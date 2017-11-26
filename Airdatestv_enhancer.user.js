@@ -8,7 +8,7 @@
 // @include     https://disqus.com/embed/comments/*
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.16.1
+// @version     1.17
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -108,7 +108,7 @@ window.assignColor = function assignColor ( seriesId, color, permanent )
 	let r = _assignColor(seriesId, color, permanent),
 			css = $("#css_"+seriesId);
 
-	css.html(css.html().replace(/(\s+)(\.activeOnly[^\{]+)\{/, "$1$2:not(.collapse),body:not(.collapseMulti) $2{"));
+	css.html(css.html().replace(/(\s+)(\.activeOnly)([^\{]+)\{/, "$1$2$3:not(.multi),body:not(.collapseMulti) $2$3,$2 .day.expand $3,$2 .day.opened $3{"));
 	return r;
 }
 /*
@@ -178,103 +178,95 @@ let collapseMulti = function collapseMulti(i, day)
 {
 	if (day.list)
 	{
-		for(let i in day.list)
-		{
-			if (day.list[i].length < 2)
-				continue;
-
-			day.list[i][0]._title.html(day.list[i][0]._title[collapseMulti.enabled ? "_titleCollapsed" : "_titleOrig"]);
-		}
+		collapseMulti.setTitle(day.list, collapseMulti.enabled ? "_titleCollapsed" : "_titleOrig");
 		return;
 	}
 
 	day.list = {};
+	let list = {};
+	day.addEventListener("mouseenter", function(e)
+	{
+		collapseMulti.mouseOver(e, day);
+	}, true);
+	day.addEventListener("mouseleave", function(e)
+	{
+		collapseMulti.mouseOut(e, day);
+	}, true);
+
 	$(day).find("div.entry").each(function(i, entry)
 	{
 		let id = entry.getAttribute("data-series-id");
 		
 		entry._title = $(entry).find(".title");
 		entry._title._titleOrig = entry._title.text();
-		if (!(id in day.list))
+		if (list[id])
 		{
-			day.list[id] = [entry]
+			$(entry).toggleClass("multi", true);
 		}
 		else
 		{
-			if (day.list[id].length == 1)
-			{
-				day.list[id][0].addEventListener("mouseover", function(e)
-				{
-					collapseMulti.mouseOver(e, day, id)
-				}, false);
-				day.list[id][0].addEventListener("mouseout", function(e)
-				{
-					collapseMulti.mouseOut(e, day, id)
-				}, false);
-			}
-			$(entry).toggleClass("collapse", true);
-			day.list[id].push(entry);
-			entry.addEventListener("mouseover", function(e)
-			{
-				collapseMulti.mouseOver(e, day, id)
-			}, true);
-			entry.addEventListener("mouseout", function(e)
-			{
-				collapseMulti.mouseOut(e, day, id)
-			}, true);
+			list[id] = [];
 		}
+		list[id].push(entry);
 	});
 	
-	for(let i in day.list)
+	for(let i in list)
 	{
-		if (day.list[i].length < 2)
+		if (list[i].length < 2)
 			continue;
 
-		day.list[i][0]._title._titleCollapsed = day.list[i][0]._title.text() + "-" + day.list[i][day.list[i].length - 1]._title.text().replace(/.* ([^ ]+)$/, "$1");
-		day.list[i][0]._title.html(day.list[i][0]._title[collapseMulti.enabled ? "_titleCollapsed" : "_titleOrig"]);
+		list[i][0]._title._titleCollapsed = list[i][0]._title.text() + "-" + list[i][list[i].length - 1]._title.text().replace(/.* ([^ ]+)$/, "$1");
+		day.list[i] = list[i][0]._title;
+		if (collapseMulti.enabled)
+			$(day.list[i]).html(day.list[i]._titleCollapsed);
 	}
 }
-collapseMulti.prev = {day: null, id: null, timer: null};
-collapseMulti.mouseOver = function(e, day, id)
+
+collapseMulti.prev = null;
+
+collapseMulti.setTitle = function(list, title)
+{
+	for (let i in list)
+		$(list[i]).html(list[i][title]);
+}
+
+collapseMulti.mouseOver = function(e, day)
 {
 	if (!collapseMulti.enabled)
 		return;
 
-	if (collapseMulti.prev.day && collapseMulti.prev.id)
+	if (collapseMulti.prev)
 	{
-		if (collapseMulti.prev.day != day || collapseMulti.prev.id != id)
+		if (collapseMulti.prev == day)
 		{
-			$(collapseMulti.prev.day.list[id].entry).toggleClass("opened", false);
+			clearTimeout(collapseMulti.timer);
+			return;
 		}
 		else
 		{
-			clearTimeout(collapseMulti.prev.timer);
-			return;
+			$(collapseMulti.prev).toggleClass("expand", false);
+			if (!$(collapseMulti.prev).hasClass("opened"))
+				collapseMulti.setTitle(collapseMulti.prev.list, "_titleCollapsed");
 		}
 	}
-	for (let i = 1; i < day.list[id].length; i++)	
-	{
-		$(day.list[id][i]).toggleClass("collapse", false);
-	}
-	day.list[id][0]._title.html(day.list[id][0]._title._titleOrig)
-	collapseMulti.prev.day = day;
-	collapseMulti.prev.id = id;
+	collapseMulti.setTitle(day.list, "_titleOrig");
+	$(day).toggleClass("expand", true);
+	collapseMulti.prev = day;
 }
+
 collapseMulti.mouseOut = function(e, day, id)
 {
-	if (!collapseMulti.enabled)
+	if (!collapseMulti.enabled || e.target != day)
 		return;
 
-	collapseMulti.prev.timer = setTimeout(function()
+	clearTimeout(collapseMulti.timer);
+	collapseMulti.timer = setTimeout(function()
 	{
-		$(day.list[id][0]).toggleClass("opened", false)
-		for (let i = 1; i < day.list[id].length; i++)	
-		{
-			$(day.list[id][i]).toggleClass("collapse", true);
-			collapseMulti.prev.day = null;
-			collapseMulti.prev.id = null;
-		}
-		day.list[id][0]._title.html(day.list[id][0]._title._titleCollapsed)
+		$(day).toggleClass("expand", false)
+		if (!$(day).hasClass("opened"))
+			collapseMulti.setTitle(day.list, "_titleCollapsed");
+
+		collapseMulti.prev = null;
 	}, 100);
 }
 
@@ -283,6 +275,7 @@ collapseMulti.onOff = function(e, id, checked)
 	collapseMulti.enabled = checked;
 	$("div.day").each(collapseMulti);
 }
+
 //fixing prev/next history jump does nothing
 $(window).on("popstate", function(e)
 {
@@ -476,8 +469,12 @@ var prevOpened = null;
 //adding attribute "opened" to the entry allows us show/hide things from CSS based on entry state
 $("div.days").on("click", "div.entry div.title", function(e)
 {
+	let $entry = $( this ).parent();
+
 	if (prevOpened)
 	{
+		prevOpened.parent().toggleClass("opened", false);
+		collapseMulti.setTitle(prevOpened.parent()[0].list, collapseMulti.enabled ? "_titleCollapsed" : "_titleOrig");
 		prevOpened.attr("opened", "");
 		let po = prevOpened;
 		setTimeout(function()
@@ -487,10 +484,12 @@ $("div.days").on("click", "div.entry div.title", function(e)
 		prevOpened = null;
 	}
 
-	let $entry = $( this ).parent();
+
 	if ($entry.attr("opened") === undefined)
 	{
 		$entry.attr("opened", "");
+		$entry.parent().toggleClass("opened", true);
+		collapseMulti.setTitle($entry.parent()[0].list, "_titleOrig");
 //idealy this should've been done via "on complete" function submitted for slideUp/slideDown
 		setTimeout(function()
 		{
@@ -546,6 +545,7 @@ div.today
 
 
 /* higlighted title under cursor *//*
+div.entry > input[type="checkbox"]:hover + div.title,
 div.title:hover
 {
 	background-color: #ffffd5;
@@ -655,7 +655,7 @@ div.entry > input[type="checkbox"]
 	opacity: 0.5;
 }
 
-body.collapseMulti div.entry.collapse
+body.collapseMulti div.day:not(.expand):not(.opened) div.entry.multi
 {
 	display: none !important;
 }
@@ -1170,7 +1170,7 @@ function showHide(id, t)
  		if (!css.length)
  		{
 			let style = "<style id='css" + id + "'>"+
-									"div.calendar:not(.showHidden).activeOnly .entry[data-series-id='" + id + "'][opened]:not(.collapse){ display: block !important; }"+
+									"div.calendar:not(.showHidden).activeOnly .entry[data-series-id='" + id + "'][opened]:not(.multi){ display: block !important; }"+
 									"div.calendar:not(.showHidden) .entry[data-series-id='" + id + "']:not([opened]):not(.searchResult){ display: none !important; }"+
 									".entry[data-series-id='" + id + "'] .title{ font-style: italic; }"+
 									".entry[data-series-id='" + id + "']{ opacity: 0.3;}"+
