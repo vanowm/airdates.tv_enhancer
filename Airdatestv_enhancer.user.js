@@ -8,7 +8,7 @@
 // @include     https://disqus.com/embed/comments/*
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.17.1
+// @version     1.17.2
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -239,12 +239,13 @@ collapseMulti.mouseOver = function(e, day)
 	{
 		if (collapseMulti.prev == day)
 		{
-			clearTimeout(collapseMulti.timer);
+//log("over"+$(day).attr("data-date"))
+//			clearTimeout(collapseMulti.timer);
 			return;
 		}
 		else
 		{
-			$(collapseMulti.prev).toggleClass("expand", false);
+//			$(collapseMulti.prev).toggleClass("expand", false);
 			if (!$(collapseMulti.prev).hasClass("opened"))
 				collapseMulti.setTitle(collapseMulti.prev.list, "_titleCollapsed");
 		}
@@ -259,15 +260,16 @@ collapseMulti.mouseOut = function(e, day, id)
 	if (!collapseMulti.enabled || e.target != day)
 		return;
 
-	clearTimeout(collapseMulti.timer);
+//	clearTimeout(collapseMulti.timer);
 	collapseMulti.timer = setTimeout(function()
 	{
+//log("out"+$(day).attr("data-date"));
 		$(day).toggleClass("expand", false)
 		if (!$(day).hasClass("opened"))
 			collapseMulti.setTitle(day.list, "_titleCollapsed");
 
 		collapseMulti.prev = null;
-	}, 100);
+	}, 300);
 }
 
 collapseMulti.onOff = function(e, id, checked)
@@ -465,18 +467,28 @@ function pastLoaded()
 	showWeeks();
 }//pastLoaded()
 
-var prevOpened = null;
+var prevOpened = null,
+		prevParentOpened = null,
+		prevParentOpenTimer = null;
 //adding attribute "opened" to the entry allows us show/hide things from CSS based on entry state
 $("div.days").on("click", "div.entry div.title", function(e)
 {
-	let $entry = $( this ).parent();
+	let $entry = $( this ).parent(),
+			parent = $entry.parent();
 
 	if (prevOpened)
 	{
-		prevOpened.parent().toggleClass("opened", false);
-		collapseMulti.setTitle(prevOpened.parent()[0].list, collapseMulti.enabled ? "_titleCollapsed" : "_titleOrig");
+		let po = prevOpened,
+				ppo = prevParentOpened
+
+		prevParentOpenTimer = setTimeout(function()
+		{
+			collapseMulti.setTitle(ppo[0].list, collapseMulti.enabled && !ppo.hasClass("expand")? "_titleCollapsed" : "_titleOrig");
+
+			po.parent().toggleClass("opened", false);
+		}, 400);
+
 		prevOpened.attr("opened", "");
-		let po = prevOpened;
 		setTimeout(function()
 		{
 			po.removeAttr("opened");
@@ -488,13 +500,18 @@ $("div.days").on("click", "div.entry div.title", function(e)
 	if ($entry.attr("opened") === undefined)
 	{
 		$entry.attr("opened", "");
-		$entry.parent().toggleClass("opened", true);
-		collapseMulti.setTitle($entry.parent()[0].list, "_titleOrig");
+		parent.toggleClass("opened", true);
+		collapseMulti.setTitle(parent[0].list, "_titleOrig");
 //idealy this should've been done via "on complete" function submitted for slideUp/slideDown
+		if (prevParentOpened && parent[0] == prevParentOpened[0])
+			clearTimeout(prevParentOpenTimer);
+
 		setTimeout(function()
 		{
 			$entry.attr("opened", "1");
 		}, 300);
+
+		prevParentOpened = parent;
 		prevOpened = $entry;
 	}
 });
