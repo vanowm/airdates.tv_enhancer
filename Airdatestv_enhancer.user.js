@@ -8,7 +8,7 @@
 // @include     https://disqus.com/embed/comments/*
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.17.2
+// @version     1.18
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -93,6 +93,7 @@ function cs(id, data)
 	}
 	return r;
 }
+cs.list = ["cm","sh","sn","s","sr","n","w","wa","middleClick"];
 
 let func = function(e)
 {
@@ -106,9 +107,12 @@ work around for expand/collapse same series in one day
 window.assignColor = function assignColor ( seriesId, color, permanent )
 {
 	let r = _assignColor(seriesId, color, permanent),
-			css = $("#css_"+seriesId);
+			css = $("#css_"+seriesId),
+			html = css.html();
 
-	css.html(css.html().replace(/(\s+)(\.activeOnly)([^\{]+)\{/, "$1$2$3:not(.multi),body:not(.collapseMulti) $2$3,$2 .day.expand $3,$2 .day.opened $3{"));
+	if (html)
+		css.html(html.replace(/(\s+)(\.activeOnly)([^\{]+)\{/, "$1$2$3:not(.multi),body:not(.collapseMulti) $2$3,$2 .day.expand $3,$2 .day.opened $3{"));
+
 	return r;
 }
 /*
@@ -154,21 +158,26 @@ function loadArchiveFromPathname(originalPath,highlightSelector)
 				}});
 		}
 //injecting userscript function execution
-		showPast();
-		showHideLoad();
+		showPast(function()
+		{
 //adding watched checkboxes
-		$("div.day > div.entry").each(watched.attach);
+			$("div.day > div.entry").each(watched.attach);
 //collapse multiple entries of the same series in one day
-		$("div.day").each(collapseMulti);
+			$("div.day").each(collapseMulti);
+		});
+		showHideLoad();
 	};
 
-	if(ymCurrent != ym){
-		$(".days").load("/_archive/" + ~~(ym/12) + "-" + ~~((ym%12)+1), function(){
+	if(ymCurrent != ym)
+	{
+		$(".days").load("/_archive/" + ~~(ym/12) + "-" + ~~((ym%12)+1), function()
+		{
 			ymCurrent = ym;
 			whenDone();
 		});
 	}
-	else{
+	else
+	{
 		whenDone();
 	}
 }
@@ -181,7 +190,6 @@ let collapseMulti = function collapseMulti(i, day)
 		collapseMulti.setTitle(day.list, collapseMulti.enabled && !$(day).hasClass("opened") ? "_titleCollapsed" : "_titleOrig");
 		return;
 	}
-
 	day.list = {};
 	let list = {};
 	day.addEventListener("mouseenter", function(e)
@@ -196,20 +204,15 @@ let collapseMulti = function collapseMulti(i, day)
 	$(day).find("div.entry").each(function(i, entry)
 	{
 		let id = entry.getAttribute("data-series-id");
-		
 		entry._title = $(entry).find(".title");
 		entry._title._titleOrig = entry._title.text();
 		if (list[id])
-		{
 			$(entry).toggleClass("multi", true);
-		}
 		else
-		{
 			list[id] = [];
-		}
+
 		list[id].push(entry);
 	});
-	
 	for(let i in list)
 	{
 		if (list[i].length < 2)
@@ -291,8 +294,9 @@ end fixing browser history inflating after each page refresh and prev/next histo
 */
 
 window.loadArchiveFromPathname = loadArchiveFromPathname;
-function showPast()
+function showPast(callback)
 {
+
 // hide all past days
 	let	d = new Date();
 
@@ -338,6 +342,8 @@ function showPast()
 			$(div[n]).children().prependTo($("div.days"));
 		}
 		pastLoaded();
+		if (callback)
+			callback();
 	}
 }//showPast()
 
@@ -952,13 +958,37 @@ function fixLink(link, engine)
 	return link;
 }
 
-function createCheckbox(id, label, checked, callback)
+function command(id, val)
+{
+	if (!command.list[id])
+		return false;
+
+	try
+	{
+		command.list[id].func({preventDefault:function(){},stopPropagation:function(){}}, val);
+	}
+	catch(e)
+	{
+		return false;
+	}
+	return true;
+}
+command.list = {};
+command.add = function(id, objId, func)
+{
+	command.list[id] = {
+		id: id,
+		objId: objId,
+		func: func
+	};
+}
+function createCheckbox(id, label, cookie, callback)
 {
 	let span = document.createElement("span"),
 			checkon = document.createElement("span"),
 			checkoff = document.createElement("span"),
 			a = document.createElement("a"),
-			check = cs(checked) ? true : false;
+			check = cs(cookie) ? true : false;
 	a.className = "filter " + id;
 	checkon.className = "checkon nu";
 	checkoff.className = "checkoff nu";
@@ -970,11 +1000,14 @@ function createCheckbox(id, label, checked, callback)
 	span.appendChild(document.createTextNode(label));
 	a.appendChild(span);
 	$(a).insertBefore("#nu-showing");
-	let func = function(e)
+	let func = function(e, val)
 	{
 		e.preventDefault();
 		e.stopPropagation();
 		let check = span.hasAttribute("checked");
+		if (val !== undefined)
+			check = !val;
+
 		if (check)
 			span.removeAttribute("checked");
 		else
@@ -982,10 +1015,11 @@ function createCheckbox(id, label, checked, callback)
 
 		$(".calendar").toggleClass(id, !check);
 		$("body").toggleClass(id, !check);
-		cs(checked, check ? 0 : 1);
+		cs(cookie, check ? 0 : 1);
 
 		return (typeof(callback) == "function") ? callback(e, id, !check) : e;
 	};
+	command.add(cookie, id, func);
 	a.addEventListener("click", func, false);
 	if (check)
 		span.setAttribute("checked", "checked");
@@ -998,6 +1032,7 @@ function createCheckbox(id, label, checked, callback)
 
 function showHideLoad()
 {
+
 	if (showHideLoad.inited)
 		return;
 
@@ -1062,7 +1097,8 @@ function showHideLoad()
 	$("body").off("click", ".exportColors");
 	$("body").on("click", ".importColors", function()
 	{
-		let str = prompt( "Please enter the crazy text!" );
+		let str = prompt( "Please enter the crazy text!" ),
+				reload = false;
 		if( str )
 		{
 			let hidden = 0,
@@ -1110,6 +1146,20 @@ function showHideLoad()
 								}
 							}
 						}
+						if ("settings" in json)
+						{
+							for(let i in json.settings)
+							{
+								if (cs.list.indexOf(i) == -1)
+									continue;
+
+								if (!command(i, json.settings[i]))
+								{
+									cs(i, json.settings[i]);
+									reload = true;
+								}
+							}
+						}
 					}
 					else
 					{
@@ -1127,6 +1177,8 @@ function showHideLoad()
 				txt += (hidden ? ", " : " ") + watchedNum + " as watched";
 
 			alert(txt);
+			if (reload)
+				window.location.reload();
 		}
 		return false;
 	});
@@ -1134,11 +1186,37 @@ function showHideLoad()
 	{
 		let str = $.map(DB.savedColors,function(e,i){return i + "=" + e;}).join(";");
 		str = str.replace(/;?[0-9]+=#FFFFFF/i, "");
-		let obj = {
-			hidden: _hidden,
-			watched: watched._list
-		};
-		str += ";" + JSON.stringify(obj);
+		let settings = {};
+		for(let i = 0; i < cs.list.length; i++)
+		{
+			let v = cs(cs.list[i]);
+			if (v !== null)
+			{
+				settings[cs.list[i]] = v;
+			}
+		}
+		let obj = {};
+		for(let i in _hidden)
+		{
+			obj.hidden = _hidden;
+			break;
+		}
+		for(let i in watched._list)
+		{
+			obj.watched = watched._list;
+			break;
+		}
+		for(let i in settings)
+		{
+			obj.settings = settings;
+			break;
+		}
+		for(let i in obj)
+		{
+			str += ";" + JSON.stringify(obj);
+			break;
+		}
+
 
 		if (str)
 				prompt( "This is the crazy text. \nYou can save it in a normal textfile and/or import it to another computer/browser.", str );
