@@ -35,7 +35,7 @@ function ls(id, data)
 		{
 			r = localStorage.setItem(id, JSON.stringify(data));
 		}
-		catch(e){log(e)}
+		catch(e){log(e);}
 	}
 	return r;
 }
@@ -133,7 +133,7 @@ let cl = ls("customLinks") || {};
 	}
 	ls("customLinks", clNew);
 	window.engines = window.engines.concat(list);
-})()
+})();
 
 
 
@@ -744,7 +744,7 @@ let func = function(event)
 		height: 100%;
 		right: -1px;
 		top: -1px;
-		width: 2px; 
+		width: 2px;
 	}
 	*/};//css
 
@@ -1513,12 +1513,13 @@ let func = function(event)
 	{
 		let title = entry._title && entry._title._titleOrig ? entry._title._titleOrig : $(entry).find("div.title").text();
 		return title.substring(0, title.lastIndexOf(" "));
-	}
+	};
 
 	DB.infoSave = function()
 	{
 		ls("info", DB.info);
-	}
+	};
+
 	DB.infoAdd = function(id, name, nosave)
 	{
 		if (typeof(name) == "undefined")
@@ -1536,13 +1537,13 @@ let func = function(event)
 		DB.info[id] = name;
 		if (!nosave)
 			DB.infoSave();
-	}
+	};
 
 	DB.infoRemove = function(id)
 	{
 		delete DB.info[id];
 		DB.infoSave();
-	}
+	};
 
 	DB.infoGet = function(id)
 	{
@@ -1551,7 +1552,7 @@ let func = function(event)
 			return [DB.infoNameClean(entry), entry.getAttribute("data-series-source")];
 
 		return null;
-	}
+	};
 
 	DB.infoLoad = function(id)
 	{
@@ -1563,7 +1564,7 @@ let func = function(event)
 			if (title)
 				DB.infoAdd(id, [title, $(obj).find(".entry").attr("data-series-source")]);
 		});
-	}
+	};
 
 	function showMyShows(e)
 	{
@@ -1605,7 +1606,6 @@ let func = function(event)
 		{
 			$(".entry").removeClass("searchResult");
 		});
-		
 	}
 
 	$(document).ready(function()
@@ -1620,7 +1620,7 @@ let func = function(event)
 
 		if (!as.length)
 			return;
-		
+
 		$("#account-overview").unbind("click", loop);
 		let a = document.createElement("a"),
 				i = document.createTextNode("🔍");
@@ -1657,7 +1657,7 @@ let func = function(event)
 			if (added)
 				DB.infoSave();
 		})();
-		
+
 	//fix paste via right click: adding input event
 		$( "#searchBecauseNoOneChecks" ).on( "input keyup change search", function(e)
 		{
@@ -1674,7 +1674,7 @@ let func = function(event)
 			else
 				showMyShows.box = null;
 
-		}).trigger("change");;
+		}).trigger("change");
 	});//document.ready()
 };//func()
 
