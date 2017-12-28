@@ -8,7 +8,7 @@
 // @include     https://disqus.com/embed/comments/*
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.19.4
+// @version     1.20
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -18,6 +18,13 @@
 
 let log = console.log;
 
+let adeName = "Airdates.tv enhancer",
+		adeVersion = "n/a";
+try
+{
+	adeName = GM_info.script.name;
+	adeVersion = GM_info.script.version;
+}catch(e){};
 function ls(id, data)
 {
 	let r;
@@ -747,6 +754,17 @@ let func = function(event)
 		top: -1px;
 		width: 2px;
 	}
+	/*Account popup*//*
+	#account-popup-content .content h4
+	{
+		margin-top: 0;
+		margin-bottom: 1em;
+	}
+	#account-popup-content .content
+	{
+		padding-top: 1em;
+		padding-bottom: 1em;
+	}
 	*/};//css
 
 	style.innerHTML = css.toString().slice(14,-3).split("*//*").join("*/");
@@ -1069,7 +1087,7 @@ let func = function(event)
 		a.className = "filter " + id;
 		checkon.className = "checkon nu";
 		checkoff.className = "checkoff nu";
-		checkon.innerHTML = "☑";
+		checkon.innerHTML = "🗹";
 		checkoff.innerHTML = "☐";
 		a.href = "#";
 		span.appendChild(checkon);
@@ -1170,8 +1188,8 @@ let func = function(event)
 			return false;
 		});
 
-		$("body").off("click", ".importColors");
 		$("body").off("click", ".exportColors");
+		$("body").off("click", ".importColors");
 		$("body").on("click", ".importColors", function()
 		{
 			let str = prompt( "Please enter the crazy text!" ),
@@ -1189,6 +1207,7 @@ let func = function(event)
 						assignColor.apply( null, color );
 						colors++;
 					}
+/*
 					else
 					{
 						let json = null;
@@ -1246,8 +1265,10 @@ let func = function(event)
 								showHide(parseInt(color[i]), 1);
 						}
 					}
+*/
 				});
-				let txt = "Imported " + colors + " colors" + ((hidden || watchedNum) ? " and marked " : "");
+//				let txt = "Imported " + colors + " colors" + ((hidden || watchedNum) ? " and marked " : "");
+				let txt = "Imported " + colors + " colors";
 				if (hidden)
 					txt += hidden + " as hidden";
 				if (watchedNum)
@@ -1259,10 +1280,12 @@ let func = function(event)
 			}
 			return false;
 		});
+
 		$("body").on( "click", ".exportColors", function()
 		{
 			let str = $.map(DB.savedColors,function(e,i){return i + "=" + e;}).join(";");
 			str = str.replace(/;?[0-9]+=#FFFFFF/i, "");
+/*
 			let settings = {};
 			for(let i = 0; i < cs.list.length; i++)
 			{
@@ -1293,7 +1316,7 @@ let func = function(event)
 				str += ";" + JSON.stringify(obj);
 				break;
 			}
-
+*/
 
 			if (str)
 					prompt( "This is the crazy text. \nYou can save it in a normal textfile and/or import it to another computer/browser.", str );
@@ -1436,12 +1459,16 @@ let func = function(event)
 		if (watched._saving && !f)
 			return;
 
-		clearTimeout(watched._saving);
-		watched._saving = setTimeout(function()
+		function func()
 		{
 			watched._saving = false;
 			ls("watched", watched._list);
-		}, 500);
+		}
+		clearTimeout(watched._saving);
+		if (f)
+			func();
+		else
+			watched._saving = setTimeout(func, 500);
 	};
 
 	watched.has = function(entry)
@@ -1615,22 +1642,157 @@ let func = function(event)
 			if( !$( "#account-popup" ).hasClass("loaded") || (!as.length && accountLoop--))
 				return setTimeout(loop, 100);
 
-		if (!as.length)
-			return;
+			if (!as.length)
+				return;
 
-		$("#account-overview").unbind("click", loop);
-		let a = document.createElement("a"),
-				i = document.createTextNode("🔍");
-		a.href = '#myshows';
-		a.addEventListener("click", function(e)
-		{
-			e.preventDefault();
-			search("info:myshows");
-			$("#account-popup").toggle();
-		}, false);
-		a.textContent = "All my shows";
-		as[as.length-1].parentNode.insertBefore(a, as[as.length-1].parentNode.lastChild.previousSibling);
-		a.parentNode.insertBefore(i, a);
+			$("#account-overview").unbind("click", loop);
+			let a = document.createElement("a"),
+					i = document.createTextNode("→ "),
+					span = document.createElement("div"),
+					h = document.createElement("h4"),
+					item = span,
+					parent = as[as.length-1].parentNode;
+			parent.removeChild(parent.lastChild);
+			h.textContent = adeName + " v" + adeVersion;
+			parent.appendChild(h);
+			span.appendChild(i);
+			span.appendChild(a);
+			a.href = "#";
+			a.textContent = "Export settings";
+			a.addEventListener("click", function(e)
+			{
+				e.preventDefault();
+				let settings = {},
+						str = "";
+				for(let i = 0; i < cs.list.length; i++)
+				{
+					let v = cs(cs.list[i]);
+					if (v !== null)
+					{
+						settings[cs.list[i]] = v;
+					}
+				}
+				let obj = {};
+				for(let i in settings)
+				{
+					obj.settings = settings;
+					break;
+				}
+				for(let i in _hidden)
+				{
+					obj.hidden = _hidden;
+					break;
+				}
+				for(let i in watched._list)
+				{
+					obj.watched = watched._list;
+					break;
+				}
+				for(let i in obj)
+				{
+					obj.version = adeVersion;
+					str = JSON.stringify(obj);
+					break;
+				}
+
+				if (str)
+						prompt( adeName + " Settings \nYou can save it in a normal textfile and/or import it to another computer/browser.", str );
+				else
+						alert("Nothing to export");
+				return false;
+			}, false);
+			parent.appendChild(span);
+
+			span = span.cloneNode(true);
+			a = span.lastChild;
+			i = span.firstChild;
+			i.textContent = "← ";
+			a.textContent = "Import settings";
+			a.addEventListener("click", function(e)
+			{
+				e.preventDefault();
+				let str = prompt( "Please enter the " + adeName + " settings text" ),
+						reload = false,
+						txt = "Error importing settings";
+				if( str )
+				{
+					let hiddenNum = 0,
+							watchedNum = 0,
+							settingsNum = 0;
+					let json = null;
+					try
+					{
+						json = JSON.parse(str);
+					}
+					catch(e){}
+					if (json)
+					{
+						if ("hidden" in json)
+						{
+							hiddenNum = json.hidden.length;
+							for(let i = 0; i < hiddenNum; i++)
+								showHide(parseInt(json.hidden[i]), 1);
+						}
+						if ("watched" in json)
+						{
+							for(let id in json.watched)
+							{
+								for(let i = 0; i < json.watched[id].length; i++)
+								{
+									let ep = json.watched[id][i];
+									watched.add(id, ep);
+									watchedNum++;
+									$('div.entry[data-series-id="' + id + '"]').each(function(n, entry)
+									{
+										if (watched.title(entry) == ep)
+											watched.update(entry, true);
+									});
+								}
+							}
+							watched.save(true);
+						}
+						if ("settings" in json)
+						{
+							for(let i in json.settings)
+							{
+								if (cs.list.indexOf(i) == -1)
+									continue;
+
+								if (!command(i, json.settings[i]))
+								{
+									settingsNum++;
+									cs(i, json.settings[i]);
+									reload = true;
+								}
+							}
+						}
+						txt = settingsNum + " setting" + (settingsNum > 1 ? "s" : "") + " imported" + ((hiddenNum || watchedNum) ? " and marked " : "");
+						if (hiddenNum)
+							txt += hiddenNum + " show" + (hiddenNum > 1 ? "s" : "") + " as hidden";
+						if (watchedNum)
+							txt += (hiddenNum ? ", " : " ") + watchedNum + " as watched";
+					}
+					alert(txt);
+					if (reload)
+						window.location.reload();
+				}
+			}, false);
+			parent.appendChild(span);
+
+			span = span.cloneNode(true);
+			a = span.lastChild;
+			i = span.firstChild;
+			i.textContent = "🔍 ";
+			a.href = '#myshows'; 
+			a.addEventListener("click", function(e)
+			{
+				e.preventDefault();
+				search("info:myshows");
+				$("#account-popup").toggle();
+			}, false);
+			a.textContent = "All my shows";
+			parent.appendChild(span);
+//			a.parentNode.insertBefore(i, a);
 		});
 
 		let repeat = 20,
