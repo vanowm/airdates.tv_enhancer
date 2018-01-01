@@ -8,7 +8,7 @@
 // @include     https://disqus.com/embed/comments/*
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.21.1
+// @version     1.22
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -134,15 +134,87 @@ function enginesCheck(id)
 	return -1;
 };
 
-function enginesFind(id)
+function enginesFind(id, obj)
 {
-	for(let i = 0; i < window.engines.length; i++)
+	obj = typeof(obj) == "undefined" ? window.engines : obj;
+	for(let i = 0; i < obj.length; i++)
 	{
-		if (window.engines[i].name == id || window.engines[i].host == id)
+		if (obj[i].name == id || obj[i].host == id)
 			return i;
 	}
 	return -1;
 };
+
+function enginesSort(list, save)
+{
+	if (typeof(list) == "undefined")
+	{
+		list = ls("enginesSort") || [];
+		save = true;
+	}
+
+	let newList = [],
+			newEnginesList = [];
+
+	for(let i = 0; i < list.length; i++)
+	{
+		let index = enginesFind(list[i]);
+		if (index == -1 || newList.indexOf(window.engines[index].host) != -1)
+			continue;
+
+		newEnginesList[newEnginesList.length] = window.engines[index];
+		newList[newList.length] = window.engines[index].host;
+	}
+	for(let i = 0; i < window.engines.length; i++)
+	{
+		if (newList.indexOf(window.engines[i].host) == -1)
+		{
+			newEnginesList[newEnginesList.length] = window.engines[i];
+			newList[newList.length] = window.engines[i].host;
+		}
+	}
+	for(let i in customLinks._list)
+	{
+		if (newList.indexOf(i) == -1)
+		{
+			newEnginesList[newEnginesList.length] = customLinks._list[i];
+			newList[newList.length] = i;
+		}
+	}
+	if (save)
+		enginesSort._list = newList;
+
+	window.engines = newEnginesList;
+}
+enginesSort.changed = function()
+{
+	let list = [];
+	for (let i = 0; i < enginesDefault.length; i++)
+	{
+		list[list.length] = enginesDefault[i].host;
+	}
+	for (i in customLinks._list)
+	{
+		if (list.indexOf(i) == -1)
+			list[list.length] = i;
+	}
+	return !isEqual(list, enginesSort._list);
+}
+
+function isEqual (a, b)
+{
+	for(let i in a)
+	{
+		if (!(i in b) || a[i] != b[i])
+			return false
+	}
+	for(let i in b)
+	{
+		if (!(i in a) || a[i] != b[i])
+			return false
+	}
+	return true;
+}
 
 function cleanName(id)
 {
@@ -228,8 +300,11 @@ customLinks.menu = function(callback)
 	});
 	$("body").append(popup);
 
-	let	content= $(popup).find(".content").html("<h4>Links Manager</h4>"),
+	let	content = $(popup).find(".content").html('<h4>Links Manager</h4>'),
 			html = function(){/*
+<div class="reset">
+	<a id="sort-reset" href="#">reset sort</a>
+</div>
 <form>
 	<div id="engine-edit">
 		<div>
@@ -252,11 +327,14 @@ customLinks.menu = function(callback)
 			<label>ID:</label>
 			<input id="engine-id" placeholder="&lt;optional&gt;">
 		</div>
-		<div id="engine-res"></div>
 		<div>
 			<label></label>
-			<input id="engine-submit" type="button" value="Submit">
+			<input id="engine-submit" type="button" value="Add">
 			<input id="engine-reset" type="reset" value="Reset">
+		</div>
+		<div>
+			<label>Result:</label>
+			<div id="engine-res"></div>
 		</div>
 	</div>
 </form>
@@ -270,57 +348,64 @@ customLinks.menu = function(callback)
 			engTags = $("#engine-tags"),
 			engRes = $("#engine-res"),
 			engReset = $("#engine-reset"),
+			engSortReset = $("#sort-reset"),
 			engResHidden = $('<div id="engine-hidden" class="entry" data-series-id="1234" data-series-source="List of Monsuno episodes" data-date="20120223"><div class="title">Monsuno S01E01</div></div>').appendTo(popup),
 			prevTarget = null,
 			prevVal = null;
 
+			if (enginesSort.changed())
+				popup.attr("changed", true);
 
 	function change(e)
 	{
 		if (prevTarget === e.target && prevVal === e.target.value)
 			return;
 
-		prevVal = e.target.value;
-		prevTarget = e.target;
-		engResHidden.find(".details").remove();
-		let opened = $('.details[style="display: block;"]').toggleClass("details", false);
-		enginesBackup();
-		let eng = [{
-					name: engName.val(),
-					host: engId.val(),
-					href: engUrl.val()
-				}];
-
-		if (!eng[0].href.match(/[a-z]+:\/\//i))
-			eng[0].href = "http://" + eng[0].href;
-
-		engineFixHost(eng[0]);
-		window.engines = eng;
-		engResHidden.find(".title").trigger("click");
-		opened.toggleClass("details", true);
-		setTimeout(function()
+		clearTimeout(change.timer);
+		change.timer = setTimeout(function()
 		{
-			let list = engResHidden.find(".engines").children(),
-					a = list.filter("a")[0],
-					img = list.filter("img")[0],
-					children = engRes.children();
+			prevVal = e.target.value;
+			prevTarget = e.target;
+			engResHidden.find(".details").remove();
+			let opened = $('.details[style="display: block;"]').toggleClass("details", false);
+			enginesBackup();
+			let eng = [{
+						name: engName.val(),
+						host: engId.val(),
+						href: engUrl.val()
+					}];
 
-			img.src = "http://www.google.com/s2/favicons?domain=" + getHost(eng[0].href);
+			if (!eng[0].href.match(/[a-z]+:\/\//i))
+				eng[0].href = "http://" + eng[0].href;
 
-			if (!children.length)
+			engineFixHost(eng[0]);
+			window.engines = eng;
+			engResHidden.find(".title").trigger("click");
+			opened.toggleClass("details", true);
+			setTimeout(function()
 			{
-				engRes.append(img).append(a);
-			}
-			else
-			{
-				$(children[0]).replaceWith(img);
-				$(children[1]).replaceWith(a);
-			}
-			if (enginesBackup)
-			{
-				enginesRestore();
-			}
-		});
+				let list = engResHidden.find(".engines").children(),
+						a = list.filter("a")[0],
+						img = list.filter("img")[0],
+						children = engRes.children();
+
+				img.src = "http://www.google.com/s2/favicons?domain=" + getHost(eng[0].href);
+
+				if (!children.length)
+				{
+					engRes.append(img).append(a);
+				}
+				else
+				{
+					$(children[0]).replaceWith(img);
+					$(children[1]).replaceWith(a);
+				}
+				if (enginesBackup)
+				{
+					enginesRestore();
+				}
+			});
+		}, 300);
 	}//change()
 	engId.on("input change", change);
 	engUrl.on("input change", change);
@@ -345,20 +430,6 @@ customLinks.menu = function(callback)
 		engRes.html("");
 		prevVal = null;
 	});
-	function isEqual (a, b)
-	{
-		for(let i in a)
-		{
-			if (!(i in b) || a[i] != b[i])
-				return false
-		}
-		for(let i in b)
-		{
-			if (!(i in a) || a[i] != b[i])
-				return false
-		}
-		return true;
-	}
 	function flash(obj, color)
 	{
 		obj.toggleClass("update", false);
@@ -472,7 +543,97 @@ customLinks.menu = function(callback)
 			clone.remove();
 		}, 300);
 	}
+	engSortReset.click(function(e)
+	{
+		e.stopPropagation();
+		e.preventDefault();
+		let host = engId.val(),
+				name = engName.val(),
+				href = engUrl.val(),
+				list = [];
 
+		for (let i = 0; i < enginesDefault.length; i++)
+		{
+			list[list.length] = enginesDefault[i].host;
+		}
+		for (i in customLinks._list)
+		{
+			list[list.length] = customLinks._list[i].host;
+		}
+		enginesSort(list, true);
+		ls("enginesSort", []);
+		updateDetails();
+		$(customLinks.div).remove();
+		customLinks.div = null;
+		popup.removeAttr("changed");
+		customLinks.menu(function()
+		{
+			if (host || name || href)
+			{
+				$("#engine-id").val(host);
+				$("#engine-name").val(name);
+				$("#engine-url").val(href);
+				$("#engine-url").trigger("input");
+			}
+		});
+		customLinks.show();
+	});
+	let dragged = null
+	function dndHandle(e)
+	{
+		let r = null;
+		switch(e.type)
+		{
+			case "dragstart":
+				e.dataTransfer.effectAllowed = 'move';
+				dragged = this;
+				this.classList.add("dragging");
+				this.parentNode.classList.add("dragging");
+				break;
+			case "dragenter":
+				this.parentNode.insertBefore(dragged, (this.nextSibling == dragged) ? this : this.nextSibling);
+				break;
+			case "dragover":
+				e.dataTransfer.dropEffect = 'move';
+				if (e.stopPropagation)
+					e.stopPropagation();
+
+				if (e.preventDefault)
+						e.preventDefault(); // Necessary. Allows us to drop.
+
+				r = false;
+				break;
+			case "dragleave":
+				break;
+			case "dragend":
+				dragged.classList.remove("dragging");
+				let div = document.querySelectorAll('#manage-links-popup-content .content [draggable]'),
+						list = [];
+				[].forEach.call(div, function (col)
+				{
+					list[list.length] = col._engine.host;
+				});
+				this.classList.remove("dragging");
+				this.parentNode.classList.remove("dragging");
+				enginesSort(list, true);
+				ls("enginesSort", list);
+				if (enginesSort.changed())
+					popup.attr("changed", true);
+				else
+					popup.removeAttr("changed");
+
+				updateDetails();
+				break;
+			case "drop":
+				if (e.stopPropagation)
+					e.stopPropagation();
+				if (e.preventDefault)
+						e.preventDefault(); // Necessary. Allows us to drop.
+				break;
+		}
+		if (r !== null)
+			return r;
+	}
 	function create(engine, callback)
 	{
 		let div = document.createElement("div"),
@@ -490,7 +651,16 @@ customLinks.menu = function(callback)
 					ls("enginesHide", enginesHide);
 
 			}, ["Visible", "Hidden"]);
+		div._engine = engine;
 		div.id = id;
+		div.setAttribute("draggable", true);
+		div.addEventListener('dragstart', dndHandle, false);
+		div.addEventListener('dragenter', dndHandle, false)
+		div.addEventListener('dragover', dndHandle, false);
+		div.addEventListener('dragleave', dndHandle, false);
+		div.addEventListener('drop', dndHandle, false);
+		div.addEventListener('dragend', dndHandle, false);
+
 		div.appendChild(cb);
 		let clone = engResHidden.clone();
 		$("body").append(clone);
@@ -512,15 +682,27 @@ customLinks.menu = function(callback)
 				return;
 			}
 			let	a = list.filter("a")[0],
-					img = list.filter("img")[0];
+					img = list.filter("img")[0],
+					def = false;
+
+			for (let i = 0; i < enginesDefault.length; i++)
+			{
+				if (enginesDefault[i].host == engine.host)
+				{
+					def = true;
+					break;
+				}
+			}
 			if (a && img)
 				img.src = "http://www.google.com/s2/favicons?domain=" + getHost(a.href);
 
 			$(div).append(img);
 			$(div).append(a);
+			if (def)
+				$(div).toggleClass("def", true);
+
 			enginesRestore();
 			clone.remove();
-
 
 			$('<span class="edit" title="Edit">&#9998;</span>').appendTo(div).click(function(e)
 			{
@@ -532,7 +714,7 @@ customLinks.menu = function(callback)
 			if (customLinks._list[engine.host])
 			{
 	//				$('<span class="del" title="delete">&#9249;</span>').appendTo(div).click(function(e)
-				$('<span class="del" title="Delete">&#9003;</span>').appendTo(div).click(function(e)
+				$('<span class="del" title="' + (def ? "Clear" : "Delete") + '">' + (def ? "&#9003;" : "&#9003;") + '</span>').appendTo(div).click(function(e)
 				{
 					e.stopPropagation();
 					e.preventDefault();
@@ -560,7 +742,16 @@ customLinks.menu = function(callback)
 								if (update !== false)
 									window.engines[i] = enginesDefault[update];
 								else
+								{
+									let index = enginesSort._list.indexOf(engine.host);
+
+									if (index != -1)
+									{
+										enginesSort._list.splice(i, 1);
+										ls("enginesSort", enginesSort._list);
+									}
 									window.engines.splice(i, 1);
+								}
 								break;
 							}
 						}
@@ -644,8 +835,11 @@ function customLinksAdd()
 	}
 	ls("customLinks", customLinks._list);
 	window.engines = window.engines.concat(list);
+
+	enginesSort();
 	let css = [],
 			css2 = [];
+
 	for (let i = 0; i < window.engines.length; i++)
 	{
 		let id = cleanName(window.engines[i].host);
@@ -1409,10 +1603,19 @@ let func = function(event)
 		vertical-align: bottom;
 	}
 	#manage-links-popup-content div.back:hover,
-	#manage-links-popup .content > div:not(#engine-res):hover
+	#manage-links-popup .content > div.dragging,
+	#manage-links-popup .content:not(.dragging) > div:not(#engine-res):hover
 	{
 		background-color: #FFFFB7;
 		outline: 1px dotted grey;
+	}
+	#manage-links-popup .content > div:not(.def) > a.link:after
+	{
+		content: "*";
+		text-decoration: none;
+		display: inline-block;
+		color: red;
+		margin-left: 0.2em;
 	}
 	#engine-edit > div:not(#engine-res) > label
 	{
@@ -1446,7 +1649,8 @@ let func = function(event)
 		overflow-x: auto;
 		overflow-y: hidden;
 		min-height: 18px;
-		padding: 2px;
+		display: block !important;
+		margin-left: 0.5em !important;
 	}
 	#engine-hidden
 	{
@@ -1462,12 +1666,31 @@ let func = function(event)
 	#engine-reset
 	{
 		font-size: 90%;
-		margin-bottom: 1em !important;
 		display: inline-block !important;
+		width: 50% !important;
 	}
 	#engine-reset
 	{
 		margin-left: 1em;
+	}
+	div.reset
+	{
+		display: none !important;
+	}
+	#manage-links-popup[changed] div.reset
+	{
+		display: block !important;
+	}
+	#sort-reset
+	{
+		display: block !important;
+		text-align: right;
+		margin-right: 0.5em;
+		margin-bottom: 0.5em;
+	}
+	#engine-edit
+	{
+		 border-top: 1px dotted;
 	}
 	#manage-links-popup .nu,
 	#manage-links-popup .nu
@@ -1489,7 +1712,25 @@ let func = function(event)
 		-moz-transition:background-color 0.4s ease-in;
 		-o-transition:background-color 0.4s ease-in;
 		transition:background-color 0.4s ease-in;
- 	}
+	}
+	[draggable]
+	{
+		-moz-user-select: none;
+		-khtml-user-select: none;
+		-webkit-user-select: none;
+		user-select: none;
+		/* Required to make elements draggable in old WebKit *//*
+		-khtml-user-drag: element;
+		-webkit-user-drag: element;
+	}
+	[draggable] a.link
+	{
+		cursor: move;
+	}
+	[draggable].over
+	{
+		outline: 2px dashed black;
+	}
 	*/};//css
 
 	style.innerHTML = css.toString().slice(14,-3).split("*//*").join("*/");
@@ -2355,6 +2596,11 @@ let func = function(event)
 					obj.enginesHide = enginesHide;
 					break;
 				}
+				for(let i in enginesSort._list)
+				{
+					obj.enginesSort = enginesSort._list;
+					break;
+				}
 				for(let i in obj)
 				{
 					obj.version = adeVersion;
@@ -2385,9 +2631,10 @@ let func = function(event)
 				{
 					let hiddenNum = 0,
 							watchedNum = 0,
-							settingsNum = 0;
-							enginesNum = 0;
+							settingsNum = 0,
+							enginesNum = 0,
 							engineHideNum = 0;
+
 					let json = null;
 					try
 					{
@@ -2458,9 +2705,24 @@ let func = function(event)
 									changed = reload = true;
 									enginesHide.push(json.enginesHide[i]);
 								}
-								if (changed)
-									ls("enginesHide", enginesHide);
 							}
+							if (changed)
+								ls("enginesHide", enginesHide);
+						}
+						if ("enginesSort" in json)
+						{
+							let changed = false;
+							enginesSort._list = [];
+							for(let i = 0; i < json.enginesSort.length; i++)
+							{
+								if (enginesFind(json.enginesSort[i]) != -1)
+								{
+									changed = reload = true;
+									enginesSort._list.push(json.enginesSort[i]);
+								}
+							}
+							if (changed)
+								ls("enginesSort", enginesSort._list);
 						}
 						txt = settingsNum + " setting" + (settingsNum > 1 ? "s" : "") + " imported" + ((hiddenNum || watchedNum) ? " and marked " : "");
 						if (hiddenNum)
