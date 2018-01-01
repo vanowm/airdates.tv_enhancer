@@ -8,7 +8,7 @@
 // @include     https://disqus.com/embed/comments/*
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.20
+// @version     1.21
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -19,7 +19,11 @@
 let log = console.log;
 
 let adeName = "Airdates.tv enhancer",
-		adeVersion = "n/a";
+		adeVersion = "n/a",
+		force = false,
+		enginesDefault = []
+		_engines = [];
+
 try
 {
 	adeName = GM_info.script.name;
@@ -68,8 +72,594 @@ function cs(id, data)
 	return r;
 }
 
-let loo = 1000;
-let cl = ls("customLinks") || {};
+let _enginesList = [];
+function enginesBackup()
+{
+	if (!enginesBackup.backup)
+		enginesBackup.backup = window.engines;
+}
+
+function enginesRestore()
+{
+	if (enginesBackup.backup)
+	{
+		window.engines = enginesBackup.backup;
+		enginesBackup.backup = null
+	}
+}
+
+function enginesAdd(id)
+{
+	for(let i = 0; i < _engines.length; i++)
+	{
+		if (_engines[i].name == id || _engines[i].host == id)
+			return;
+	}
+	for(let i = 0; i < engines.length; i++)
+	{
+		if (engines[i].name == id || engines[i].host == id)
+		{
+			_enginesList.push(engines[i].name);
+			_engines.push(engines[i]);
+			cs("middleClick", _enginesList);
+			return;
+		}
+	}
+};
+
+function enginesRemove(id)
+{
+	for(let i = 0; i < _engines.length; i++)
+	{
+		if (_engines[i].name == id || _engines[i].host == id)
+		{
+			let n = _enginesList.indexOf(_engines[i].name);
+			if (n != -1)
+				_enginesList.splice(n, 1);
+
+			cs("middleClick", _enginesList);
+			_engines.splice(i, 1);
+			return;
+		}
+	}
+};
+
+function enginesCheck(id)
+{
+	for(let i = 0; i < _engines.length; i++)
+	{
+		if (_engines[i].name == id || _engines[i].host == id)
+			return i;
+	}
+	return -1;
+};
+
+function enginesFind(id)
+{
+	for(let i = 0; i < window.engines.length; i++)
+	{
+		if (window.engines[i].name == id || window.engines[i].host == id)
+			return i;
+	}
+	return -1;
+};
+
+function cleanName(id)
+{
+	return id.replace(/[^a-zA-Z0-9-_]/g, "_");
+}
+
+function getHost(url)
+{
+	let a = document.createElement('a');
+	a.href = url;
+	return a.hostname;
+}
+function engineFixHost(engine)
+{
+	if (engine.host)
+		return;
+
+	engine.host = getHost(engine.href);
+}
+
+
+function command(id, val)
+{
+	if (!command.list[id])
+		return false;
+
+	try
+	{
+		command.list[id].func({preventDefault:function(){},stopPropagation:function(){}}, val);
+	}
+	catch(e)
+	{
+		return false;
+	}
+	return true;
+}
+command.list = {};
+command.add = function(id, objId, func)
+{
+	command.list[id] = {
+		id: id,
+		objId: objId,
+		func: func
+	};
+};
+let loo = 1000,
+		enginesHide = ls("enginesHide") || [];
+
+//custom links
+function customLinks(obj)
+{
+
+}
+customLinks._list = ls("customLinks") || {};
+customLinks.show = function()
+{
+	$(customLinks.div).show();
+}
+customLinks.hide = function()
+{
+	$(customLinks.div).hide();
+}
+
+
+customLinks.menu = function(callback)
+{
+	if (customLinks.div)
+		return callback ? callback() : true;
+
+	let popup = $('<div id="manage-links-popup"><div id="manage-links-popup-content"><div class="header"><div class="back">←</div></div><div class="content"></div></div></div>');
+	customLinks.div = popup[0];
+	popup.find(".back").click(function()
+	{
+		customLinks.hide();
+		setTimeout(function()
+		{
+			$("#account-overview").click();
+		});
+	});
+	$(popup).find("[id^=account]").each(function()
+	{
+		this.id = this.id.replace("account", "manage-links");
+	});
+	$("body").append(popup);
+
+	let	content= $(popup).find(".content").html("<h4>Links Manager</h4>"),
+			html = function(){/*
+<form>
+	<div id="engine-edit">
+		<div>
+			<label>Name:</label>
+			<input id="engine-name">
+		</div>
+		<div>
+			<label>URL:</label>
+			<input id="engine-url">
+			<select id="engine-tags" size="1">
+				<option value=""></option>
+				<option value="MONKEY_N">Name</option>
+				<option value="MONKEY">Name+Episode</option>
+				<option value="MONKEY_ID">ID</option>
+				<option value="{WIKI_TITLE}">Wiki page</option>
+				<option value="MONKEY_ARCHIVELINK">Archive link</option>
+			</select>
+		</div>
+		<div>
+			<label>ID:</label>
+			<input id="engine-id" placeholder="&lt;optional&gt;">
+		</div>
+		<div id="engine-res"></div>
+		<div>
+			<label></label>
+			<input id="engine-submit" type="button" value="Submit">
+			<input id="engine-reset" type="reset" value="Reset">
+		</div>
+	</div>
+</form>
+	*/};//html
+
+	$(html.toString().slice(14,-3).split("*//*").join("*/").replace(/[\n\t]*/g, "")).appendTo(content.parent());
+	let engId = $("#engine-id"),
+			engUrl = $("#engine-url"),
+			engName = $("#engine-name"),
+			engSubmit = $("#engine-submit"),
+			engTags = $("#engine-tags"),
+			engRes = $("#engine-res"),
+			engReset = $("#engine-reset"),
+			engResHidden = $('<div id="engine-hidden" class="entry" data-series-id="1234" data-series-source="List of Monsuno episodes" data-date="20120223"><div class="title">Monsuno S01E01</div></div>').appendTo(popup),
+			prevTarget = null,
+			prevVal = null;
+
+
+	function change(e)
+	{
+		if (prevTarget === e.target && prevVal === e.target.value)
+			return;
+
+		prevVal = e.target.value;
+		prevTarget = e.target;
+		engResHidden.find(".details").remove();
+		let opened = $('.details[style="display: block;"]').toggleClass("details", false);
+		enginesBackup();
+		let eng = [{
+					name: engName.val(),
+					host: engId.val(),
+					href: engUrl.val()
+				}];
+
+		if (!eng[0].href.match(/[a-z]+:\/\//i))
+			eng[0].href = "http://" + eng[0].href;
+
+		engineFixHost(eng[0]);
+		window.engines = eng;
+		engResHidden.find(".title").trigger("click");
+		opened.toggleClass("details", true);
+		setTimeout(function()
+		{
+			let list = engResHidden.find(".engines").children(),
+					a = list.filter("a")[0],
+					img = list.filter("img")[0],
+					children = engRes.children();
+
+			img.src = "http://www.google.com/s2/favicons?domain=" + getHost(eng[0].href);
+
+			if (!children.length)
+			{
+				engRes.append(img).append(a);
+			}
+			else
+			{
+				$(children[0]).replaceWith(img);
+				$(children[1]).replaceWith(a);
+			}
+			if (enginesBackup)
+			{
+				enginesRestore();
+			}
+		});
+	}//change()
+	engId.on("input change", change);
+	engUrl.on("input change", change);
+	engName.on("input change", change);
+
+	engTags.on("change", function(e)
+	{
+		let start = engUrl[0].selectionStart,
+				end = engUrl[0].selectionEnd,
+				endNew = start + e.target.value.length,
+				startNew = endNew,
+				txt = engUrl.val();
+		engUrl.val(txt.substring(0, start) + e.target.value + txt.substring(end));
+		engUrl[0].selectionStart = startNew;
+		engUrl[0].selectionEnd = endNew;
+		engUrl.focus();
+		engUrl.trigger("input");
+		e.target.value = "";
+	});
+	engReset.click(function(e)
+	{
+		engRes.html("");
+		prevVal = null;
+	});
+	function isEqual (a, b)
+	{
+		for(let i in a)
+		{
+			if (!(i in b) || a[i] != b[i])
+				return false
+		}
+		for(let i in b)
+		{
+			if (!(i in a) || a[i] != b[i])
+				return false
+		}
+		return true;
+	}
+	function flash(obj, color)
+	{
+		obj.toggleClass("update", false);
+		obj.css("background-color", color ? color : "#90FF90");
+		setTimeout(function()
+		{
+			obj.toggleClass("update", true);
+			obj.removeAttr("style");
+		}, 100);
+	}
+	engSubmit.click(function(e)
+	{
+		let engine = {
+					name: engName.val().trim(),
+					href: engUrl.val().trim(),
+					host: engId.val().trim()
+				};
+		if (!engine.href.match(/[a-z]+:\/\//i))
+			engine.href = "http://" + engine.href;
+
+//		engUrl.val(engine.href);
+		engineFixHost(engine);
+		let id = "engine_" + cleanName(engine.host),
+				update = $("#" + id),
+				exists = customLinks._list[engine.host];
+
+		if (!engine.name || !engine.href)
+			return false;
+
+		let equal = false,
+				n = -1;
+		for(let i = 0; i < window.engines.length; i++)
+		{
+			if (window.engines[i].host == engine.host)
+			{
+				equal = isEqual(window.engines[i], engine);
+				n = i;
+				break;
+			}
+		}
+		if (equal)
+		{
+			flash(update);
+			return false;
+		}
+
+		if (!exists || update.length)
+		{
+			customLinks._list[engine.host] = engine;
+			if (update.length)
+			{
+				if (n > -1)
+					window.engines[n] = engine;
+
+			}
+			else
+				window.engines.push(engine);
+
+			ls("customLinks", customLinks._list);
+		}
+		function updater(update)
+		{
+			flash($(update));
+			updateDetails();
+		}
+		if (update.length)
+		{
+			if (exists)
+			{
+				for (let i = 0; i < enginesDefault.length; i++)
+				{
+					if (isEqual(enginesDefault[i], engine))
+					{
+						update.find(".del").trigger("click");
+						return;
+					}
+				}
+			}
+			update.replaceWith(create(engine, !exists ? updater : function(update)
+			{
+				flash($(update));
+			}));
+			let entry = $("div.entry").find("." + id);
+			entry.filter("a.link").attr("href", engine.href).text(engine.name);
+			flash(update);
+		}
+		else
+		{
+			let last = content.children(":last-child");
+			content.append(create(engine, updater));
+//			updateDetails();
+		}
+
+		engName.val("");
+		engId.val("");
+		engUrl.val("");
+	});//engSubmit.click()
+
+	function updateDetails()
+	{
+		let clone = engResHidden.clone();
+		clone.find(".details").remove();
+		$("body").append(clone);
+		let opened = $('.details[style="display: block;"]').toggleClass("details", false);
+		force = true;
+		clone.find(".title").trigger("click");
+		opened.toggleClass("details", true);
+		setTimeout(function()
+		{
+			$('div:not(#engine-hidden) .details[style="display: block;"]').find(".engines").replaceWith(clone.find(".engines"));
+			clone.remove();
+		}, 300);
+	}
+
+	function create(engine, callback)
+	{
+		let div = document.createElement("div"),
+				id = "engine_" + cleanName(engine.host),
+				cb = createCheckbox(id, "", enginesHide.indexOf(engine.host) == -1, function(e, id, checked)
+				{
+					if (checked)
+					{
+						enginesHide.splice(enginesHide.indexOf(engine.host), 1);
+					}
+					else
+					{
+						enginesHide.push(engine.host);
+					}
+					ls("enginesHide", enginesHide);
+
+			}, ["Visible", "Hidden"]);
+		div.id = id;
+		div.appendChild(cb);
+		let clone = engResHidden.clone();
+		$("body").append(clone);
+		clone.find(".details").remove();
+		let opened = $('.details[style="display: block;"]').toggleClass("details", false);
+
+		enginesBackup();
+		window.engines = [engine];
+		clone.find(".title").trigger("click");
+		opened.toggleClass("details", true);
+		let n = 100;
+		setTimeout(function loop()
+		{
+//			let list = clone.find(".engines").children().filter(".engine_" + cleanName(engine.host)),
+			let list = clone.find(".engines").children();
+			if (!list.length && n--)
+			{
+				setTimeout(loop);
+				return;
+			}
+			let	a = list.filter("a")[0],
+					img = list.filter("img")[0];
+			if (a && img)
+				img.src = "http://www.google.com/s2/favicons?domain=" + getHost(a.href);
+
+			$(div).append(img);
+			$(div).append(a);
+			enginesRestore();
+			clone.remove();
+
+
+			$('<span class="edit" title="Edit">&#9998;</span>').appendTo(div).click(function(e)
+			{
+				engId.val(engine.host);
+				engName.val(engine.name);
+				engUrl.val(engine.href.replace(/http:\/\//i, ""));
+				engId.trigger("input");
+			});
+			if (customLinks._list[engine.host])
+			{
+	//				$('<span class="del" title="delete">&#9249;</span>').appendTo(div).click(function(e)
+				$('<span class="del" title="Delete">&#9003;</span>').appendTo(div).click(function(e)
+				{
+					e.stopPropagation();
+					e.preventDefault();
+					flash($("#" + id), e.isTrigger ? null : "#FF9090");
+					setTimeout(function()
+					{
+						let host = engId.val(),
+								name = engName.val(),
+								href = engUrl.val();
+
+						delete customLinks._list[engine.host];
+						let update = false;
+						for(let i = 0; i < window.engines.length; i++)
+						{
+							if (window.engines[i].host == engine.host)
+							{
+								for(let d = 0; d < enginesDefault.length; d++)
+								{
+									if (enginesDefault[d].host == engine.host)
+									{
+										update = d;
+										break;
+									}
+								}
+								if (update !== false)
+									window.engines[i] = enginesDefault[update];
+								else
+									window.engines.splice(i, 1);
+								break;
+							}
+						}
+						ls("customLinks", customLinks._list);
+						if (update === false)
+						{
+							$("#" + id).remove();
+							$(".engines").find("." + id).remove();
+							$("." + id).toggleClass(id, false);
+						}
+						$(customLinks.div).remove();
+						customLinks.div = null;
+						customLinks.menu(function()
+						{
+							if (update !== false)
+							{
+								let aNew = $("#manage-links-popup").find("#" + id).find("a.link"),
+										a = $('.details[style="display: block;"]').find(".engines").find("a." + id);
+
+								a.html(aNew.html());
+								a.attr("href", aNew.attr("href"));
+							}
+							if (host || name || href)
+							{
+								$("#engine-id").val(host);
+								$("#engine-name").val(name);
+								$("#engine-url").val(href);
+								$("#engine-url").trigger("input");
+							}
+						});
+						customLinks.show();
+					}, 200);
+				});
+			}
+			if (callback)
+				callback(div);
+		});
+		return div;
+	}//create();
+	enginesBackup();
+
+	let eng = window.engines,
+			n = eng.length;
+	function finished()
+	{
+		if (!--n)
+			callback();
+	}
+	for(let i = 0; i < eng.length; i++)
+	{
+		content.append(create(eng[i], callback ? finished : null));
+	};
+	setTimeout(enginesRestore,100);
+}//customLinks.menu()
+
+function customLinksAdd()
+{
+
+	let listNew = [],
+			remove = [],
+			list = [];
+	for(let l in customLinks._list)
+	{
+		listNew.push(customLinks._list[l]);
+	}
+	let hosts = [];
+	for(let n = 0; n < window.engines.length; n++)
+	{
+		hosts[hosts.length] = window.engines[n].host;
+		enginesDefault[enginesDefault.length] = window.engines[n];
+	}
+	for(let i = 0; i < listNew.length; i++)
+	{
+		let n = hosts.indexOf(listNew[i].host);
+		if (n != -1)
+			window.engines[n] = listNew[i];
+		else
+			list.push(listNew[i]);
+
+		customLinks._list[listNew[i].host] = listNew[i];
+	}
+	ls("customLinks", customLinks._list);
+	window.engines = window.engines.concat(list);
+	let css = [],
+			css2 = [];
+	for (let i = 0; i < window.engines.length; i++)
+	{
+		let id = cleanName(window.engines[i].host);
+		css[css.length] = 'body:not(.engine_' + id + ') .engines .engine_' + id;
+		css2[css2.length] = 'body:not(.engine_' + id + ') #engine_' + id + " img";
+		css2[css2.length] = 'body:not(.engine_' + id + ') #engine_' + id + " a.link";
+	}
+	css = css.join(",") + "{display:none;}";
+	css2 = css2.join(",") + "{font-style: italic; opacity: 0.5;}";
+	$("<style></style>").html(css+css2).appendTo("head");
+	customLinks.menu();
+	$(customLinks.div).remove();
+	customLinks.div = null;
+}
 (function loop()
 {
 	if ((typeof(engines) == "undefined" || !engines.length) && --loo)
@@ -77,69 +667,8 @@ let cl = ls("customLinks") || {};
 
 	if (!loo)
 		return;
-//	Available tags in the url (must be in capital letters):
-//	MONKEY = full name of the episode
-//	MONKEY_N = full name without episode number (S01E32)
-//	MONKEY_ID = show ID on this website
-//	MONKEY_ARCHIVELINK = url to the archive listing on this website
-//	{WIKI_TITLE} = wikipedia path for the show
-	let list = [
-//begin custom links
-/*
-		{
-			host: "example.com", //domain name, used as ID
-			href: "http://example.com/path?monkey=MONKEY&monkey_n=MONKEY_N&monkey_id=MONKEY_ID&monkey_archivelink=MONKEY_ARCHIVELINK&wiki_title={WIKI_TITLE}", //url to the website
-			name: "test", //name will be displayed in the list
-			remove: false //set to true if you want clear this item from local storage;
-		},
-		{
-			host: "blah.com", //domain name, used as ID
-			href: "http://example.com/another/path?monkey=MONKEY&monkey_n=MONKEY_N&monkey_id=MONKEY_ID&monkey_archivelink=MONKEY_ARCHIVELINK&wiki_title={WIKI_TITLE}", //url to the website
-			name: "second example", //name will be displayed in the list
-			remove: true //set to true if you want clear this item from local storage;
-		},
-		{
-			host: "blah.com", //domain name, used as ID
-			href: "http://example.com/another/path?monkey=MONKEY&monkey_n=MONKEY_N&monkey_id=MONKEY_ID&monkey_archivelink=MONKEY_ARCHIVELINK&wiki_title={WIKI_TITLE}", //url to the website
-			name: "second example", //name will be displayed in the list
-			remove: false //set to true if you want clear this item from local storage;
-		},
-*/
-//end custom links
-	];
 
-	let listNew = [],
-			clNew = {},
-			remove = [];
-	for(let l = 0; l < list.length; l++)
-	{
-		if (cl[list[l].host] && !cl[list[l].host].remove)
-			cl[list[l].host] = list[l];
-	}
-	for(let l in cl)
-	{
-		if (!cl[l].remove)
-		{
-			delete cl[l].remove;
-			listNew.push(cl[l]);
-			clNew[l] = cl[l];
-		}
-		else
-		{
-			remove.push(l);
-		}
-	}
-	list = [];
-	for(let i = 0; i < listNew.length; i++)
-	{
-		if (remove.indexOf(listNew[i].host) == -1)
-		{
-			list.push(listNew[i]);
-			clNew[listNew[i].host] = listNew[i];
-		}
-	}
-	ls("customLinks", clNew);
-	window.engines = window.engines.concat(list);
+	customLinksAdd();
 })();
 
 
@@ -171,6 +700,16 @@ let func = function(event)
 	fixing browser history inflating after each page refresh and prev/next history jump don't work
 	*/
 	var prevPath;
+	//MS Edge get's /undefined in the address
+	if (window.location.pathname.match(/\/undefined/))
+	{
+		history.go(-1);
+		let path = window.location.href;
+		history.go(1)
+		history.replaceState({}, "", path);
+		history.go(-1);
+	}
+
 	function loadArchiveFromPathname(originalPath,highlightSelector)
 	{
 		path = originalPath||document.location.pathname;
@@ -189,7 +728,7 @@ let func = function(event)
 		$("body").toggleClass("archive", !!match&&match.length==3);
 		$("#leaveArchive").text(ym>ymToday?"Leave future":"Leave archive");
 
-		var whenDone = function(){
+		let whenDone = function(){
 			// set title
 			$("#archive-current").text((!!match&&match.length==3)?ym2str(ym):"Go waste your time");
 			// highlight today with a happy yellow background
@@ -233,6 +772,10 @@ let func = function(event)
 			whenDone();
 		}
 	}
+	window.loadArchiveFromPathname = loadArchiveFromPathname;
+	/*
+	end fixing browser history inflating after each page refresh and prev/next history jump don't work
+	*/
 
 	//collapse multiple entries of the same series in one day
 	let collapseMulti = function collapseMulti(i, day)
@@ -256,7 +799,7 @@ let func = function(event)
 		$(day).find("div.entry").each(function(i, entry)
 		{
 			let id = entry.getAttribute("data-series-id");
-			entry._title = $(entry).find(".title");
+			entry._title = $(entry).find(".title>span");
 			entry._title._titleOrig = entry._title.text();
 			if (list[id])
 				$(entry).toggleClass("multi", true);
@@ -345,11 +888,7 @@ let func = function(event)
 
 		loadArchiveFromPathname(prevPath, state ? state.highlightSelector : undefined);
 	});
-	/*
-	end fixing browser history inflating after each page refresh and prev/next history jump don't work
-	*/
 
-	window.loadArchiveFromPathname = loadArchiveFromPathname;
 	function showPast(callback)
 	{
 
@@ -359,7 +898,12 @@ let func = function(event)
 		_today = $("div.day[data-date='" + d.getFullYear() + pad2((new Date()).getMonth() + 1) + pad2((new Date()).getDate()) + "']");
 
 		if (!_today || $(".archive").length)
+		{
+			if (callback)
+				return callback();
+
 			return;
+		}
 
 		let	firstDay = $(".days").children().first(),
 				firstDate = firstDay.attr("data-date"),
@@ -533,8 +1077,11 @@ let func = function(event)
 			prevParentOpened = null,
 			prevParentOpenTimer = null;
 	//adding attribute "opened" to the entry allows us show/hide things from CSS based on entry state
-	$("div.days").on("click", "div.entry div.title", function(e)
+	$("body").on("click", "div.entry div.title", function(e)
 	{
+		if (e.isTrigger)
+			return;
+
 		let $entry = $( this ).parent(),
 				parent = $entry.parent();
 
@@ -624,7 +1171,7 @@ let func = function(event)
 
 
 	/* higlighted title under cursor *//*
-	div.entry > input[type="checkbox"]:hover + div.title,
+	div.title > input[type="checkbox"]:hover + div.title,
 	div.title:hover
 	{
 		background-color: #ffffd5;
@@ -665,6 +1212,11 @@ let func = function(event)
 		vertical-align: text-bottom !important;
 	}
 
+	div.entry
+	{
+		float: left;
+		width: 100%;
+	}
 	div.entry,
 	.date
 	{
@@ -710,7 +1262,7 @@ let func = function(event)
 
 
 	/*Watched*//*
-	body:not(.enableWatched) div.entry > input[type="checkbox"]
+	body:not(.enableWatched) div.title > input[type="checkbox"]
 	{
 		display: none;
 	}
@@ -720,13 +1272,16 @@ let func = function(event)
 		text-decoration: line-through;
 	}
 
-	div.entry > input[type="checkbox"]
+	div.title > input[type="checkbox"]
 	{
-		vertical-align: bottom;
-		width: unset !important;
-		float: left;
+		vertical-align: middle;
 	}
 
+	#searchResults div.title > input[type="checkbox"]
+	{
+		width: unset;
+		float: left;
+	}
 
 	/*Past related*//*
 	.past
@@ -755,16 +1310,182 @@ let func = function(event)
 		width: 2px;
 	}
 	/*Account popup*//*
+	#manage-links-popup .content h4,
 	#account-popup-content .content h4
 	{
-		margin-top: 0;
+		margin-top: 1em;
 		margin-bottom: 1em;
 	}
+	#manage-links-popup .content,
 	#account-popup-content .content
 	{
-		padding-top: 1em;
+		padding-top: 0;
 		padding-bottom: 1em;
 	}
+	#account-popup-content .content > div > *:first-child
+	{
+		width: 1.5em;
+		display: inline-block;
+	}
+
+	#manage-links-popup
+	{
+		position: absolute;
+		z-index: 1234;
+		top: 50px;
+		left: 4.7%;
+		width: 1px;
+		display: none;
+	}
+	#manage-links-popup-content
+	{
+		position: absolute;
+		top: 0px;
+		left: 0px;
+		background-color: #ffff00;
+		border: 1px dotted black;
+		width: 300px;
+		min-height: 10px;
+	}
+	#manage-links-popup-content div.back
+	{
+		font-size: 1.4em;
+		width: 1em;
+		height: 1em;
+		cursor: pointer;
+		padding: 0 3px 3px 3px;
+	}
+	#manage-links-popup .header
+	{
+		background-color: #7FFFFF;
+		padding: 5px 0 5px 5px;
+	}
+	#manage-links-popup .content,
+	#engine-edit
+	{
+		padding: 3px 10px;
+	}
+	#engine-edit > div:not(#engine-res),
+	#manage-links-popup .content > div:not(#engine-res)
+	{
+		display: table-row;
+		white-space: nowrap;
+	}
+	#engine-edit > div:not(#engine-res) > *,
+	#manage-links-popup .content > div:not(#engine-res) > *
+	{
+		display: table-cell;
+		vertical-align: middle;
+		margin: 2px 4px 2px 1px;
+	}
+	#manage-links-popup .content > div:not(#engine-res) > img
+	{
+		vertical-align: bottom;
+	}
+	#manage-links-popup .content > div:not(#engine-res) > :first-child
+	{
+		padding-left: 3px;
+	}
+
+	#manage-links-popup .content > div:not(#engine-res) > filter
+	{
+		padding-left: 0.3em;
+	}
+	#manage-links-popup .content > div:not(#engine-res) > .edit,
+	#manage-links-popup .content > div:not(#engine-res) > .del
+	{
+		cursor: pointer;
+		margin: 3px;
+		position: relative;
+		top: -0.5em;
+		font-size: 80%;
+		padding: 3px;
+		display: inline-block;
+		height: 1em;
+		vertical-align: bottom;
+	}
+	#manage-links-popup-content div.back:hover,
+	#manage-links-popup .content > div:not(#engine-res):hover
+	{
+		background-color: #FFFFB7;
+		outline: 1px dotted grey;
+	}
+	#engine-edit > div:not(#engine-res) > label
+	{
+		text-align: right;
+	}
+	#engine-edit > div:not(#engine-res) > input
+	{
+		width: 95%;
+		margin-left: 0.5em;
+		padding-right: 1.5em;
+	}
+	#engine-edit > div:not(#engine-res) > select
+	{
+		width: 1.5em;
+		position: relative;
+		left: -1.8em;
+		margin: 0;
+		padding: 0;
+	}
+	#manage-links-popup .content > div:not(#engine-res) > .edit
+	{
+		-moz-transform: scaleX(-1);
+		-o-transform: scaleX(-1);
+		-webkit-transform: scaleX(-1);
+		transform: scaleX(-1);
+		filter: FlipH;
+		-ms-filter: "FlipH";
+	}
+	#engine-res
+	{
+		overflow-x: auto;
+		overflow-y: hidden;
+		min-height: 18px;
+		padding: 2px;
+	}
+	#engine-hidden
+	{
+		display: none !important;
+	}
+	#engine-res > *
+	{
+		vertical-align: middle;
+		display: inline-block;
+		margin: 0 4px 0 0;
+	}
+	#engine-submit,
+	#engine-reset
+	{
+		font-size: 90%;
+		margin-bottom: 1em !important;
+		display: inline-block !important;
+	}
+	#engine-reset
+	{
+		margin-left: 1em;
+	}
+	#manage-links-popup .nu,
+	#manage-links-popup .nu
+	{
+		vertical-align: bottom;
+		font-size: 1.3em;
+	}
+	/* small screen party *//*
+	@media screen and (max-width: 1000px)
+	{
+		#manage-links-popup
+		{
+			top: 80px;
+		}
+	}
+	#manage-links-popup-content .content > div.update
+	{
+		-webkit-transition:background-color 0.4s ease-in;
+		-moz-transition:background-color 0.4s ease-in;
+		-o-transition:background-color 0.4s ease-in;
+		transition:background-color 0.4s ease-in;
+ 	}
 	*/};//css
 
 	style.innerHTML = css.toString().slice(14,-3).split("*//*").join("*/");
@@ -842,56 +1563,9 @@ let func = function(event)
 		picker.detach().appendTo(this).click();
 	});
 
-	let engines = window.engines;
-	engines.add = function(id)
-	{
-		for(let i = 0; i < _engines.length; i++)
-		{
-			if (_engines[i].name == id || _engines[i].host == id)
-				return;
-		}
-		for(let i = 0; i < engines.length; i++)
-		{
-			if (engines[i].name == id || engines[i].host == id)
-			{
-				_enginesList.push(engines[i].name);
-				_engines.push(engines[i]);
-				cs("middleClick", _enginesList);
-				return;
-			}
-		}
-	};
-
-	engines.remove = function(id)
-	{
-		for(let i = 0; i < _engines.length; i++)
-		{
-			if (_engines[i].name == id || _engines[i].host == id)
-			{
-				let n = _enginesList.indexOf(_engines[i].name);
-				if (n != -1)
-					_enginesList.splice(n, 1);
-
-				cs("middleClick", _enginesList);
-				_engines.splice(i, 1);
-				return;
-			}
-		}
-	};
-
-	engines.check = function(id)
-	{
-		for(let i = 0; i < _engines.length; i++)
-		{
-			if (_engines[i].name == id || _engines[i].host == id)
-				return i;
-		}
-		return -1;
-	};
-
 	//middle click on day's title opens selected engines for user's shows
-	let _engines = [],
-			_enginesList = cs("middleClick") || [];
+	let engines = enginesBackup.backup ? enginesBackup.backup : window.engines;
+	_enginesList = cs("middleClick") || [];
 
 	for(let i = 0; i < engines.length; i++)
 	{
@@ -905,7 +1579,6 @@ let func = function(event)
 			engines[i].href = engines[i].href.replace(/\.se\//, ".org").replace(/\/0\/7\/0$/, "/0/3/0");
 		}
 	}
-
 	function middleClick(e, search)
 	{
 		if (e.button != 1)
@@ -941,6 +1614,9 @@ let func = function(event)
 
 			$.each( _engines, function( i, engine )
 			{
+				if (!$("body").hasClass("engine_" + cleanName(engine.host)))
+					return;
+
 				let href = engine.href
 					.replace( "MONKEY_ID", MONKEY_ID )
 					.replace( "MONKEY_N", MONKEY_N )
@@ -953,7 +1629,7 @@ let func = function(event)
 		};
 		parent.each(func);
 	}
-	$("div.date,div.title").on("mousedown", middleClick);
+	$("body").on("mousedown", "div.date,div.title", middleClick);
 
 	let _markSearchResults = markSearchResults;
 	window.markSearchResults = function markSearchResults()
@@ -972,18 +1648,27 @@ let func = function(event)
 		return _markSearchResults();
 	};
 
+	$("body").on("click", 'div.entry div.title>input[type="checkbox"]', function(e)
+	{
+		e.stopPropagation();
+	});
 	//sanitizing engine links
 	$("body").on("click", "div.entry div.title", function(e)
 	{
-		let obj = this;
-		if (obj.inited)
+		if (e.isTrigger && !force)
 			return;
 
-		obj.inited = true;
+		force = false;
+		let obj = this;
 		setTimeout(function()
 		{
+			let details = $(obj).parent().find(".details");
+			if (!details.length || details[0].inited)
+				return;
+
+			details[0].inited = true;
 			let showHideObj = document.createElement("a"),
-					id = $(obj.parentNode).attr("data-series-id"),
+					showId = $(obj.parentNode).attr("data-series-id"),
 					show = document.createElement("span"),
 					hide = document.createElement("span");
 
@@ -1001,49 +1686,59 @@ let func = function(event)
 			{
 				e.stopPropagation();
 				e.preventDefault();
-				showHide(parseInt(id), 2);
+				showHide(parseInt(showId), 2);
 			}, false);
-			$(obj).parent().find(".engines").append(showHideObj).children().each(function(i, o)
+
+			let list = $(obj).parent().find(".engines").append(showHideObj).children();
+			for (let i = 0; i < list.length; i += 3)
 			{
-				if (o.tagName != "A")
-					return;
+				let img = list[i],
+						a = list[i+1],
+						br = list[i+2],
+						checkbox = document.createElement("input"),
+						engine = img.src ? img.src.match(/\?domain=(.*)/)[1] : null,
+						id = "engine_" + cleanName(engine),
+						engineInfo = window.engines[enginesFind(engine)],
+						domain = engineInfo ? getHost(engineInfo.href) : null;
 
-				let checkbox = document.createElement("input"),
-						img = o.previousSibling;
+				if (domain)
+					img.src = "http://www.google.com/s2/favicons?domain=" + domain;
 
-				if (img.tagName != "IMG")
-					img = o;
-
-				let engine = img.src ? img.src.match(/\?domain=(.*)/)[1] : null;
+				$(img).toggleClass(id, true);
+				$(a).toggleClass(id, true);
+				$(br).toggleClass(id, true);
+				$(checkbox).toggleClass(id, true);
 				checkbox.engine = engine;
 				checkbox.type = "checkbox";
 				checkbox.title = "Open with middle click on title";
-				checkbox.checked = engines.check(engine) != -1;
-				o.parentNode.insertBefore(checkbox, img);
-				if (o.className.indexOf("archive-link") != -1 && showMyShows.box)
+				checkbox.checked = enginesCheck(engine) != -1;
+				img.parentNode.insertBefore(checkbox, img);
+				if (a.className.indexOf("archive-link") != -1 && showMyShows.box)
 				{
-					$(o).toggleClass("archive-link", false);
-					o.textContent = "Show all episodes";
-					o.href = "javascript:search('info:" + id + "');";
+					$(a).toggleClass("archive-link", false);
+					a.textContent = "Show all episodes";
+					a.href = "javascript:search('info:" + showId + "');";
 				}
-				if (engine == "airdates.tv" || o.className == "showhide")
+				if (engine == "airdates.tv" || a.className == "showhide")
 				{
 					checkbox.style.visibility = "hidden";
 					return;
 				}
-				o.href = fixLink(o.href, o.text);
+				a.href = fixLink(a.href, a.text);
 
 				$(checkbox).on("click", "", function(e)
 				{
 					if (checkbox.checked)
-						engines.add(checkbox.engine);
+						enginesAdd(checkbox.engine);
 					else
-						engines.remove(checkbox.engine);
+						enginesRemove(checkbox.engine);
+
+					$("input." + id).prop("checked", checkbox.checked);
 				});
 
-			});
+			};
 		});
-	});
+	});//$("body").on("click", "div.entry div.title", function(e)
 
 	function fixLink(link, engine)
 	{
@@ -1051,78 +1746,6 @@ let func = function(event)
 		if (engine == "Piratebay")
 			link = link.replace(/['"`!]/g, '');
 		return link;
-	}
-
-	function command(id, val)
-	{
-		if (!command.list[id])
-			return false;
-
-		try
-		{
-			command.list[id].func({preventDefault:function(){},stopPropagation:function(){}}, val);
-		}
-		catch(e)
-		{
-			return false;
-		}
-		return true;
-	}
-	command.list = {};
-	command.add = function(id, objId, func)
-	{
-		command.list[id] = {
-			id: id,
-			objId: objId,
-			func: func
-		};
-	};
-	function createCheckbox(id, label, cookie, callback)
-	{
-		let span = document.createElement("span"),
-				checkon = document.createElement("span"),
-				checkoff = document.createElement("span"),
-				a = document.createElement("a"),
-				check = cs(cookie) ? true : false;
-		a.className = "filter " + id;
-		checkon.className = "checkon nu";
-		checkoff.className = "checkoff nu";
-		checkon.innerHTML = "🗹";
-		checkoff.innerHTML = "☐";
-		a.href = "#";
-		span.appendChild(checkon);
-		span.appendChild(checkoff);
-		span.appendChild(document.createTextNode(label));
-		a.appendChild(span);
-		$(a).insertBefore("#nu-showing");
-		let func = function(e, val)
-		{
-			e.preventDefault();
-			e.stopPropagation();
-			let check = span.hasAttribute("checked");
-			if (val !== undefined)
-				check = !val;
-
-			if (check)
-				span.removeAttribute("checked");
-			else
-				span.setAttribute("checked", "checked");
-
-			$(".calendar").toggleClass(id, !check);
-			$("body").toggleClass(id, !check);
-			cs(cookie, check ? 0 : 1);
-
-			return (typeof(callback) == "function") ? callback(e, id, !check) : e;
-		};
-		command.add(cookie, id, func);
-		a.addEventListener("click", func, false);
-		if (check)
-			span.setAttribute("checked", "checked");
-
-		$(".calendar").toggleClass(id, check);
-		$("body").toggleClass(id, check);
-
-		return a;
 	}
 
 	function showHideLoad()
@@ -1520,7 +2143,11 @@ let func = function(event)
 			});
 			watched(entry);
 		}, false);
-		entry.insertBefore(input, entry.firstChild);
+		let title = $(entry).find(".title")[0],
+				text = title.innerHTML;
+		title.innerHTML = "";
+		title.appendChild(input);
+		$("<span><span>").append(text).appendTo(title);
 	};
 
 
@@ -1635,29 +2262,55 @@ let func = function(event)
 	$(document).ready(function()
 	{
 		let accountLoop = 50;
-		$("#account-overview").click(function loop()
+		$("#account-popup").attr("hidden", "");
+		$("#account-overview").click(function loop(e)
 		{
-
+			if (e.isTrigger)
+			{
+				return;
+			}
+			$("#account-popup").removeAttr("hidden");
 			let as = $("#account-popup-content .content a");
 			if( !$( "#account-popup" ).hasClass("loaded") || (!as.length && accountLoop--))
-				return setTimeout(loop, 100);
+				return setTimeout(function()
+				{
+					loop(e)
+				}, 100);
 
 			if (!as.length)
 				return;
 
+			//account overview neat icons
+			$("#account-popup-content").find("div.content").contents().filter(function()
+			{
+				if (this.tagName == "BR")
+					this.parentNode.removeChild(this);
+
+				if (this.nodeType != Node.TEXT_NODE || !this.textContent.trim())
+					return;
+
+				let span = document.createElement("span"),
+						div = document.createElement("div");
+				div.appendChild(span);
+				div.appendChild(this.nextSibling);
+				span.textContent = this.textContent.trim();
+				this.parentNode.replaceChild(div, this);
+			});
+
 			$("#account-overview").unbind("click", loop);
 			let a = document.createElement("a"),
-					i = document.createTextNode("→ "),
+					i = document.createElement("span"),
 					span = document.createElement("div"),
 					h = document.createElement("h4"),
 					item = span,
-					parent = as[as.length-1].parentNode;
-			parent.removeChild(parent.lastChild);
+					parent = as[as.length-1].parentNode.parentNode;
+
 			h.textContent = adeName + " v" + adeVersion;
 			parent.appendChild(h);
 			span.appendChild(i);
 			span.appendChild(a);
 			a.href = "#";
+			i.textContent = "→";
 			a.textContent = "Export settings";
 			a.addEventListener("click", function(e)
 			{
@@ -1688,6 +2341,16 @@ let func = function(event)
 					obj.watched = watched._list;
 					break;
 				}
+				for(let i in customLinks._list)
+				{
+					obj.customLinks = customLinks._list;
+					break;
+				}
+				for(let i in enginesHide)
+				{
+					obj.enginesHide = enginesHide;
+					break;
+				}
 				for(let i in obj)
 				{
 					obj.version = adeVersion;
@@ -1706,7 +2369,7 @@ let func = function(event)
 			span = span.cloneNode(true);
 			a = span.lastChild;
 			i = span.firstChild;
-			i.textContent = "← ";
+			i.textContent = "←";
 			a.textContent = "Import settings";
 			a.addEventListener("click", function(e)
 			{
@@ -1719,6 +2382,8 @@ let func = function(event)
 					let hiddenNum = 0,
 							watchedNum = 0,
 							settingsNum = 0;
+							enginesNum = 0;
+							engineHideNum = 0;
 					let json = null;
 					try
 					{
@@ -1766,6 +2431,33 @@ let func = function(event)
 								}
 							}
 						}
+						if ("customLinks" in json)
+						{
+							let changed = false;
+							for (i in json.customLinks)
+							{
+								enginesNum++;
+								changed = reload = true;
+								customLinks._list[i] = json.customLinks[i];
+							}
+							if (changed)
+								ls("customLinks", customLinks._list);
+						}
+						if ("enginesHide" in json)
+						{
+							let changed = false;
+							for(let i = 0; i < json.enginesHide.length; i++)
+							{
+								if (enginesHide.indexOf(json.enginesHide[i]) == -1)
+								{
+									engineHideNum++;
+									changed = reload = true;
+									enginesHide.push(json.enginesHide[i]);
+								}
+								if (changed)
+									ls("enginesHide", enginesHide);
+							}
+						}
 						txt = settingsNum + " setting" + (settingsNum > 1 ? "s" : "") + " imported" + ((hiddenNum || watchedNum) ? " and marked " : "");
 						if (hiddenNum)
 							txt += hiddenNum + " show" + (hiddenNum > 1 ? "s" : "") + " as hidden";
@@ -1782,18 +2474,38 @@ let func = function(event)
 			span = span.cloneNode(true);
 			a = span.lastChild;
 			i = span.firstChild;
-			i.textContent = "🔍 ";
-			a.href = '#myshows'; 
+			i.textContent = "☴";
+			a.href = '#';
+			a.id = "manage-links-open";
+			a.addEventListener("click", function(e)
+			{
+				e.preventDefault();
+				customLinks.menu(function()
+				{
+					customLinks.show();
+					$("#account-popup").toggle(false);
+				});
+
+			}, false);
+			a.textContent = "Links Manager";
+			parent.appendChild(span);
+
+			span = span.cloneNode(true);
+			a = span.lastChild;
+			i = span.firstChild;
+			i.textContent = "🔍";
+			a.href = '#myshows';
+			a.id = "";
 			a.addEventListener("click", function(e)
 			{
 				e.preventDefault();
 				search("info:myshows");
-				$("#account-popup").toggle();
+				$("#account-popup").toggle(false);
 			}, false);
 			a.textContent = "All my shows";
 			parent.appendChild(span);
 //			a.parentNode.insertBefore(i, a);
-		});
+		});//$("#account-overview").click()
 
 		let repeat = 20,
 				list = ls("info") || {};
@@ -1847,7 +2559,69 @@ let func = function(event)
 
 		}).trigger("change");
 	});//document.ready()
+
+	$(document.body).on( "click touchstart", function(e)
+	{
+		if (!e.isTrigger && e.target.id != "manage-links-open" && $( e.target ).parents("#manage-links-popup").get().length == 0)
+		{
+			$("#manage-links-popup").hide();
+		}
+	});
 };//func()
+
+function createCheckbox(id, label, cookie, callback, title)
+{
+	let span = document.createElement("span"),
+			checkon = document.createElement("span"),
+			checkoff = document.createElement("span"),
+			a = document.createElement("a"),
+			check = typeof(cookie) == "boolean" ? cookie : cs(cookie) ? true : false;
+	if (title)
+	{
+		checkon.title = title[0];
+		checkoff.title = title[1];
+	}
+	a.className = "filter " + id;
+	checkon.className = "checkon nu";
+	checkoff.className = "checkoff nu";
+	checkon.innerHTML = "☑";
+	checkoff.innerHTML = "☐";
+	a.href = "#";
+	span.appendChild(checkon);
+	span.appendChild(checkoff);
+	span.appendChild(document.createTextNode(label));
+	a.appendChild(span);
+	$(a).insertBefore("#nu-showing");
+	let func = function(e, val)
+	{
+		e.preventDefault();
+		e.stopPropagation();
+		let check = span.hasAttribute("checked");
+		if (val !== undefined)
+			check = !val;
+
+		if (check)
+			span.removeAttribute("checked");
+		else
+			span.setAttribute("checked", "checked");
+
+		$(".calendar").toggleClass(id, !check);
+		$("body").toggleClass(id, !check);
+		if (typeof(cookie) != "boolean")
+			cs(cookie, check ? 0 : 1);
+
+		return (typeof(callback) == "function") ? callback(e, id, !check) : e;
+	};
+	command.add(cookie, id, func);
+	a.addEventListener("click", func, false);
+	if (check)
+		span.setAttribute("checked", "checked");
+
+	$(".calendar").toggleClass(id, check);
+	$("body").toggleClass(id, check);
+
+	return a;
+}
 
 function rand(min, max)
 {
