@@ -489,6 +489,7 @@ customLinks.menu = function(callback)
 				window.engines.push(engine);
 
 			ls("customLinks", customLinks._list);
+			customLinksAddCss(id);
 		}
 		function updater(update)
 		{
@@ -790,6 +791,13 @@ customLinks.menu = function(callback)
 							$("#" + id).remove();
 							$(".engines").find("." + id).remove();
 							$("." + id).toggleClass(id, false);
+							$("#css_" + id).remove();
+							let index = enginesHide.indexOf(engine.host);
+							if (index != -1)
+							{
+								enginesHide.splice(index, 1);
+								ls("enginesHide", enginesHide);
+							}
 						}
 						$(customLinks.div).remove();
 						customLinks.div = null;
@@ -871,14 +879,9 @@ function customLinksAdd()
 
 	for (let i = 0; i < window.engines.length; i++)
 	{
-		let id = cleanName(window.engines[i].host);
-		css[css.length] = 'body:not(.engine_' + id + ') .engines .engine_' + id;
-		css2[css2.length] = 'body:not(.engine_' + id + ') #engine_' + id + " img";
-		css2[css2.length] = 'body:not(.engine_' + id + ') #engine_' + id + " a.link";
+		let id = "engine_" + cleanName(window.engines[i].host);
+		customLinksAddCss(id);
 	}
-	css = css.join(",") + "{display:none;}";
-	css2 = css2.join(",") + "{font-style: italic; opacity: 0.5;}";
-	$("<style></style>").html(css+css2).appendTo("head");
 	customLinks.menu();
 	$(customLinks.div).remove();
 	customLinks.div = null;
@@ -933,6 +936,16 @@ function customLinksAdd()
 		cs("middleClick", _enginesList);
 
 }//customLinksAdd()
+
+function customLinksAddCss(id)
+{
+	let css = 'body:not(.' + id + ') .engines .' + id + "{display:none;}",
+			css2 = 'body:not(.' + id + ') #' + id + " img";
+
+	css2 += ',body:not(.' + id + ') #' + id + " a.link";
+	css2 += "{font-style: italic; opacity: 0.5;}";
+	$('<style id="css_' + id + '"></style>').html(css+css2).appendTo("head");
+}
 
 (function loop()
 {
