@@ -8,7 +8,7 @@
 // @include     https://disqus.com/embed/comments/*
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.22
+// @version     1.23
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -21,7 +21,7 @@ let log = console.log;
 let adeName = "Airdates.tv enhancer",
 		adeVersion = "n/a",
 		force = false,
-		enginesDefault = []
+		enginesDefault = [],
 		_engines = [];
 
 try
@@ -99,7 +99,7 @@ function enginesAdd(id)
 	{
 		if (engines[i].name == id || engines[i].host == id)
 		{
-			_enginesList.push(engines[i].name);
+			_enginesList.push(engines[i].host);
 			_engines.push(engines[i]);
 			cs("middleClick", _enginesList);
 			return;
@@ -113,7 +113,7 @@ function enginesRemove(id)
 	{
 		if (_engines[i].name == id || _engines[i].host == id)
 		{
-			let n = _enginesList.indexOf(_engines[i].name);
+			let n = _enginesList.indexOf(_engines[i].host);
 			if (n != -1)
 				_enginesList.splice(n, 1);
 
@@ -578,22 +578,41 @@ customLinks.menu = function(callback)
 		});
 		customLinks.show();
 	});
-	let dragged = null
-	function dndHandle(e)
+	let dragged = null;
+
+	function dndEvent(e)
 	{
 		let r = null;
 		switch(e.type)
 		{
+			case "mousedown":
+				if (e.target.className.indexOf("dndh") != -1)
+					dragged = e.target.parentNode;
+				break;
 			case "dragstart":
+				if (!dragged)
+					return;
+//				e.dataTransfer.setDragImage(document.createElement("img"), 0, 0);
 				e.dataTransfer.effectAllowed = 'move';
 				dragged = this;
-				this.classList.add("dragging");
+				dragged.classList.add("dragging");
 				this.parentNode.classList.add("dragging");
+				setTimeout(function()
+				{
+					dragged.classList.add("hide");
+				});
+				e.dataTransfer.setData('application/x-moz-node', dragged);
 				break;
 			case "dragenter":
-				this.parentNode.insertBefore(dragged, (this.nextSibling == dragged) ? this : this.nextSibling);
+				if (!dragged)
+					return;
+				let node = this;
+				node.parentNode.insertBefore(dragged, (node.nextSibling == dragged) ? node : node.nextSibling);
 				break;
 			case "dragover":
+				if (!dragged)
+					return;
+
 				e.dataTransfer.dropEffect = 'move';
 				if (e.stopPropagation)
 					e.stopPropagation();
@@ -606,15 +625,18 @@ customLinks.menu = function(callback)
 			case "dragleave":
 				break;
 			case "dragend":
+				if (!dragged)
+					return;
+
 				dragged.classList.remove("dragging");
+				dragged.classList.remove("hide");
 				let div = document.querySelectorAll('#manage-links-popup-content .content [draggable]'),
 						list = [];
 				[].forEach.call(div, function (col)
 				{
 					list[list.length] = col._engine.host;
 				});
-				this.classList.remove("dragging");
-				this.parentNode.classList.remove("dragging");
+				dragged.parentNode.classList.remove("dragging");
 				enginesSort(list, true);
 				ls("enginesSort", list);
 				if (enginesSort.changed())
@@ -623,8 +645,12 @@ customLinks.menu = function(callback)
 					popup.removeAttr("changed");
 
 				updateDetails();
+				dragged = false;
 				break;
 			case "drop":
+				if (!dragged)
+					return;
+
 				if (e.stopPropagation)
 					e.stopPropagation();
 				if (e.preventDefault)
@@ -641,26 +667,29 @@ customLinks.menu = function(callback)
 				cb = createCheckbox(id, "", enginesHide.indexOf(engine.host) == -1, function(e, id, checked)
 				{
 					if (checked)
-					{
 						enginesHide.splice(enginesHide.indexOf(engine.host), 1);
-					}
 					else
-					{
 						enginesHide.push(engine.host);
-					}
-					ls("enginesHide", enginesHide);
 
-			}, ["Visible", "Hidden"]);
+					ls("enginesHide", enginesHide);
+			}, ["Visible", "Hidden"]),
+				dndHandle = document.createElement("span");
 		div._engine = engine;
 		div.id = id;
+		
+		content[0].setAttribute("draggable", true);
 		div.setAttribute("draggable", true);
-		div.addEventListener('dragstart', dndHandle, false);
-		div.addEventListener('dragenter', dndHandle, false)
-		div.addEventListener('dragover', dndHandle, false);
-		div.addEventListener('dragleave', dndHandle, false);
-		div.addEventListener('drop', dndHandle, false);
-		div.addEventListener('dragend', dndHandle, false);
+		div.addEventListener('dragstart', dndEvent, false);
+		div.addEventListener('dragenter', dndEvent, false)
+		div.addEventListener('dragover', dndEvent, false);
+		div.addEventListener('dragleave', dndEvent, false);
+		div.addEventListener('drop', dndEvent, false);
+		div.addEventListener('dragend', dndEvent, false);
+		div.addEventListener("mousedown", dndEvent, false);
 
+		dndHandle.innerText = "☰";
+		dndHandle.className = "dndh";
+		div.appendChild(dndHandle);
 		div.appendChild(cb);
 		let clone = engResHidden.clone();
 		$("body").append(clone);
@@ -853,7 +882,58 @@ function customLinksAdd()
 	customLinks.menu();
 	$(customLinks.div).remove();
 	customLinks.div = null;
-}
+
+
+	//middle click on day's title opens selected engines for user's shows
+	let engines = enginesBackup.backup ? enginesBackup.backup : window.engines;
+	_enginesList = cs("middleClick") || [];
+	let del = [],
+			add = [];
+	for(let i = 0; i < engines.length; i++)
+	{
+		let n = _enginesList.indexOf(engines[i].host)
+
+		if (n != -1)
+			_engines.push(engines[i]);
+
+	}
+	for(let i = 0; i < _enginesList.length; i++)
+	{
+		let found = false;
+		for (let n = 0; n < engines.length; n++)
+		{
+			if (engines[n].name == _enginesList[i])
+				_enginesList[i] = engines[n].host
+
+			if (engines[n].host == _enginesList[i])
+			{
+				_engines.push(engines[n]);
+				if (!i && engines[n].host == "thepiratebay.org")
+				{
+					//sort by date instead of seeds
+					engines[n].href = engines[n].href.replace(/\.se\//, ".org").replace(/\/0\/7\/0$/, "/0/3/0");
+				}
+				found = true;
+				break
+			}
+		}
+		if (!found)
+			del.push(_enginesList[i]);
+	}
+	for(let i = 0; i < del.length; i++)
+	{
+		_enginesList.splice(_enginesList.indexOf(del[i]), 1);
+	}
+	let l = _enginesList.length;
+	try
+	{
+		_enginesList = Array.from(new Set(_enginesList));
+	}catch(e){}
+	if (l != _enginesList)
+		cs("middleClick", _enginesList);
+
+}//customLinksAdd()
+
 (function loop()
 {
 	if ((typeof(engines) == "undefined" || !engines.length) && --loo)
@@ -1469,6 +1549,7 @@ let func = function(event)
 	div.title > input[type="checkbox"]
 	{
 		vertical-align: middle;
+		margin: 0 3px 0 1px
 	}
 
 	#searchResults div.title > input[type="checkbox"]
@@ -1579,10 +1660,7 @@ let func = function(event)
 	#manage-links-popup .content > div:not(#engine-res) > img
 	{
 		vertical-align: bottom;
-	}
-	#manage-links-popup .content > div:not(#engine-res) > :first-child
-	{
-		padding-left: 3px;
+		display: list-item;
 	}
 
 	#manage-links-popup .content > div:not(#engine-res) > filter
@@ -1601,13 +1679,22 @@ let func = function(event)
 		display: inline-block;
 		height: 1em;
 		vertical-align: bottom;
+		float: left;
 	}
 	#manage-links-popup-content div.back:hover,
-	#manage-links-popup .content > div.dragging,
+	#manage-links-popup .content > div.dragging:not(.hide),
 	#manage-links-popup .content:not(.dragging) > div:not(#engine-res):hover
 	{
 		background-color: #FFFFB7;
 		outline: 1px dotted grey;
+	}
+	#manage-links-popup .content > div.dragging.hide > *
+	{
+		opacity: 0;
+	}
+	#manage-links-popup .content > div.dragging.hide
+	{
+		outline: 1px dashed grey;
 	}
 	#manage-links-popup .content > div:not(.def) > a.link:after
 	{
@@ -1713,6 +1800,7 @@ let func = function(event)
 		-o-transition:background-color 0.4s ease-in;
 		transition:background-color 0.4s ease-in;
 	}
+
 	[draggable]
 	{
 		-moz-user-select: none;
@@ -1723,15 +1811,19 @@ let func = function(event)
 		-khtml-user-drag: element;
 		-webkit-user-drag: element;
 	}
-	[draggable] a.link
+	[draggable] .dndh
 	{
 		cursor: move;
+		margin: 0 0.5em 0 0 !important;
+		font-size: 1.2em;
+		float: left;
+		position: relative;
+		top: -2px;
+		padding-left: 3px;
+		padding-right: 3px;
 	}
-	[draggable].over
-	{
-		outline: 2px dashed black;
-	}
-	*/};//css
+
+*/};//css
 
 	style.innerHTML = css.toString().slice(14,-3).split("*//*").join("*/");
 	$("head").append(style);
@@ -1808,25 +1900,9 @@ let func = function(event)
 		picker.detach().appendTo(this).click();
 	});
 
-	//middle click on day's title opens selected engines for user's shows
-	let engines = enginesBackup.backup ? enginesBackup.backup : window.engines;
-	_enginesList = cs("middleClick") || [];
-
-	for(let i = 0; i < engines.length; i++)
-	{
-		let n = _enginesList.indexOf(engines[i].name);
-		if (n != -1)
-			_engines.push(engines[i]);
-
-		if (engines[i].name == "Piratebay")
-		{
-			//sort by date instead of seeds
-			engines[i].href = engines[i].href.replace(/\.se\//, ".org").replace(/\/0\/7\/0$/, "/0/3/0");
-		}
-	}
 	function middleClick(e, search)
 	{
-		if (e.button != 1)
+		if (e.button != 1 && !(!e.button && e.ctrlKey) )
 			return;
 
 		e.stopPropagation();
@@ -1941,7 +2017,7 @@ let func = function(event)
 						a = list[i+1],
 						br = list[i+2],
 						checkbox = document.createElement("input"),
-						engine = img.src ? img.src.match(/\?domain=(.*)/)[1] : null,
+						engine = window.engines[i/3] ? window.engines[i/3].host : img.src ? img.src.match(/\?domain=(.*)/)[1] : null,
 						id = "engine_" + cleanName(engine),
 						engineInfo = window.engines[enginesFind(engine)],
 						domain = engineInfo ? getHost(engineInfo.href) : null;
