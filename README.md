@@ -1,5 +1,5 @@
-# airdates.tv_enhancer
-Userscript for airdates.tv that improves the experience.
+# airdates.tv enhancer
+Userscript for [airdates.tv](http://airdates.tv) that improves the experience.
 
 This userscript adds/fixes the following:
 
