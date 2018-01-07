@@ -8,7 +8,7 @@
 // @include     https://disqus.com/embed/comments/*
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.23.2
+// @version     1.24
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -279,7 +279,7 @@ customLinks.hide = function()
 }
 
 
-customLinks.menu = function(callback)
+customLinks.manager = function customLinksManager(callback)
 {
 	if (customLinks.div)
 		return callback ? callback() : true;
@@ -567,7 +567,7 @@ customLinks.menu = function(callback)
 		$(customLinks.div).remove();
 		customLinks.div = null;
 		popup.removeAttr("changed");
-		customLinks.menu(function()
+		customLinks.manager(function()
 		{
 			if (host || name || href)
 			{
@@ -593,7 +593,7 @@ customLinks.menu = function(callback)
 			case "dragstart":
 				if (!dragged)
 					return;
-//				e.dataTransfer.setDragImage(document.createElement("img"), 0, 0);
+
 				e.dataTransfer.effectAllowed = 'move';
 				dragged = this;
 				dragged.classList.add("dragging");
@@ -607,8 +607,13 @@ customLinks.menu = function(callback)
 			case "dragenter":
 				if (!dragged)
 					return;
-				let node = this;
-				node.parentNode.insertBefore(dragged, (node.nextSibling == dragged) ? node : node.nextSibling);
+
+				let node = this,
+						up = (node.nextSibling == dragged),
+						moveold = up ? node : node.nextSibling,
+						movenew = dragged;
+
+				node.parentNode.insertBefore(movenew, moveold);
 				break;
 			case "dragover":
 				if (!dragged)
@@ -801,7 +806,7 @@ customLinks.menu = function(callback)
 						}
 						$(customLinks.div).remove();
 						customLinks.div = null;
-						customLinks.menu(function()
+						customLinks.manager(function()
 						{
 							if (update !== false)
 							{
@@ -842,7 +847,7 @@ customLinks.menu = function(callback)
 		content.append(create(eng[i], callback ? finished : null));
 	};
 	setTimeout(enginesRestore,100);
-}//customLinks.menu()
+}//customLinks.manager()
 
 function customLinksAdd()
 {
@@ -882,7 +887,7 @@ function customLinksAdd()
 		let id = "engine_" + cleanName(window.engines[i].host);
 		customLinksAddCss(id);
 	}
-	customLinks.menu();
+	customLinks.manager();
 	$(customLinks.div).remove();
 	customLinks.div = null;
 
@@ -911,11 +916,13 @@ function customLinksAdd()
 			if (engines[n].host == _enginesList[i])
 			{
 				_engines.push(engines[n]);
+
 				if (!i && engines[n].host == "thepiratebay.org")
 				{
 					//sort by date instead of seeds
 					engines[n].href = engines[n].href.replace(/\.se\//, ".org").replace(/\/0\/7\/0$/, "/0/3/0");
 				}
+
 				found = true;
 				break
 			}
@@ -1196,8 +1203,12 @@ let func = function(event)
 		}
 
 		let	firstDay = $(".days").children().first(),
-				firstDate = firstDay.attr("data-date"),
-				div = [document.createElement("div")],
+				firstDate = firstDay.attr("data-date");
+
+		if (!firstDay.length)
+			return;
+
+		let div = [document.createElement("div")],
 				y = firstDate.slice(0, 4),
 				m = firstDate.slice(4, 6);
 
@@ -2619,7 +2630,15 @@ let func = function(event)
 
 			if (!as.length)
 				return;
-
+			//account reset password
+			if (DB.username)
+			{
+				let h = $("#account-popup-content").find("div.header"),
+						div = $("<div/>").html(h.html().replace(/(\s)+/g, "$1")),
+						a = $('<a href="/_u/forgot-password#' + DB.username +'">Reset password</a>');
+				h.html("").append(div);
+				div.find("a").after(a).after(" | ");
+			}
 			//account overview neat icons
 			$("#account-popup-content").find("div.content").contents().filter(function()
 			{
@@ -2841,7 +2860,7 @@ let func = function(event)
 			a.addEventListener("click", function(e)
 			{
 				e.preventDefault();
-				customLinks.menu(function()
+				customLinks.manager(function()
 				{
 					customLinks.show();
 					$("#account-popup").toggle(false);
@@ -2928,6 +2947,14 @@ let func = function(event)
 			$("#manage-links-popup").hide();
 		}
 	});
+	//reset password auto fill username
+	if (location.pathname == "/_u/forgot-password")
+	{
+		if (DB.username && "#" + DB.username == location.hash);
+			$("#username").val(DB.username);
+
+		history.replaceState({}, document.title, "/_u/forgot-password");
+	}
 };//func()
 
 function createCheckbox(id, label, cookie, callback, title)
