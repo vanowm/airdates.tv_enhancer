@@ -8,7 +8,7 @@
 // @include     https://disqus.com/embed/comments/*
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.25.1
+// @version     1.26
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -85,6 +85,12 @@ cs.listLegacy = {
 	wa: "enableWatched",
 	middleClick: "middleClick"
 };
+function multiline(func)
+{
+	func = func.toString();
+	return func.slice(func.indexOf("/*") + 2, func.lastIndexOf("*/")).split("*//*").join("*/").replace(/[\n\t]*/g, "");
+}
+
 let enginesHide = ls("enginesHide") || [];
 let Settings = {
 	inited: false,
@@ -94,6 +100,7 @@ let Settings = {
 		enableWatched: 0,
 		shortTitle: 0,
 		shortTitleExpand: 1,
+//		animateExpand: 0,
 		showHidden: 0,
 		collapseMulti: 0,
 		showNew: 0,
@@ -201,7 +208,7 @@ let Settings = {
 		if (Settings.box)
 			return callback ? callback() : true;
 
-		let html = function(){/*
+		let html = multiline(function(){/*
 <div id="settings-popup">
 	<div id="settings-popup-content">
 		<div class="header">
@@ -224,9 +231,9 @@ let Settings = {
 		</div>
 	</div>
 </div>
-		*/};//html
+		*/});//html
 
-		let popup = $(html.toString().slice(14,-3).split("*//*").join("*/").replace(/[\n\t]*/g, "")).appendTo("body"),
+		let popup = $(html).appendTo("body"),
 				content = popup.find(".content"),
 				a = document.createElement("a"),
 				i = document.createElement("span"),
@@ -246,12 +253,13 @@ let Settings = {
 			});
 		});
 		content.append(createCheckbox("enableWatched", "Enable watched", this.prefs.enableWatched ? true : false, this.callback, null, "pointer"));
-		let opt = createCheckbox("shortTitle", "Trancate long titles", this.prefs.shortTitle ? true : false, this.callback, null, "pointer");
+		let opt = createCheckbox("shortTitle", "Truncate long titles", this.prefs.shortTitle ? true : false, this.callback, null, "pointer");
 		opt.title = "Shorten titles to fit into single row.";
 		content.append(opt);
-		opt = createCheckbox("shortTitleExpand", "Auto expand trancated titles", this.prefs.shortTitleExpand ? true : false, this.callback, null, "pointer");
+		opt = createCheckbox("shortTitleExpand", "Auto expand truncated titles", this.prefs.shortTitleExpand ? true : false, this.callback, null, "pointer");
 		opt.title = "Show full title when cursor over it. If disabled you still be able see full title in tooltip or when show is opened.";
 		content.append(opt);
+//		content.append(createCheckbox("animateExpand", "Animate during expanding", this.prefs.animateExpand ? true : false, this.callback, null, "pointer"));
 		content.append('<div class="spacer"/>');
 
 		a.href = "#";
@@ -263,8 +271,8 @@ let Settings = {
 			let cookies = {},
 					str = "",
 					obj = {
-						settings: Settings.prefs,
-						version: adeVersion
+						version: adeVersion,
+						settings: Settings.prefs
 					};
 
 			for(let i = 0; i < cs.list.length; i++)
@@ -957,7 +965,7 @@ customLinks.manager = function customLinksManager(callback)
 	if (customLinks.div)
 		return callback ? callback() : true;
 
-	let html = function(){/*
+	let html = multiline(function(){/*
 <div id="manage-links-popup">
 	<div id="manage-links-popup-content">
 		<div class="header">
@@ -979,9 +987,9 @@ customLinks.manager = function customLinksManager(callback)
 		<div class="content"></div>
 	</div>
 </div>
-		*/};//html
+		*/});//html
 
-	let popup = $(html.toString().slice(14,-3).split("*//*").join("*/").replace(/[\n\t]*/g, "")).appendTo("body");
+	let popup = $(html).appendTo("body");
 	customLinks.div = popup[0];
 	popup.find(".back").click(function()
 	{
@@ -997,7 +1005,7 @@ customLinks.manager = function customLinksManager(callback)
 	});
 
 	let	content = $(popup).find(".content").html("");
-	html = function(){/*
+	html = multiline(function(){/*
 <div class="reset">
 	<a id="sort-reset" href="#">reset sort</a>
 </div>
@@ -1034,9 +1042,9 @@ customLinks.manager = function customLinksManager(callback)
 		</div>
 	</div>
 </form>
-	*/};//html
+	*/});//html
 
-	$(html.toString().slice(14,-3).split("*//*").join("*/").replace(/[\n\t]*/g, "")).appendTo(content.parent());
+	$(html).appendTo(content.parent());
 	let engId = $("#engine-id"),
 			engUrl = $("#engine-url"),
 			engName = $("#engine-name"),
@@ -1754,6 +1762,16 @@ let func = function(event)
 {
 	Settings.init();
 
+	// fix highlighting today would remove /u/user ..
+	$( "#linkToday" ).click(function click(e)
+	{
+		e.stopPropagation();
+		e.preventDefault();
+		e.stopImmediatePropagation();
+		loadArchiveFromPathname("#today", "#today");
+		return false;  
+	});
+
 	let _today,
 			showHidden = Settings.pref("showHidden") ? true : false;
 			_assignColor = assignColor;
@@ -1912,12 +1930,38 @@ let func = function(event)
 
 	collapseMulti.mouseOver = function(e, day)
 	{
-		$(day).toggleClass("expand", true);
-		if (!Settings.prefs.collapseMulti)
+		if (e.target != day)
 			return;
 
+		day._type = "over";
 		clearTimeout(day._collapseMultiTimer);
-		collapseMulti.setTitle(day.list, "_titleOrig");
+		if (Settings.prefs.animateExpand)
+		{
+			let func = function()
+			{
+				collapseMulti.animate(day, "expand", true, Settings.prefs.collapseMulti ? "_titleOrig" : "");
+			};
+			if (!$(day).hasClass("expand") && !$(day).hasClass("opened"))
+			{
+				func();
+			}
+			else
+			{
+				$(day).toggleClass("expand", true);
+				if (!Settings.prefs.collapseMulti)
+					return;
+
+				collapseMulti.setTitle(day.list, "_titleOrig");
+			}
+		}
+		else
+		{
+			$(day).toggleClass("expand", true);
+			if (!Settings.prefs.collapseMulti)
+				return;
+
+			collapseMulti.setTitle(day.list, "_titleOrig");
+		}
 	};
 
 	collapseMulti.mouseOut = function(e, day, id)
@@ -1925,16 +1969,116 @@ let func = function(event)
 		if (e.target != day)
 			return;
 
+		day._type = "out";
 		day._collapseMultiTimer = setTimeout(function()
 		{
-			$(day).toggleClass("expand", false);
-			if (!Settings.prefs.collapseMulti)
-				return;
+			if (Settings.prefs.animateExpand)
+			{
+				collapseMulti.animate(day, "expand", false, Settings.prefs.collapseMulti && !$(day).hasClass("opened") ? "_titleCollapsed" : "")
+			}
+			else
+			{
+				$(day).toggleClass("expand", false);
+				if (!Settings.prefs.collapseMulti)
+					return;
 
-			if (!$(day).hasClass("opened"))
-				collapseMulti.setTitle(day.list, "_titleCollapsed");
+				if (!$(day).hasClass("opened"))
+					collapseMulti.setTitle(day.list, "_titleCollapsed");
+			}
+		}, 300)
+	};
 
-		}, 300);
+	collapseMulti.animateDone = function(e, n)
+	{
+		e.elem.style.overflow = "";
+		e.elem.style.height = "";
+		e.elem.style.display = "";
+		e.elem.style.textOverflow = "";
+		$(e.elem).find(".title").css("white-space", "");
+	};
+	collapseMulti.animate = function(day, cl, val, title)
+	{
+		if (!day._animatingQuie)
+			day._animatingQuie = {};
+
+		if (day._animating)
+		{
+			clearTimeout(day._animatingQuie[cl+val]);
+			return day._animatingQuie[cl+val] = setTimeout(function()
+			{
+				collapseMulti.animate(day, cl, val, title);
+			});
+		}
+
+		let type = day._type;
+		if (Settings.prefs.collapseMulti)
+			clearTimeout(day._collapseMultiTimer);
+
+		let clone = day.cloneNode(true);
+		$(clone).toggleClass(cl, val);
+		if (title)
+		{
+			clone.list = {};
+			for (let i in day.list)
+			{
+				clone.list[i] = $($(clone).find(".multif[data-series-id=" + i + "]")[0]);
+				clone.list[i]._titleCollapsed = day.list[i]._titleCollapsed;
+				clone.list[i]._titleOrig = day.list[i]._titleOrig;
+			}
+			collapseMulti.setTitle(clone.list, title);
+		}
+		clone.style.visibility = "hidden";
+		clone.style.position = "absolute";
+		clone.style.top = 0;
+		clone.style.width = day.clientWidth + "px";
+		$(clone).toggleClass("clone", true);
+		day.parentNode.appendChild(clone);
+		let n = 0;
+		collapseMulti.setTitle(day.list, title);
+		let stopped = false;
+		day._animating = true;
+		$(clone).find(".entry").each(function(i, c)
+		{
+			n++;
+			let e = $(day).find(".entry")[i];
+			e.style.height = (e.clientHeight ? e.clientHeight : 1) + "px";
+			e.style.overflow = "hidden";
+			e.style.textOverflow = "unset";
+			e.style.display = "block !important";
+			$(e).find(".title").css("white-space", "normal");
+			$(e).show();
+			$(e).css("display", "block !important");
+			if (!$(e).is( ":visible" ))
+			{
+				e.style.setProperty("display", $(c).css("display"), "important");
+			}
+			$(e).stop(true);
+			$(e).animate({
+				height: c.clientHeight,
+			},
+			{
+				duration: 200,
+				progress: function(e)
+				{
+					if (day._type != type)
+					{
+						e.stop(true);
+						stopped = true;
+					}
+				},
+				always: function(e)
+				{
+					if (!--n)
+					{
+						if (!stopped)
+							$(day).toggleClass(cl, val);
+
+						day._animating = false;
+					}
+					collapseMulti.animateDone(e);
+				}
+			});
+		});
 	};
 
 	collapseMulti.onOff = function(e, id, checked)
@@ -2195,7 +2339,15 @@ let func = function(event)
 
 	//create stylesheet. A little trick to have multi-line text in javascript
 	let	style = document.createElement("style"),
-			css = function(){/*
+			css = multiline(function(){/*
+	body.userViewer .importColors,
+	body.userViewer .importColorsIcon,
+	body.userViewer .clearColorsIcon,
+	body.userViewer .clearColors,
+	body.userViewer .colors
+	{
+		display: none !important;
+	}
 	div.showPast1 div.past1,
 	div.showPast2 div.past2,
 	div.showPast3 div.past3,
@@ -2434,8 +2586,7 @@ let func = function(event)
 		top: 5px;
 		left: 5px;
 	}
-	#settings-popup-content div.close > :first-child,
-	#manage-links-popup-content div.close > :first-child
+	.close > svg:first-child
 	{
 		display: none;
 	}
@@ -2447,8 +2598,9 @@ let func = function(event)
 		height: 1.3em;
 		cursor: pointer;
 		position: absolute;
-		top: 5px;
-		right: 5px;
+		top: 0;
+		right: 0;
+		padding: 5px;
 	}
 	#settings-popup .header,
 	#manage-links-popup .header
@@ -2508,21 +2660,18 @@ let func = function(event)
 		background-color: #FFFFB7;
 		outline: 1px dotted grey;
 	}
-	#settings-popup-content div.close:hover,
-	#manage-links-popup-content div.close:hover
+	.close:hover > svg
 	{
 		background-color: #e81123;
 	}
-	#settings-popup-content div.close:hover > :last-child,
-	#manage-links-popup-content div.close:hover > :last-child
+	.close:hover > svg:last-child
 	{
 		display: none;
 	}
-	#settings-popup-content div.close:hover > :first-child,
-	#manage-links-popup-content div.close:hover > :first-child
+	.close:hover > svg:first-child
 	{
 		fill: #FFFFFF;
-		display: block;
+		display: inline-block;
 	}
 
 	#manage-links-popup .content > div.dragging.hide > *
@@ -2613,14 +2762,6 @@ let func = function(event)
 		vertical-align: bottom;
 		font-size: 1.3em;
 	}
-	/* small screen party *//*
-	@media screen and (max-width: 1000px)
-	{
-		#manage-links-popup
-		{
-			top: 80px;
-		}
-	}
 	#manage-links-popup-content .content > div.update
 	{
 		-webkit-transition:background-color 0.4s ease-in;
@@ -2656,13 +2797,51 @@ let func = function(event)
 		margin: 3px 0 3px 0;
 		display: table;
 	}
-	.close > svg,
+
+	.user > svg
+	{
+		margin-right: 0.3em;
+	}
+
+/*fixing menu wrapping too soon*//*
+	@media screen and (max-width: 1000px)
+	{
+		body #menu li,
+		body:not(.userViewer) #menu li
+		{ display: inline-block; }
+		body #menu li .nu,
+		body:not(.userViewer) #menu li .nu
+		{ min-width: unset; }
+		body #account-popup,
+		body:not(.userViewer) #account-popup
+		{ top: 50px; }
+	}
+	#menu .nu
+	{
+		font-weight: bold;
+	}
+	#menu .close
+	{
+		font-size: 0.9em;
+		position: relative;
+		top: -0.6em;
+		cursor: pointer;
+		padding: 0.3em;
+	}
+	#menu .close > svg
+	{
+		width: 0.9em;
+		height: 0.9em;
+		position: unset;
+	}
+
+	.user > svg,
 	.back > svg,
 	.content > div > span > svg
 	{
 		width: 1.3em;
 		height: 1.3em;
-		vertical-align: middle;
+		vertical-align: bottom;
 	}
 	#searchResults > div.entry > div.title,
 	body:not(.shortTitle) div > div.entry > div.title,
@@ -2707,9 +2886,9 @@ let func = function(event)
 		display: inline-block;
 		content: ")";
 	}
-*/};//css
+*/});//css
 
-	style.innerHTML = css.toString().slice(14,-3).split("*//*").join("*/");
+	style.innerHTML = css;
 	$("head").append(style);
 
 
@@ -2972,11 +3151,11 @@ let func = function(event)
 				clearWatched = clearColors.clone(false);
 
 		clearHidden.removeClass();
-		clearHidden.addClass(".clearHidden");
+		clearHidden.addClass("clearHidden");
 		clearHidden.html("Clear hidden");
 		clearHidden.insertAfter(clearColors);
 		clearWatched.removeClass();
-		clearWatched.addClass(".clearWatched");
+		clearWatched.addClass("clearWatched");
 		clearWatched.html("Clear watched");
 		clearWatched.insertAfter(clearHidden);
 		clearColors.after(" | ");
@@ -3008,134 +3187,10 @@ let func = function(event)
 		});
 
 		$("body").off("click", ".exportColors");
-		$("body").off("click", ".importColors");
-		$("body").on("click", ".importColors", function()
-		{
-			let str = prompt( "Please enter the crazy text!" ),
-					reload = false;
-			if( str )
-			{
-				let hidden = 0,
-						colors = 0,
-						watchedNum = 0;
-				$.each( str.split( ";" ), function( i, e )
-				{
-					let color = e.split("=").concat([true] );
-					if (color.length == 3)
-					{
-						assignColor.apply( null, color );
-						colors++;
-					}
-/*
-					else
-					{
-						let json = null;
-						try
-						{
-							json = JSON.parse(color[0]);
-						}
-						catch(e){}
-						if (json)
-						{
-							if ("hidden" in json)
-							{
-								hidden = json.hidden.length;
-								for(let i = 1; i < json.hidden.length; i++)
-									showHide(parseInt(json.hidden[i]), 1);
-							}
-							if ("watched" in json)
-							{
-								watchedNum = 0;
-								for(let id in json.watched)
-								{
-									for(let i = 0; i < json.watched[id].length; i++)
-									{
-										let ep = json.watched[id][i];
-										watched.add(id, ep);
-										watchedNum++;
-										$('div.entry[data-series-id="' + id + '"]').each(function(n, entry)
-										{
-											if (watched.title(entry) == ep)
-												watched.update(entry, true);
-										});
-									}
-								}
-							}
-							if ("settings" in json)
-							{
-								for(let i in json.settings)
-								{
-									if (cs.list.indexOf(i) == -1)
-										continue;
-
-									if (!command(i, json.settings[i]))
-									{
-										cs(i, json.settings[i]);
-										reload = true;
-									}
-								}
-							}
-						}
-						else
-						{
-							color = color[0].split(",");
-							hidden = color.length - 1;
-							for(let i = 1; i < color.length; i++)
-								showHide(parseInt(color[i]), 1);
-						}
-					}
-*/
-				});
-//				let txt = "Imported " + colors + " colors" + ((hidden || watchedNum) ? " and marked " : "");
-				let txt = "Imported " + colors + " colors";
-				if (hidden)
-					txt += hidden + " as hidden";
-				if (watchedNum)
-					txt += (hidden ? ", " : " ") + watchedNum + " as watched";
-
-				alert(txt);
-				if (reload)
-					window.location.reload();
-			}
-			return false;
-		});
-
 		$("body").on( "click", ".exportColors", function()
 		{
 			let str = $.map(DB.savedColors,function(e,i){return i + "=" + e;}).join(";");
 			str = str.replace(/;?[0-9]+=#FFFFFF/i, "");
-/*
-			let settings = {};
-			for(let i = 0; i < cs.list.length; i++)
-			{
-				let v = cs(cs.list[i]);
-				if (v !== null)
-				{
-					settings[cs.list[i]] = v;
-				}
-			}
-			let obj = {};
-			for(let i in _hidden)
-			{
-				obj.hidden = _hidden;
-				break;
-			}
-			for(let i in watched._list)
-			{
-				obj.watched = watched._list;
-				break;
-			}
-			for(let i in settings)
-			{
-				obj.settings = settings;
-				break;
-			}
-			for(let i in obj)
-			{
-				str += ";" + JSON.stringify(obj);
-				break;
-			}
-*/
 
 			if (str)
 					prompt( "This is the crazy text. \nYou can save it in a normal textfile and/or import it to another computer/browser.", str );
@@ -3146,6 +3201,67 @@ let func = function(event)
 
 
 	} //showHideLoad()
+	DB.viewing = DB.username != DB.loggedInUsername;
+	let ul = $("#menu").find("ul");
+	if (DB.viewing)
+	{
+		ul.children("li:last-child").css("margin-right", "1.5em");
+		let li = $(multiline(function(){/*
+<li>Viewing as 
+	<span class="user">
+		<svg viewBox="0 0 24 24">
+			<path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"></path>
+		</svg>
+	</span>
+	<span class="nu"></span>
+	<a class="close" href="*/}) + window.location.href.replace(/\/u\/[^?#]+/, "") + multiline(function(){/*">
+		<svg viewBox="0 0 24 24">
+			<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
+		</svg>
+		<svg viewBox="0 0 24 24">
+			<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
+		</svg>
+	</a>
+</li>
+*/})).appendTo(ul);
+		li.find("span.nu").text(DB.username);
+//fix auto wrap on small screen
+		let width = li.prop("clientWidth");
+		width = Math.round(width * 2 + 760 + width / 6);
+		$("head").append("<style>@media screen and (max-width: " + width + multiline(function(){/*
+px)
+{
+	body.userViewer #menu li:not(:nth-last-child(2)):not(:last-child){ display: block; }
+	body.userViewer #menu li .nu{ min-width: 15px; }
+	body.userViewer #account-popup,
+	body.userViewer #settings-popup,
+	body.userViewer #manage-links-popup
+	{ top: 80px; }
+}
+</style>*/}));
+	}
+	else
+	{
+		setTimeout(function()
+		{
+		let li = ul.children().last();
+		let width = li.prop("clientWidth");
+		width = Math.round(width * 2 + 600 + width / 6);
+		$("head").append("<style>@media screen and (max-width: " + width + multiline(function(){/*
+px)
+{
+	body:not(.userViewer) #menu li{ display: block; }
+	body:not(.userViewer) #menu li .nu{ min-width: 15px; }
+	body:not(.userViewer) #account-popup,
+	body:not(.userViewer) #settings-popup,
+	body:not(.userViewer) #manage-links-popup
+	{ top: 80px; }
+}
+</style>*/}));
+});
+	}
+
+
 	//fix when removing color it still saves it in database as #FFFFFF
 	window.DB._setColor = window.DB.setColor;
 	window.DB.setColor = function setColor(id, c)
@@ -3182,7 +3298,7 @@ let func = function(event)
 	window.updateSelectedOnly = function(){};
 	$("#selected-only-showing").toggle(false);
 	$("#selected-only-hidden").toggle(false);
-	createCheckbox("activeOnly", "My shows", "s", function(e, id, checked){}, [$("#selected-only-hidden").prop("title")]);
+	createCheckbox("activeOnly", (DB.viewing ? DB.username + " user's" : "My") + " shows", "s", function(e, id, checked){}, [$("#selected-only-hidden").prop("title")]);
 
 	//fix auto clear search field on click
 	setTimeout(function()
@@ -3365,9 +3481,29 @@ let func = function(event)
 		$(showMyHidden.box).prepend('<small>' + text + '</small><div style="height: 0.5em;"></div>');
 		$("#searchResults").html(showMyHidden.box.innerHTML);
 	}
-
 	$(document).ready(function()
 	{
+		function hideNode(id)
+		{
+			$("." + id).each(function(i, e)
+			{
+				let prev = e.previousSibling;
+				if (prev.nodeType == prev.TEXT_NODE)
+				{
+					let span = document.createElement("span");
+					prev.parentNode.insertBefore(span, prev);
+					span.appendChild(prev);
+					prev = span;
+				}
+				$(prev).toggleClass(id + "Icon", true)
+			});
+		}
+		if (DB.viewing)
+		{
+			$("body").toggleClass("userViewer", true);
+			hideNode("clearColors");
+			hideNode("importColors");
+		}
 		let accountLoop = 50;
 		$("#account-popup").attr("hidden", "");
 		$("#account-overview").click(function(e)
@@ -3395,16 +3531,18 @@ let func = function(event)
 
 			if (!as.length)
 				return;
+
+			let header = $("#account-popup-content").find("div.header");
 			//account reset password
 			if (DB.loggedInUsername)
 			{
-				let h = $("#account-popup-content").find("div.header"),
-						div = $("<div/>").html(h.html().replace(/(\s)+/g, "$1")),
+				let div = $("<div/>").html(header.html().replace(/(\s)+/g, "$1")),
 //						a = $('<a href="/_u/forgot-password#' + DB.username +'">Reset password</a>');
 						a = $('<a href="/_u/forgot-password">Reset password</a>');
-				h.html("").append(div);
+				header.html("").append(div);
 				div.find("a").after(a).after(" | ");
 			}
+
 			//account overview neat icons
 			$("#account-popup-content").find("div.content").contents().filter(function()
 			{
@@ -3423,6 +3561,7 @@ let func = function(event)
 			});
 
 			$("#account-overview").unbind("click", loop);
+			hideNode("importColors");
 			let a = document.createElement("a"),
 					i = document.createElement("span"),
 					span = document.createElement("div"),
@@ -3447,7 +3586,7 @@ let func = function(event)
 				search("info:myshows");
 				$("#account-popup").toggle(false);
 			}, false);
-			a.textContent = "My shows";
+			a.textContent = (DB.viewing ? DB.username + " user's" : "My") + " shows";
 			parent.appendChild(span);
 
 			span = span.cloneNode(true);
@@ -3576,7 +3715,7 @@ let func = function(event)
 		{
 			e.stopPropagation();
 			e.preventDefault();
-			if (DB.username == DB.loggedInUsername)
+			if (!DB.viewing)
 			{
 				$.each( DB.savedColors, function( i, c )
 				{ 
@@ -3588,7 +3727,7 @@ let func = function(event)
 				alert( "You don't have permission!" );
 
 			return false; 
-		}); 
+		});
 	});//document.ready()
 
 	$(document.body).on( "click touchstart", function(e)
@@ -3796,7 +3935,7 @@ if (window.top !== window.self)
 					clearInterval(timer);
 
 					let style = document.createElement("style");
-					style.innerHTML = function(){/*
+					style.innerHTML = multiline(function(){/*
 .trollComment
 {
 	cursor: pointer;
@@ -3828,7 +3967,7 @@ img.troll
 	line-height: 1.3em;
 }
 */
-					}.toString().slice(14,-3).split("*//*").join("*/");
+					});
 					document.getElementsByTagName("head")[0].appendChild(style);
 					for(let i = 0; i < names.length; i++)
 					{
@@ -3911,7 +4050,6 @@ img.troll
 		}, false);
 	}
 }//disqus
-
 if (document.readyState != "loading")
 	func();
 else
