@@ -8,7 +8,7 @@
 // @include     https://disqus.com/embed/comments/*
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.26
+// @version     1.27
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -93,6 +93,8 @@ function multiline(func)
 
 let enginesHide = ls("enginesHide") || [];
 let Settings = {
+	SORT_NAME: 0,
+	SORT_COLOR: 1,
 	inited: false,
 	box: null,
 	prefs: {},
@@ -107,6 +109,7 @@ let Settings = {
 		showReturn: 0,
 		middleClick: [],
 		weeks: 0,
+		sortBy: 0,
 	},
 	pref: function(id, val)
 	{
@@ -331,34 +334,18 @@ let Settings = {
 		let d = a.cloneNode(true);
 
 
-		function pad(t)
-		{
-			return "" + t < 10 ? "0" + t : t;
-		}
 		d.addEventListener("click", function(e)
 		{
 			if (e.isTrigger)
 				return;
 
-//			e.preventDefault();
+			e.preventDefault();
 			e.stopPropagation();
 
-			let data = backup(),
-					blob = new Blob([data], {type: 'text/json'}),
-					me    = new MouseEvent("click"),
-					a = e.target,
-					d = new Date(),
+			let d = new Date(),
 					date = d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
 
-			a.download = "Airdates.tv_enhancer_v" + adeVersion + "_settings_" + date + ".json";
-			a.href = window.URL.createObjectURL(blob);
-			a.dataset.downloadurl =  ['text/json', a.download, a.href].join(':');
-			setTimeout(function()
-			{
-				delete a.dataset.downloadurl;
-				a.href = "#";
-				a.download = "";
-			});
+			fileSave("Airdates.tv_enhancer_v" + adeVersion + "_settings_" + date + ".json", backup());
 		}, false);
 		d.textContent = "save to file";
 		d.className = "file";
@@ -529,36 +516,15 @@ let Settings = {
 			e.preventDefault();
 			restore(prompt( "Please enter the " + adeName + " settings text" ));
 		}, false);
+
 		d.addEventListener("click", function(e)
 		{
 			e.preventDefault();
 			e.stopPropagation();
-			let f = document.createElement("input");
-			f.type = "file";
-			f.setAttribute("accept", ".json");
-			function readFile(e)
+			fileLoad(function(text)
 			{
-				let files = f.files;
-				if (!f.files.length)
-				{
-					alert('Please select a file!');
-					return;
-				}
-				let reader = new FileReader();
-
-				reader.onloadend = function(evt)
-				{
-					if (evt.target.readyState == FileReader.DONE)
-					{
-						restore(evt.target.result);
-					}
-				};
-
-				let blob = f.files[0].slice(0, f.files[0].size);
-				reader.readAsBinaryString(blob);
-			}
-			f.addEventListener("change", readFile, false);
-		f.click();
+				restore(text);
+			});
 		}, false);
 		d.textContent = "load from file";
 		span.appendChild(d);
@@ -588,6 +554,69 @@ let Settings = {
 		Settings.box.hide();
 	},
 }//Settings
+
+function fileLoad(callback, ext)
+{
+	let f = document.createElement("input");
+	f.type = "file";
+	if (typeof(ext) == "undefined")
+		ext = ".json";
+
+	if (ext)
+		f.setAttribute("accept", ext);
+
+	function readFile(e)
+	{
+		f.removeEventListener("change", readFile, false);
+		let files = f.files;
+		if (!f.files.length)
+		{
+			alert('Please select a file!');
+			return;
+		}
+		let reader = new FileReader();
+
+		reader.onloadend = function(evt)
+		{
+			if (evt.target.readyState == FileReader.DONE)
+			{
+				callback(evt.target.result);
+			}
+		};
+
+		let blob = f.files[0].slice(0, f.files[0].size);
+		reader.readAsBinaryString(blob);
+	}
+	f.addEventListener("change", readFile, false);
+	f.click();
+}
+
+function fileSave(name, data, type)
+{
+	type = type ? type : 'text/json';
+	let blob = new Blob([data], {type: type}),
+			a = document.createElement("a"),
+			d = new Date(),
+			date = d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
+
+	a.download = name;
+	a.href = window.URL.createObjectURL(blob);
+	a.dataset.downloadurl = [type, a.download, a.href].join(':');
+	document.body.appendChild(a);
+	a.click();
+	a.parentNode.removeChild(a);
+}
+
+function exportGetColors()
+{
+	let str = $.map(DB.savedColors,function(e,i){return i + "=" + e;}).join(";");
+	return str.replace(/;?[0-9]+=#FFFFFF/i, "");
+}
+
+function pad(t)
+{
+	return "" + t < 10 ? "0" + t : t;
+}
 
 function enginesBackup()
 {
@@ -2340,6 +2369,11 @@ let func = function(event)
 	//create stylesheet. A little trick to have multi-line text in javascript
 	let	style = document.createElement("style"),
 			css = multiline(function(){/*
+	svg
+	{
+		width: 1em;
+		height: 1em;
+	}
 	body.userViewer .importColors,
 	body.userViewer .importColorsIcon,
 	body.userViewer .clearColorsIcon,
@@ -2886,6 +2920,34 @@ let func = function(event)
 		display: inline-block;
 		content: ")";
 	}
+
+	#searchResults > .info
+	{
+		margin-bottom: 0.7em;
+	}
+	
+	#searchResults > .info > small
+	{
+		vertical-align: text-bottom;
+	}
+	#searchResults > .info > small > span:not(.info)
+	{
+		position: absolute;
+		right: 1em;
+	}
+	span.button
+	{
+		cursor: pointer;
+		background-color: #DDDDDD;
+		border-radius: 4px;
+		padding: 3px;
+	}
+	
+/* fix search field box covers text on bottom *//*
+	#searchFieldContainer
+	{
+		height: 0;
+	}
 */});//css
 
 	style.innerHTML = css;
@@ -3185,21 +3247,17 @@ let func = function(event)
 			alert( "Done!" );
 			return false;
 		});
-
-		$("body").off("click", ".exportColors");
-		$("body").on( "click", ".exportColors", function()
-		{
-			let str = $.map(DB.savedColors,function(e,i){return i + "=" + e;}).join(";");
-			str = str.replace(/;?[0-9]+=#FFFFFF/i, "");
-
-			if (str)
-					prompt( "This is the crazy text. \nYou can save it in a normal textfile and/or import it to another computer/browser.", str );
-			else
-					alert("Nothing to export");
-			return false;
-		});
-
-
+			$("body").off("click", ".exportColors");
+			$("body").on( "click", ".exportColors", function(e)
+			{
+				e.stopImmediatePropagation();
+				let str = exportGetColors();
+				if (str)
+						prompt( "This is the crazy text. \nYou can save it in a normal textfile and/or import it to another computer/browser.", str );
+				else
+						alert("Nothing to export");
+				return false;
+			});
 	} //showHideLoad()
 	DB.viewing = DB.username != DB.loggedInUsername;
 	let ul = $("#menu").find("ul");
@@ -3391,45 +3449,128 @@ px)
 		}
 		$(".entry").removeClass("searchResult");
 		$("#searchStatus").css("visibility","hidden");
-		showMyShows.box = document.createElement("div");
-		let entry = document.createElement("div"),
-				title = document.createElement("div");
+		let list = [];
 
-		entry.appendChild(title);
-		entry.className = "entry";
-		title.className = "title";
-		let list = [],
-				count = 0;
-
-		for(let id in DB.savedColors)
+		for (let i in DB.savedColors)
 		{
-			list[list.length] = id;
-		}
-		list.sort(function(a, b)
-		{
-			return !DB.info[a] || !DB.info[b] ? -1 : DB.info[a][0].toLowerCase().localeCompare(DB.info[b][0].toLowerCase());
-		});
-		for(let i = 0; i < list.length; i++)
-		{
-			let id = list[i];
-			if (!DB.info[id])
+			if (!DB.info[i])
 				continue;
 
-			count++;
-			entry = entry.cloneNode(true);
-			title = entry.firstChild;
-			entry.setAttribute("data-series-id", id);
-			entry.setAttribute("data-series-source", DB.info[id][1]);
-			title.textContent = DB.info[id][0];
-			showMyShows.box.appendChild(entry);
+//http://runtime-era.blogspot.com/2011/11/grouping-html-hex-colors-by-hue-in.html
+			/* Get the hex value without hash symbol. */
+			let hex = DB.savedColors[i].substring(1);
+			/* Get the RGB values to calculate the Hue. */
+			let r = parseInt(hex.substring(0,2),16)/255,
+					g = parseInt(hex.substring(2,4),16)/255,
+					b = parseInt(hex.substring(4,6),16)/255;
+
+			/* Getting the Max and Min values for Chroma. */
+			let max = Math.max.apply(Math, [r,g,b]),
+					min = Math.min.apply(Math, [r,g,b]);
+
+			/* Variables for HSV value of hex color. */
+			let chr = max-min,
+					hue = 0,
+					val = max,
+					sat = 0;
+
+			if (val > 0)
+			{
+				/* Calculate Saturation only if Value isn't 0. */
+				sat = chr/val;
+				if (sat > 0)
+				{
+					if (r == max)
+					{ 
+						hue = 60 * (((g - min) - (b - min)) / chr);
+						if (hue < 0)
+							hue += 360;
+					}
+					else if (g == max)
+					{ 
+						hue = 120 + 60 * (((b - min) - (r - min)) / chr); 
+					} else if (b == max)
+					{ 
+						hue = 240 + 60 * (((r - min) - (g - min)) / chr); 
+					}
+				}
+			}
+			
+			/* Modifies existing objects by adding HSV values. */
+			list[list.length] = {
+				id: i,
+				hex: hex,
+				hue: hue,
+				sat: sat,
+				val: val,
+				lum: (r * 299 + g * 587 + b * 114) / 1000
+			}
 		}
-		let text = "You don't have any shows";
-		if (count)
+		(function display()
 		{
-			text = "You have " + count + " show" + (count > 1 ? "s" : "") + ":";
-		}
-		$(showMyShows.box).prepend('<small>' + text + '</small><div style="height: 0.5em;"></div>');
-		$("#searchResults").html(showMyShows.box.innerHTML);
+			if (Settings.prefs.sortBy == Settings.SORT_COLOR)
+			{
+				list = list.sort(function(a,b)
+				{
+					let r = a.hue - b.hue;
+					if (!r)
+						r = a.val - b.val;
+					if (!r)
+						r = a.sat - b.sat;
+					if (!r)
+						r = DB.info[a.id][0].toLowerCase().localeCompare(DB.info[b.id][0].toLowerCase());
+					return r;
+				});
+			}
+			else
+			{
+				list = list.sort(function(a, b)
+				{
+					return DB.info[a.id][0].toLowerCase().localeCompare(DB.info[b.id][0].toLowerCase());
+				});
+			}
+			$(showMyShows.box).find("span.button").off("click");
+			showMyShows.box = document.createElement("div");
+			let entry = document.createElement("div"),
+					title = document.createElement("div"),
+					count = 0;
+
+			entry.appendChild(title);
+			entry.className = "entry";
+			title.className = "title";
+			for(let i = 0; i < list.length; i++)
+			{
+				let id = list[i].id;
+
+				count++;
+				entry = entry.cloneNode(true);
+				title = entry.firstChild;
+				entry.setAttribute("data-series-id", id);
+				entry.setAttribute("data-series-source", DB.info[id][1]);
+				title.textContent = DB.info[id][0];
+				showMyShows.box.appendChild(entry);
+			}
+			let text = "You don't have any shows";
+		
+			if (count)
+			{
+				function getSortName()
+				{
+					let a = ["Name", "Color"];
+					return  a[Settings.prefs.sortBy + 1] || a[0];
+				}
+				text = (DB.viewing ? DB.username + " has " : "You have ") + count + " show" + (count > 1 ? "s" : "") + '. <span>Sort by <span class="button">' + getSortName() + "</span></span>";
+			}
+			$(showMyShows.box).prepend('<div class="info"><small>' + text + '</small><div>');
+			$("#searchResults").html(showMyShows.box.innerHTML).find("span.button").click(function(e)
+			{
+				if (++Settings.prefs.sortBy > 1)
+					Settings.prefs.sortBy = 0;
+				
+				Settings.save();
+				display();
+			});;
+		})();
 	}
 
 	function showMyHidden(e)
@@ -3561,6 +3702,55 @@ px)
 			});
 
 			$("#account-overview").unbind("click", loop);
+
+			let d = document.createElement("a");
+			d.addEventListener("click", function(e)
+			{
+				if (e.isTrigger)
+					return;
+
+				e.preventDefault();
+				e.stopPropagation();
+
+				let data = exportGetColors(),
+						d = new Date(),
+						date = d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
+				if (data)
+					fileSave("Airdates.tv_colors_" + (DB.username ? DB.username.replace(/[\/\\?%*:|"<>]/g, "_") + "_" : "") + date + ".txt", data);
+				else
+					alert("Nothing to export");
+			}, false);
+			d.textContent = "save to file";
+			d.className = "file";
+			$("#account-popup").find(".exportColors").append(d);
+			d = d.cloneNode(true);
+			d.addEventListener("click", function(e)
+			{
+				if (e.isTrigger)
+					return;
+
+				e.preventDefault();
+				e.stopPropagation();
+
+				fileLoad(function(str)
+				{
+					if (str)
+					{
+						$.each( str.split( ";" ), function( i, e ){
+							assignColor.apply( null, e.split("=").concat([true] ) );
+						} );
+						alert( "kk, imported " + str.split(";").length + " colors" );
+					}
+					else
+					{
+						alert( "Error importing" );
+					}
+				}, ".txt");
+
+			}, false);
+			d.textContent = "load from file";
+			$("#account-popup").find(".importColors").append(d);
+
 			hideNode("importColors");
 			let a = document.createElement("a"),
 					i = document.createElement("span"),
