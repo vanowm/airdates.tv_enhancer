@@ -8,7 +8,7 @@
 // @include     https://disqus.com/embed/comments/*
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.27
+// @version     1.27.1
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -988,7 +988,6 @@ customLinks.hide = function()
 	$(customLinks.div).hide();
 }
 
-
 customLinks.manager = function customLinksManager(callback)
 {
 	if (customLinks.div)
@@ -1654,14 +1653,6 @@ function customLinksAdd()
 			del = [],
 			add = [];
 
-	for(let i = 0; i < engines.length; i++)
-	{
-		let n = _enginesList.indexOf(engines[i].host)
-
-		if (n != -1)
-			_engines.push(engines[i]);
-
-	}
 	for(let i = 0; i < _enginesList.length; i++)
 	{
 		let found = false;
@@ -1763,6 +1754,33 @@ function createCheckbox(id, label, cookie, callback, title, className)
 	if (check)
 		span.setAttribute("checked", "checked");
 
+/*
+//real checkboxes
+	let box = document.createElement("span"),
+			labelNode = document.createElement("label"),
+			checkbox = document.createElement("input"),
+			checkboxId = "cb_" + id,
+			suf = "",
+			i = 1;
+	checkbox.type = "checkbox";
+	box.className = (typeof(className) == "undefined" ? "filter " : className + " ") + id;
+	if (title)
+		box.title = title[0];
+
+	labelNode.textContent = label;
+	box.appendChild(checkbox);
+	box.appendChild(labelNode);
+	
+	while($("#" + checkboxId + suf).length)
+	{
+		suf = "_" + i++;
+	}
+	checkbox.addEventListener("change", func, false);
+	checkbox.id = checkboxId + suf;
+	checkbox.checked = check;
+	labelNode.setAttribute("for", checkbox.id);
+	$(box).insertBefore("#nu-showing");
+*/
 	$(".calendar").toggleClass(id, check);
 	$("body").toggleClass(id, check);
 
@@ -2567,6 +2585,7 @@ let func = function(event)
 	{
 		margin-top: 1em;
 		margin-bottom: 1em;
+		display: inline-block;
 	}
 	#settings-popup .header h4,
 	#manage-links-popup .header h4
@@ -2904,16 +2923,19 @@ let func = function(event)
 		margin-bottom: 0.5em !important;
 		display: block !important;
 	}
+	a.parentheses,
 	a.file
 	{
 		margin-left: 1em;
 	}
+	a.parentheses:before,
 	a.file:before
 	{
 		text-decoration: none;
 		display: inline-block;
 		content: "(";
 	}
+	a.parentheses:after,
 	a.file:after
 	{
 		text-decoration: none;
@@ -3057,7 +3079,6 @@ let func = function(event)
 			let MONKEY = encodeURIComponent( title.replace(/ E[0-9]+/g, "") ),
 					MONKEY_N = encodeURIComponent( title.replace( /S[0-9]+E[0-9]+$/g, '' ) ),
 					WIKI_TITLE = encodeURIComponent( el.data("series-source") );
-
 			$.each( _engines, function( i, engine )
 			{
 				if (!$("body").hasClass("engine_" + cleanName(engine.host)))
@@ -3512,13 +3533,13 @@ px)
 			{
 				list = list.sort(function(a,b)
 				{
-					let r = a.hue - b.hue;
+					let r = b.hue - a.hue;
 					if (!r)
-						r = a.val - b.val;
+						r = b.val - a.val;
 					if (!r)
-						r = a.sat - b.sat;
+						r = b.sat - a.sat;
 					if (!r)
-						r = DB.info[a.id][0].toLowerCase().localeCompare(DB.info[b.id][0].toLowerCase());
+						r = DB.info[b.id][0].toLowerCase().localeCompare(DB.info[a.id][0].toLowerCase());
 					return r;
 				});
 			}
@@ -3683,9 +3704,9 @@ px)
 				header.html("").append(div);
 				div.find("a").after(a).after(" | ");
 			}
-
+			let content = $("#account-popup-content").find("div.content");
 			//account overview neat icons
-			$("#account-popup-content").find("div.content").contents().filter(function()
+			content.contents().filter(function()
 			{
 				if (this.tagName == "BR")
 					this.parentNode.removeChild(this);
@@ -3702,7 +3723,7 @@ px)
 			});
 
 			$("#account-overview").unbind("click", loop);
-
+			content.find("div:first-of-type > span").html('<svg viewBox="0 0 24 24"><path d="M10.59,13.41C11,13.8 11,14.44 10.59,14.83C10.2,15.22 9.56,15.22 9.17,14.83C7.22,12.88 7.22,9.71 9.17,7.76V7.76L12.71,4.22C14.66,2.27 17.83,2.27 19.78,4.22C21.73,6.17 21.73,9.34 19.78,11.29L18.29,12.78C18.3,11.96 18.17,11.14 17.89,10.36L18.36,9.88C19.54,8.71 19.54,6.81 18.36,5.64C17.19,4.46 15.29,4.46 14.12,5.64L10.59,9.17C9.41,10.34 9.41,12.24 10.59,13.41M13.41,9.17C13.8,8.78 14.44,8.78 14.83,9.17C16.78,11.12 16.78,14.29 14.83,16.24V16.24L11.29,19.78C9.34,21.73 6.17,21.73 4.22,19.78C2.27,17.83 2.27,14.66 4.22,12.71L5.71,11.22C5.7,12.04 5.83,12.86 6.11,13.65L5.64,14.12C4.46,15.29 4.46,17.19 5.64,18.36C6.81,19.54 8.71,19.54 9.88,18.36L13.41,14.83C14.59,13.66 14.59,11.76 13.41,10.59C13,10.2 13,9.56 13.41,9.17Z"></path></svg>');
 			let d = document.createElement("a");
 			d.addEventListener("click", function(e)
 			{
@@ -3722,7 +3743,7 @@ px)
 			}, false);
 			d.textContent = "save to file";
 			d.className = "file";
-			$("#account-popup").find(".exportColors").append(d);
+			content.find(".exportColors").append(d);
 			d = d.cloneNode(true);
 			d.addEventListener("click", function(e)
 			{
@@ -3749,7 +3770,7 @@ px)
 
 			}, false);
 			d.textContent = "load from file";
-			$("#account-popup").find(".importColors").append(d);
+			content.find(".importColors").append(d);
 
 			hideNode("importColors");
 			let a = document.createElement("a"),
@@ -3767,6 +3788,7 @@ px)
 			span = span.cloneNode(true);
 			a = span.lastChild;
 			i = span.firstChild;
+			a.className = "";
 			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>';
 			a.href = '#myshows';
 			a.id = "";
@@ -3827,21 +3849,38 @@ px)
 			}, false);
 			a.textContent = "Options";
 			parent.appendChild(span);
-//			a.parentNode.insertBefore(i, a);
-		});//$("#account-overview").click()
 
-		let repeat = DB.username ? 20 : 2,
-				list = ls("info") || {};
-		//to avoid hit a ceiling of max data allowed store in local storage, we only save names of user's current shows, nothing else.
+			a = document.createElement("a");
+			a.href = "https://github.com/vanowm/airdates.tv_enhancer/issues";
+			a.target = "_blank";
+			a.textContent = "Support";
+			a.className = "parentheses support";
+			parent.insertBefore(a, h.nextSibling);
+
+		});
+
+		let repeat = 100,
+				list = ls("info") || {},
+				userCookie = readCookieRaw("adsc_SESSION"),
+				isUser = userCookie && userCookie.indexOf("username=") > 0,
+				blank = {};
 		DB.info = {};
 		DB.infoLoaded = false;
+		//to avoid hit a ceiling of max data allowed store in local storage, we only save names of user's current shows, nothing else.
 		//unfortunately we don't know when saved colors are done loading for registered users, so we must wait in a loop
 		(function loop()
 		{
 			let added = false;
 			for(let id in DB.savedColors)
 			{
+				DB.loaded = true;
 				repeat = 0;
+				let col = new Colors().setColor(DB.savedColors[id]);
+
+ 				//there is a bug in original ADT that store show's color as "FFFFFF" (which is "delete" show color)
+				if (col.HEX == "FFFFFF")
+					assignColor(id, DB.savedColors[id], true);
+
 				if (id in list)
 				{
 					DB.info[id] = list[id];
@@ -3850,8 +3889,13 @@ px)
 				added = true;
 				DB.infoAdd(id);
 			}
-			if (repeat--)
-				return setTimeout(loop, 300);
+			//we know DB.savedColors is empty, we can set it to empty again within our namespace so we can see if it was changed
+			if (repeat == 100 && !Object.keys(DB.savedColors).length)
+				DB.savedColors = blank;
+
+			if (isUser && repeat-- && DB.savedColors === blank)
+				return setTimeout(loop, 100);
+
 
 			for(let i = 0; i < _hidden.length; i++)
 			{
@@ -3868,6 +3912,8 @@ px)
 			DB.infoLoaded = true;
 			if (added)
 				DB.infoSave();
+
+			
 		})();
 
 	//fix paste via right click: adding input event
@@ -3918,6 +3964,8 @@ px)
 
 			return false; 
 		});
+
+
 	});//document.ready()
 
 	$(document.body).on( "click touchstart", function(e)
