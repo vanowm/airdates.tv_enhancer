@@ -5,10 +5,10 @@
 // @description Control how many past weeks you want to see and many other enhancements
 // @include     http://www.airdates.tv/*
 // @include     https://www.airdates.tv/*
-// @include     https://disqus.com/embed/comments/*
+// @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.27.5
+// @version     1.28
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -16,29 +16,24 @@
 //tab = 2 spaces
 
 
-let log = console.log;
+let log = console.log,
+		self = this;
 
-let adeName = "Airdates.tv enhancer",
-		adeVersion = "n/a",
-		force = false,
-		enginesDefault = [],
-		_engines = [],
-		_hidden = ls("hidden") || [],
-		loo = 1000,
-		_enginesList = [];
-
-
-try
-{
-	adeName = GM_info.script.name;
-	adeVersion = GM_info.script.version;
-}catch(e){};
-function ls(id, data)
+function ls(id, data, callback)
 {
 	let r;
 	if (typeof(data) == "undefined")
 	{
-		r = localStorage.getItem(id);
+		try
+		{
+			r = localStorage.getItem(id);
+		}
+		catch(e)
+		{
+			window.top.postMessage({id: "ade", func: "ls", args: [id], return: callback}, "http://www.airdates.tv");
+			log(e);
+			return r;
+		}
 		try
 		{
 			r = JSON.parse(r);
@@ -50,10 +45,16 @@ function ls(id, data)
 		{
 			r = localStorage.setItem(id, JSON.stringify(data));
 		}
-		catch(e){log(e);}
+		catch(e)
+		{
+			window.top.postMessage({id: "ade", func: "ls", args: [id, data], return: callback}, "http://www.airdates.tv");
+			log(e);
+			return r;
+		}
 	}
 	return r;
 }
+
 function cs(id, data)
 {
 	let r;
@@ -75,6 +76,101 @@ function cs(id, data)
 	}
 	return r;
 }
+
+function multiline(func, ws)
+{
+	func = func.toString();
+	func = func.slice(func.indexOf("/*") + 2, func.lastIndexOf("*/")).split("*//*").join("*/");
+	return ws ? func : func.replace(/[\n\t]*/g, "");
+}
+
+window.hashChanged = function hashChanged(e, hash)
+{
+	let match,
+			remove = false,
+			hashSearch = false;
+	hash = typeof(hash) == "undefined" ? location.hash : hash;
+
+	if (hash == "#myshows")
+	{
+		search("info:myshows");
+		hashSearch = true;
+	}
+	else if (hash == "#hidden")
+	{
+		search("info:hidden");
+		hashSearch = true;
+	}
+	else if (match = hash.match(/^#([sfq]|search|find):(.*)/))
+	{
+		search(match[2]);
+//		remove = true;
+		hashSearch = true;
+	}
+	else if (match = hash.match(/^#(info:.+)/))
+	{
+		search(match[1]);
+//		remove = true;
+		hashSearch = true;
+	}
+	else if (hash == "#changes")
+	{
+		hashSearch = true;
+		changesLog.show(true);
+	}
+	if (remove && hash == location.hash)
+	{
+		removeHash();
+		hashSearch = false;
+	}
+	hashChanged.hashSearch = hashSearch;
+}
+function removeHash()
+{
+	history.replaceState({}, "", location.href.replace(/#.*/, ''));
+}
+function receiveMessage(event)
+{
+	if (["https://disqus.com", "http://www.airdates.tv"].indexOf(event.origin) == -1 || typeof(event.data) != "object" || event.data.id != "ade")
+	{
+		return;
+	}
+	let func = typeof(self[event.data.func]) != "undefined" ? self[event.data.func] : typeof(this[event.data.func]) != "undefined" ? this[event.data.func] : null;
+	if (func)
+	{
+		let r;
+		try
+		{
+			r = func.apply(null, event.data.args);
+		}
+		catch(e){log(e)};
+
+		event.source.postMessage({id: "ade", return: event.data.return, val: r}, event.origin);
+	}
+	if ("val" in event.data && "return" in event.data && typeof(self[event.data.return]) == "function")
+	{
+		self[event.data.return](event.data.val);
+	}
+}
+receiveMessage._self = this;
+window.addEventListener("message", receiveMessage, false);
+let func = function(event)
+{
+let adeName = "Airdates.tv enhancer",
+		adeVersion = "n/a",
+		force = false,
+		enginesDefault = [],
+		_engines = [],
+		_hidden = ls("hidden") || [],
+		loo = 1000,
+		_enginesList = [];
+
+
+try
+{
+	adeName = GM_info.script.name;
+	adeVersion = GM_info.script.version;
+}catch(e){};
 cs.list = ["s","n"];
 cs.listLegacy = {
 	sh: "showHidden",
@@ -85,11 +181,6 @@ cs.listLegacy = {
 	wa: "enableWatched",
 	middleClick: "middleClick"
 };
-function multiline(func)
-{
-	func = func.toString();
-	return func.slice(func.indexOf("/*") + 2, func.lastIndexOf("*/")).split("*//*").join("*/").replace(/[\n\t]*/g, "");
-}
 
 let enginesHide = ls("enginesHide") || [];
 let Settings = {
@@ -97,6 +188,13 @@ let Settings = {
 	SORT_COLOR: 1,
 	inited: false,
 	box: null,
+	colorsDef: {
+		"807fff": {name: ""},
+		"ff7fff": {name: ""},
+		"80ff7f": {name: ""},
+		"7fffff": {name: ""},
+		"ff7f7f": {name: ""},
+	},
 	prefs: {},
 	prefsDef: {
 		enableWatched: 0,
@@ -110,6 +208,16 @@ let Settings = {
 		middleClick: [],
 		weeks: 0,
 		sortBy: 0,
+		version: "",
+		noChangesLog: 0,
+		smallLogo: 0,
+		colorsCustom: {
+			"807fff": {name: ""},
+			"ff7fff": {name: ""},
+			"80ff7f": {name: ""},
+			"7fffff": {name: ""},
+			"ff7f7f": {name: ""},
+		},
 	},
 	pref: function(id, val)
 	{
@@ -124,7 +232,10 @@ let Settings = {
 		if (this.inited)
 			return;
 
-		this.prefs = ls("settings") || this.prefsDef;
+		this.prefs = ls("settings") || Object.assign({}, this.prefsDef);
+		if (typeof(this.prefs) != "object")
+			this.prefs = Object.assign({}, this.prefsDef);
+
 		for(i in this.prefsDef)
 		{
 			if (!(i in this.prefs))
@@ -170,7 +281,7 @@ let Settings = {
 			s = true;
 		}
 
-		//splitting New/Returning into two separate filters
+		/* splitting New/Returning into two separate filters */
 		c = cs("sn");
 		if (c === null && this.pref("showNew") === null)
 		{
@@ -215,13 +326,13 @@ let Settings = {
 <div id="settings-popup">
 	<div id="settings-popup-content">
 		<div class="header">
-			<div class="back">
+			<div class="back" title="Back">
 				<svg viewBox="0 0 24 24">
 					<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
 				</svg>
 			</div>
 			<h4>Options</h4>
-			<div class="close">
+			<div class="close" title="Close" title="Close">
 				<svg viewBox="0 0 24 24">
 					<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
 				</svg>
@@ -247,14 +358,6 @@ let Settings = {
 		span.appendChild(a);
 
 		Settings.box = popup;
-		popup.find(".back").click(function()
-		{
-			Settings.hide();
-			setTimeout(function()
-			{
-				$("#account-overview").click();
-			});
-		});
 		content.append(createCheckbox("enableWatched", "Enable watched", this.prefs.enableWatched ? true : false, this.callback, null, "pointer"));
 		let opt = createCheckbox("shortTitle", "Truncate long titles", this.prefs.shortTitle ? true : false, this.callback, null, "pointer");
 		opt.title = "Shorten titles to fit into single row.";
@@ -263,6 +366,8 @@ let Settings = {
 		opt.title = "Show full title when cursor over it. If disabled you still be able see full title in tooltip or when show is opened.";
 		content.append(opt);
 //		content.append(createCheckbox("animateExpand", "Animate during expanding", this.prefs.animateExpand ? true : false, this.callback, null, "pointer"));
+		opt = createCheckbox("smallLogo", "Small logo", this.prefs.smallLogo ? true : false, this.callback, null, "pointer");
+		content.append(opt);
 		content.append('<div class="spacer"/>');
 
 		a.href = "#";
@@ -544,8 +649,13 @@ let Settings = {
 		ls("settings", this.prefs);
 	},
 
-	show: function()
+	show: function(noBack)
 	{
+		if (noBack)
+			Settings.box.attr("noback", "");
+		else
+			Settings.box.attr("noback");
+
 		Settings.box.show();
 	},
 
@@ -600,6 +710,7 @@ function fileSave(name, data, type)
 			date = d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
 
 	a.download = name;
+	a.isTrigger = true;
 	a.href = window.URL.createObjectURL(blob);
 	a.dataset.downloadurl = [type, a.download, a.href].join(':');
 	document.body.appendChild(a);
@@ -811,8 +922,8 @@ function showHide(id, t)
 	let css = $("#css" + id);
 	if (hidden)
 	{
- 		if (!css.length)
- 		{
+		if (!css.length)
+		{
 			let style = "<style id='css" + id + "'>"+
 									"div.calendar:not(.showHidden).activeOnly .entry[data-series-id='" + id + "'][opened]:not(.multi){ display: block !important; }"+
 									"div.calendar:not(.showHidden) .entry[data-series-id='" + id + "']:not([opened]):not(.searchResult){ display: none !important; }"+
@@ -857,7 +968,7 @@ command.add = function(id, objId, func)
 	};
 };
 
-//watched checkbox
+/* watched checkbox */
 function watched(entry)
 {
 	if (entry._input.checked)
@@ -973,15 +1084,21 @@ watched.attach = function(i,entry)
 };
 
 
-//custom links
+/* custom links */
 function customLinks(obj)
 {
 
 }
 customLinks._list = ls("customLinks") || {};
-customLinks.show = function()
+customLinks.show = function(noBack)
 {
-	$(customLinks.div).show();
+	let div = $(customLinks.div);
+	if (noBack)
+		div.attr("noback", "");
+	else
+		div.attr("noback");
+
+	div.show();
 }
 customLinks.hide = function()
 {
@@ -997,13 +1114,13 @@ customLinks.manager = function customLinksManager(callback)
 <div id="manage-links-popup">
 	<div id="manage-links-popup-content">
 		<div class="header">
-			<div class="back">
+			<div class="back" title="Back">
 				<svg viewBox="0 0 24 24">
 					<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
 				</svg>
 			</div>
 			<h4>Links Manager</h4>
-			<div class="close">
+			<div class="close" title="Close">
 				<svg viewBox="0 0 24 24">
 					<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
 				</svg>
@@ -1019,14 +1136,6 @@ customLinks.manager = function customLinksManager(callback)
 
 	let popup = $(html).appendTo("body");
 	customLinks.div = popup[0];
-	popup.find(".back").click(function()
-	{
-		customLinks.hide();
-		setTimeout(function()
-		{
-			$("#account-overview").click();
-		});
-	});
 	$(popup).find("[id^=account]").each(function()
 	{
 		this.id = this.id.replace("account", "manage-links");
@@ -1343,31 +1452,8 @@ customLinks.manager = function customLinksManager(callback)
 				let node = this,
 						up = (node.nextSibling == dragged),
 						moveold = up ? node : node.nextSibling,
-/*
-						anim1 = up ? "up" : "down",
-						anim2 = up ? "down" : "up",
-*/
 						movenew = dragged;
-/*
-				movenew.classList.add(anim1);
-				moveold.classList.add(anim2);
-				movenew.classList.remove(anim2);
-				moveold.classList.remove(anim1);
-//				$(dragged).toggleClass(anim1, true);
-//				$(moveto).toggleClass(anim2, true);
-//				clearTimeout(dragged.__timer);
-//				clearTimeout(moveto.__timer);
-				movenew.__timer = setTimeout(function()
-				{
-					movenew.classList.remove(anim1);
-//					$(dragged).toggleClass(anim1, false);
-				}, 1000);
-				moveold.__timer = setTimeout(function()
-				{
-					moveold.classList.remove(anim2);
-//					$(moveto).toggleClass(anim2, false);
-				}, 1000);
-*/
+
 				node.parentNode.insertBefore(movenew, moveold);
 				break;
 			case "dragover":
@@ -1503,7 +1589,6 @@ customLinks.manager = function customLinksManager(callback)
 			});
 			if (customLinks._list[engine.host])
 			{
-	//				$('<span class="del" title="delete">&#9249;</span>').appendTo(div).click(function(e)
 				$('<span class="del" title="' + (def ? "Clear" : "Delete") + '">' + '<svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"></path></svg>' + '</span>').appendTo(div).click(function(e)
 				{
 					e.stopPropagation();
@@ -1647,7 +1732,7 @@ function customLinksAdd()
 	customLinks.div = null;
 
 
-	//middle click on day's title opens selected engines for user's shows
+/* middle click on day's title opens selected engines for user's shows */
 	_enginesList = Settings.pref("middleClick") || [];
 	let engines = enginesBackup.backup ? enginesBackup.backup : window.engines,
 			del = [],
@@ -1665,12 +1750,13 @@ function customLinksAdd()
 			{
 				_engines.push(engines[n]);
 
+/*
 				if (!i && engines[n].host == "thepiratebay.org")
 				{
-					//sort by date instead of seeds
+// sort by date instead of seeds
 					engines[n].href = engines[n].href.replace(/\.se\//, ".org").replace(/\/0\/7\/0$/, "/0/3/0");
 				}
-
+*/
 				found = true;
 				break
 			}
@@ -1700,6 +1786,53 @@ function customLinksAddCss(id)
 	css2 += ',body:not(.' + id + ') #' + id + " a.link";
 	css2 += "{font-style: italic; opacity: 0.5;}";
 	$('<style id="css_' + id + '"></style>').html(css+css2).appendTo("head");
+}
+
+/* colors manager */
+function colorsManager()
+{
+	let html = multiline(function(){/*
+<div id="colorsmanager">
+	<div id="colorsmanager-popup-content">
+		<div class="header">
+			<div class="back" title="Back">
+				<svg viewBox="0 0 24 24">
+					<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
+				</svg>
+			</div>
+			<h4>Colors Manager</h4>
+			<div class="close" title="Close">
+				<svg viewBox="0 0 24 24">
+					<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
+				</svg>
+				<svg viewBox="0 0 24 24">
+					<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
+				</svg>
+			</div>
+		</div>
+		<div class="content"></div>
+	</div>
+</div>
+		*/});//html
+
+	let popup = $(html).appendTo("body");
+	clolorsManager.div = popup[0];
+}//colorsManager()
+
+colorsManager.show = function(noBack)
+{
+	let div = $(colorsManager.div);
+	if (noBack)
+		div.attr("noback", "");
+	else
+		div.attr("noback");
+
+	div.show();
+}
+
+colorsManager.hide = function()
+{
+	$(colorsManager.div).hide();
 }
 
 
@@ -1770,7 +1903,7 @@ function createCheckbox(id, label, cookie, callback, title, className)
 	labelNode.textContent = label;
 	box.appendChild(checkbox);
 	box.appendChild(labelNode);
-	
+
 	while($("#" + checkboxId + suf).length)
 	{
 		suf = "_" + i++;
@@ -1805,8 +1938,6 @@ function rand(min, max)
 })();
 
 
-let func = function(event)
-{
 	Settings.init();
 
 	// fix highlighting today would remove /u/user ..
@@ -1816,7 +1947,7 @@ let func = function(event)
 		e.preventDefault();
 		e.stopImmediatePropagation();
 		loadArchiveFromPathname("#today", "#today");
-		return false;  
+		return false;
 	});
 
 	let _today,
@@ -2146,7 +2277,6 @@ let func = function(event)
 
 	function showPast(callback)
 	{
-
 	// hide all past days
 		let	d = new Date();
 
@@ -2185,13 +2315,15 @@ let func = function(event)
 				return;
 
 			let found = false,
+					remove = [];
 					func = function (i, o)
 					{
 						if ($(this).attr("data-date") == firstDate)
 							found = true;
 
 						if (found)
-							$(this).remove();
+							remove[remove.length] = $(this);
+//							$(this).remove();
 					};
 			for (let n = 0; n < div.length; n++)
 			{
@@ -2200,6 +2332,9 @@ let func = function(event)
 				$(div[n]).children().each(func);
 				$(div[n]).children().prependTo($("div.days"));
 			}
+			for(let i = 0; i < remove.length; i++)
+				remove[i].remove();
+
 			pastLoaded();
 			if (callback)
 				callback();
@@ -2387,598 +2522,756 @@ let func = function(event)
 	//create stylesheet. A little trick to have multi-line text in javascript
 	let	style = document.createElement("style"),
 			css = multiline(function(){/*
-	#account-overview > span.nu > svg
-	{
-		width: 1.2em;
-		height: 1.2em;
-		vertical-align: top;
-		margin-right: 0.3em;
-		fill: #3e3e3e; 
-	}
-	svg
-	{
-		width: 1em;
-		height: 1em;
-		vertical-align: top;
-	}
-	body.userViewer .importColors,
-	body.userViewer .importColorsIcon,
-	body.userViewer .clearColorsIcon,
-	body.userViewer .clearColors,
-	body.userViewer .colors
-	{
-		display: none !important;
-	}
-	div.showPast1 div.past1,
-	div.showPast2 div.past2,
-	div.showPast3 div.past3,
-	div.showPast4 div.past4,
-	div.showPast5 div.past5,
-	div.showPast6 div.past6,
-	div.showPast7 div.past7,
-	div.showPast8 div.past8,
-	div.showPast9 div.past9
-	{
-		display: block;
-	}
+#account-overview > span.nu > svg
+{
+	width: 1.2em;
+	height: 1.2em;
+	vertical-align: top;
+	margin-right: 0.3em;
+	fill: #3e3e3e;
+}
+svg
+{
+	width: 1em;
+	height: 1em;
+	vertical-align: top;
+}
+body.userViewer .importColors,
+body.userViewer .importColorsIcon,
+body.userViewer .clearColorsIcon,
+body.userViewer .clearColors,
+body.userViewer .colors
+{
+	display: none !important;
+}
+div.showPast1 div.past1,
+div.showPast2 div.past2,
+div.showPast3 div.past3,
+div.showPast4 div.past4,
+div.showPast5 div.past5,
+div.showPast6 div.past6,
+div.showPast7 div.past7,
+div.showPast8 div.past8,
+div.showPast9 div.past9
+{
+	display: block;
+}
 
-	/*
-	div.calendar.searching > #past-weeks
-	{
-		text-decoration: line-through;
-	}
-	*//*
-	#past-weeks
-	{
-		margin-left: 0.2%;
-	}
+/*
+div.calendar.searching > #past-weeks
+{
+	text-decoration: line-through;
+}
+*//*
+#past-weeks
+{
+	margin-left: 0.2%;
+}
 
-	#pastWeeks
-	{
-		margin-left: 0.5em;
-	}
+#pastWeeks
+{
+	margin-left: 0.5em;
+}
 
-	.archive #past-weeks
-	{
-		text-decoration: line-through;
-	}
-
-
-	/* today column border *//*
-	div.today
-	{
-		border-color: #FFC800;
-	}
+.archive #past-weeks
+{
+	text-decoration: line-through;
+}
 
 
-	/* higlighted title under cursor *//*
-	div.title > input[type="checkbox"]:hover + div.title,
-	div.title:hover
-	{
-		background-color: #ffffd5;
-		-webkit-transition: background 0s;
-		color: black;
-	}
-
-	/* highlight opened entry *//*
-	.entry[opened]
-	{
-		border: 1px solid black;
-	}
-
-	div[opened] + div
-	{
-		border-top: 0;
-	}
-
-	.engines input[type="checkbox"]
-	{
-		width: unset !important;
-		vertical-align: top;
-	}
-	.engines img
-	{
-		vertical-align: text-bottom !important;
-	}
-
-	div.entry
-	{
-		float: left;
-		width: 100%;
-	}
-	div.entry,
-	.pointer,
-	.date
-	{
-		cursor: pointer;
-	}
-
-	.filter
-	{
-		margin-left: 1em;
-		cursor: pointer;
-	}
-
-	.past,
-	.showhide0,
-	span[checked] > .checkoff,
-	span:not([checked]) > .checkon,
-	/*separate showing searies and season premiere*//*
-	div.calendar.showNew div.entry:not(.series-premiere):not(.searchResult),
-	div.calendar.showReturn div.entry:not(.season-premiere):not(.searchResult)
-	{
-		display: none;
-	}
+/* today column border *//*
+div.today
+{
+	border-color: #FFC800;
+}
 
 
-	/*separate showing searies and season premiere*//*
-	#nu-showing,
-	#nu-hidden,
-	#selected-only-hidden
-	{
-		display: none !important;
-	}
+/* higlighted title under cursor *//*
+div.title > input[type="checkbox"]:hover + div.title,
+div.title:hover
+{
+	background-color: #ffffd5;
+	-webkit-transition: background 0s;
+	color: black;
+}
 
-	div.calendar.showNew div.entry.series-premiere:not(.searchResult),
-	div.calendar.showReturn div.entry.season-premiere:not(.searchResult)
-	{
-		display: block;
-	}
+/* highlight opened entry *//*
+.entry[opened]
+{
+	border: 1px solid black;
+}
+
+div[opened] + div
+{
+	border-top: 0;
+}
+
+.engines input[type="checkbox"]
+{
+	width: unset !important;
+	vertical-align: top;
+}
+.engines img
+{
+	vertical-align: text-bottom !important;
+}
+
+div.entry
+{
+	float: left;
+	width: 100%;
+}
+div.entry,
+.pointer,
+.date
+{
+	cursor: pointer;
+}
+
+.filter
+{
+	margin-left: 1em;
+	cursor: pointer;
+}
+
+.past,
+.showhide0,
+span[checked] > .checkoff,
+span:not([checked]) > .checkon,
+/*separate showing searies and season premiere*//*
+div.calendar.showNew div.entry:not(.series-premiere):not(.searchResult),
+div.calendar.showReturn div.entry:not(.season-premiere):not(.searchResult)
+{
+	display: none;
+}
 
 
-	/*Search field overlaps text below in Firefox*//*
-	#searchFieldContainer
-	{
-		background-color: unset;
-	}
+/*separate showing searies and season premiere*//*
+#nu-showing,
+#nu-hidden,
+#selected-only-hidden
+{
+	display: none !important;
+}
+
+div.calendar.showNew div.entry.series-premiere:not(.searchResult),
+div.calendar.showReturn div.entry.season-premiere:not(.searchResult)
+{
+	display: block;
+}
 
 
-	/*Watched*//*
-	body:not(.enableWatched) div.title > input[type="checkbox"]
-	{
-		display: none;
-	}
+/*Search field overlaps text below in Firefox*//*
+#searchFieldContainer
+{
+	background-color: unset;
+}
 
-	body.enableWatched div.entry[watched] > div.title
-	{
-		text-decoration: line-through;
-	}
 
-	div.title > input[type="checkbox"]
-	{
-		vertical-align: middle;
-		margin: 1px 3px 0 1px;
-		height: 1em;
-	}
+/*Watched*//*
+body:not(.enableWatched) div.title > input[type="checkbox"]
+{
+	display: none;
+}
 
-	#searchResults div.title > input[type="checkbox"]
-	{
-		width: unset;
-		float: left;
-	}
+body.enableWatched div.entry[watched] > div.title
+{
+	text-decoration: line-through;
+}
 
-	#searchResults > div.entry:last-child
-	{
-		margin-bottom: 1em;
-	}
-	/*Past related*//*
-	.past
-	{
-		opacity: 0.5;
-	}
+div.title > input[type="checkbox"]
+{
+	vertical-align: middle;
+	margin: 1px 3px 0 1px;
+	height: 1em;
+}
 
-	body.collapseMulti div.day:not(.expand):not(.opened) div.entry.multi
-	{
-		display: none !important;
-	}
+#searchResults div.title > input[type="checkbox"]
+{
+	width: unset;
+	float: left;
+	z-index: auto;
+}
 
-	body.collapseMulti div.day:not(.expand):not(.opened) div.entry.multif div.title:after
-	{
-		content: "";
-		background-color: black;
-		border-left: 1px solid white;
-	}
+#searchResults > div.entry:last-child
+{
+	margin-bottom: 1em;
+}
+/*Past related*//*
+.past
+{
+	opacity: 0.5;
+}
 
-	body.collapseMulti div.day:not(.expand):not(.opened) div.entry.multif div.title:after
-	{
-		position: absolute;
-		height: 100%;
-		right: -1px;
-		top: 0;
-		width: 3px;
-	}
-	/*Account popup*//*
-	#settings-popup .content h4,
-	#manage-links-popup .content h4,
-	#account-popup-content .content h4
-	{
-		margin-top: 1em;
-		margin-bottom: 1em;
-		display: inline-block;
-	}
-	#settings-popup .header h4,
-	#manage-links-popup .header h4
-	{
-		margin: 0.2em 0 0 0;
-	}
-	#settings-popup .content,
-	#manage-links-popup .content,
-	#account-popup-content .content
-	{
-		padding-top: 0;
-		padding-bottom: 1em;
-	}
-	#settings-popup-content .content > div > *:first-child,
-	#account-popup-content .content > div > *:first-child
-	{
-		width: 1.6em;
-		display: inline-block;
-		vertical-align: bottom;
-	}
+body.collapseMulti div.day:not(.expand):not(.opened) div.entry.multi
+{
+	display: none !important;
+}
 
-	#settings-popup,
-	#manage-links-popup
-	{
-		position: absolute;
-		z-index: 1234;
-		top: 50px;
-		left: 4.7%;
-		width: 1px;
-		display: none;
-	}
-	#settings-popup-content,
-	#manage-links-popup-content
-	{
-		position: absolute;
-		top: 0px;
-		left: 0px;
-		background-color: #ffff00;
-		border: 1px dotted black;
-		width: 300px;
-		min-height: 10px;
-	}
-	#settings-popup-content div.back,
-	#manage-links-popup-content div.back
-	{
-		font-size: 1.2em;
-		width: 1.3em;
-		height: 1.3em;
-		cursor: pointer;
-		position: absolute;
-		top: 5px;
-		left: 5px;
-	}
-	.close > svg:first-child
-	{
-		display: none;
-	}
-	#settings-popup-content div.close,
-	#manage-links-popup-content div.close
-	{
-		font-size: 1.2em;
-		width: 1.3em;
-		height: 1.3em;
-		cursor: pointer;
-		position: absolute;
-		top: 0;
-		right: 0;
-		padding: 5px;
-	}
-	#settings-popup .header,
-	#manage-links-popup .header
-	{
-		background-color: #7FFFFF;
-		padding: 5px;
-		text-align: center;
-		height: 1.5em;
-	}
-	#settings-popup .content,
-	#manage-links-popup .content,
-	#engine-edit
-	{
-		padding: 3px 10px;
-	}
-	#engine-edit > div:not(#engine-res),
-	#manage-links-popup .content > div:not(#engine-res)
-	{
-		display: table-row;
-		white-space: nowrap;
-	}
-	#engine-edit > div:not(#engine-res) > *,
-	#manage-links-popup .content > div:not(#engine-res) > *
-	{
-		display: table-cell;
-		vertical-align: middle;
-		margin: 2px 4px 2px 1px;
-	}
-	#manage-links-popup .content > div:not(#engine-res) > img
-	{
-		vertical-align: bottom;
-		display: list-item;
-	}
+body.collapseMulti div.day:not(.expand):not(.opened) div.entry.multif div.title:after
+{
+	content: "";
+	background-color: black;
+	border-left: 1px solid white;
+}
 
-	#manage-links-popup .content > div:not(#engine-res) > filter
-	{
-		padding-left: 0.3em;
-	}
-	#manage-links-popup .content > div:not(#engine-res) > .edit,
-	#manage-links-popup .content > div:not(#engine-res) > .del
-	{
-		cursor: pointer;
-		margin: 3px;
-		position: relative;
-		top: -0.1em;
-		font-size: 80%;
-		padding: 3px;
-		display: inline-block;
-		height: 1em;
-		float: left;
-	}
-	#settings-popup-content div.back:hover,
-	#manage-links-popup-content div.back:hover,
-	#manage-links-popup .content > div.dragging:not(.hide),
-	#manage-links-popup .content:not(.dragging) > div:not(#engine-res):hover
-	{
-		background-color: #FFFFB7;
-		outline: 1px dotted grey;
-	}
-	.close:hover > svg
-	{
-		background-color: #e81123;
-	}
-	.close:hover > svg:last-child
-	{
-		display: none;
-	}
-	.close:hover > svg:first-child
-	{
-		fill: #FFFFFF;
-		display: inline-block;
-	}
+body.collapseMulti div.day:not(.expand):not(.opened) div.entry.multif div.title:after
+{
+	position: absolute;
+	height: 100%;
+	right: -1px;
+	top: 0;
+	width: 3px;
+}
+/*Account popup*//*
+#settings-popup .content h4,
+#manage-links-popup .content h4,
+#account-popup-content .content h4
+{
+	margin-top: 1em;
+	margin-bottom: 1em;
+	display: inline-block;
+}
+.header h4
+{
+	margin: 0.2em 0 0 0;
+}
+#settings-popup .content,
+#manage-links-popup .content,
+#account-popup-content .content
+{
+	padding-top: 0;
+	padding-bottom: 1em;
+}
+#settings-popup-content .content > div > *:first-child,
+#account-popup-content .content > div > *:first-child
+{
+	width: 1.6em;
+	display: inline-block;
+	vertical-align: bottom;
+}
 
-	#manage-links-popup .content > div.dragging.hide > *
-	{
-		opacity: 0;
-	}
-	#manage-links-popup .content > div.dragging.hide
-	{
-		outline: 1px dashed grey;
-	}
-	#manage-links-popup .content > div:not(.def) > a.link:after
-	{
-		content: "*";
-		text-decoration: none;
-		display: inline-block;
-		color: red;
-		margin-left: 0.2em;
-	}
-	#engine-edit > div:not(#engine-res) > label
-	{
-		text-align: right;
-	}
-	#engine-edit > div:not(#engine-res) > input
-	{
-		width: 95%;
-		margin-left: 0.5em;
-		padding-right: 1.5em;
-	}
-	#engine-edit > div:not(#engine-res) > select
-	{
-		width: 1.5em;
-		position: relative;
-		left: -1.8em;
-		margin: 0;
-		padding: 0;
-	}
-	#engine-res
-	{
-		overflow-x: auto;
-		overflow-y: hidden;
-		min-height: 18px;
-		display: block !important;
-		margin-left: 0.5em !important;
-	}
-	#engine-hidden
-	{
-		display: none !important;
-	}
-	#engine-res > *
-	{
-		vertical-align: middle;
-		display: inline-block;
-		margin: 0 4px 0 0;
-	}
-	#engine-submit,
-	#engine-reset
-	{
-		font-size: 90%;
-		display: inline-block !important;
-		width: 50% !important;
-	}
-	#engine-reset
-	{
-		margin-left: 1em;
-	}
-	div.reset
-	{
-		display: none !important;
-	}
-	#manage-links-popup[changed] div.reset
-	{
-		display: block !important;
-	}
-	#sort-reset
-	{
-		display: block !important;
-		text-align: right;
-		margin-right: 0.5em;
-		margin-bottom: 0.5em;
-	}
-	#engine-edit
-	{
-		 border-top: 1px dotted;
-	}
-	#manage-links-popup .nu,
-	#manage-links-popup .nu
-	{
-		vertical-align: bottom;
-		font-size: 1.3em;
-	}
-	#manage-links-popup-content .content > div.update
-	{
-		-webkit-transition:background-color 0.4s ease-in;
-		-moz-transition:background-color 0.4s ease-in;
-		-o-transition:background-color 0.4s ease-in;
-		transition:background-color 0.4s ease-in;
-	}
+#settings-popup,
+#manage-links-popup
+{
+	position: absolute;
+	z-index: 1234;
+	top: 50px;
+	left: 2.2%;
+	width: 1px;
+	display: none;
+}
+#settings-popup-content,
+#manage-links-popup-content
+{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	background-color: #ffff00;
+	border: 1px dotted black;
+	width: 300px;
+	min-height: 10px;
+}
+div.back
+{
+	font-size: 1.2em;
+	width: 1.3em;
+	height: 1.3em;
+	cursor: pointer;
+	position: absolute;
+	top: 5px;
+	left: 5px;
+}
+.close > svg:first-child
+{
+	display: none;
+}
+div.close
+{
+	font-size: 1.2em;
+	width: 1.3em;
+	height: 1.3em;
+	cursor: pointer;
+	position: absolute;
+	top: 0;
+	right: 0;
+	padding: 5px;
+}
+div:not(#account-popup-content) > .header
+{
+	background-color: #7FFFFF;
+	padding: 5px;
+	text-align: center;
+	height: 1.5em;
+}
+#settings-popup .content,
+#manage-links-popup .content,
+#engine-edit
+{
+	padding: 3px 10px;
+}
+#engine-edit > div:not(#engine-res),
+#manage-links-popup .content > div:not(#engine-res)
+{
+	display: table-row;
+	white-space: nowrap;
+}
+#engine-edit > div:not(#engine-res) > *,
+#manage-links-popup .content > div:not(#engine-res) > *
+{
+	display: table-cell;
+	vertical-align: middle;
+	margin: 2px 4px 2px 1px;
+}
+#manage-links-popup .content > div:not(#engine-res) > img
+{
+	vertical-align: bottom;
+	display: list-item;
+}
 
-	[draggable]
-	{
-		-moz-user-select: none;
-		-khtml-user-select: none;
-		-webkit-user-select: none;
-		user-select: none;
-		/* Required to make elements draggable in old WebKit *//*
-		-khtml-user-drag: element;
-		-webkit-user-drag: element;
-	}
-	[draggable] .dndh
-	{
-		cursor: move;
-		margin: 0 0.5em 0 0 !important;
-		font-size: 1.2em;
-		float: left;
-		position: relative;
-		top: -2px;
-		padding-left: 3px;
-		padding-right: 3px;
-	}
+#manage-links-popup .content > div:not(#engine-res) > filter
+{
+	padding-left: 0.3em;
+}
+#manage-links-popup .content > div:not(#engine-res) > .edit,
+#manage-links-popup .content > div:not(#engine-res) > .del
+{
+	cursor: pointer;
+	margin: 3px;
+	position: relative;
+	top: -0.1em;
+	font-size: 80%;
+	padding: 3px;
+	display: inline-block;
+	height: 1em;
+	float: left;
+}
+div.back:hover,
+#manage-links-popup .content > div.dragging:not(.hide),
+#manage-links-popup .content:not(.dragging) > div:not(#engine-res):hover
+{
+	background-color: #FFFFB7;
+	outline: 1px dotted grey;
+}
+.close:hover > svg
+{
+	background-color: #e81123;
+}
+.close:hover > svg:last-child
+{
+	display: none;
+}
+.close:hover > svg:first-child
+{
+	fill: #FFFFFF;
+	display: inline-block;
+}
 
-	#settings-popup-content > .content > *
-	{
-		margin: 3px 0 3px 0;
-		display: table;
-	}
+#manage-links-popup .content > div.dragging.hide > *
+{
+	opacity: 0;
+}
+#manage-links-popup .content > div.dragging.hide
+{
+	outline: 1px dashed grey;
+}
+#manage-links-popup .content > div:not(.def) > a.link:after
+{
+	content: "*";
+	text-decoration: none;
+	display: inline-block;
+	color: red;
+	margin-left: 0.2em;
+}
+#engine-edit > div:not(#engine-res) > label
+{
+	text-align: right;
+}
+#engine-edit > div:not(#engine-res) > input
+{
+	width: 95%;
+	margin-left: 0.5em;
+	padding-right: 1.5em;
+}
+#engine-edit > div:not(#engine-res) > select
+{
+	width: 1.5em;
+	position: relative;
+	left: -1.8em;
+	margin: 0;
+	padding: 0;
+}
+#engine-res
+{
+	overflow-x: auto;
+	overflow-y: hidden;
+	min-height: 18px;
+	display: block !important;
+	margin-left: 0.5em !important;
+}
+#engine-hidden
+{
+	display: none !important;
+}
+#engine-res > *
+{
+	vertical-align: middle;
+	display: inline-block;
+	margin: 0 4px 0 0;
+}
+#engine-submit,
+#engine-reset
+{
+	font-size: 90%;
+	display: inline-block !important;
+	width: 50% !important;
+}
+#engine-reset
+{
+	margin-left: 1em;
+}
+div.reset
+{
+	display: none !important;
+}
+#manage-links-popup[changed] div.reset
+{
+	display: block !important;
+}
+#sort-reset
+{
+	display: block !important;
+	text-align: right;
+	margin-right: 0.5em;
+	margin-bottom: 0.5em;
+}
+#engine-edit
+{
+	 border-top: 1px dotted;
+}
+#manage-links-popup .nu,
+#manage-links-popup .nu
+{
+	vertical-align: bottom;
+	font-size: 1.3em;
+}
+#manage-links-popup-content .content > div.update
+{
+	-webkit-transition:background-color 0.4s ease-in;
+	-moz-transition:background-color 0.4s ease-in;
+	-o-transition:background-color 0.4s ease-in;
+	transition:background-color 0.4s ease-in;
+}
 
-	.user > svg
-	{
-		margin-right: 0.3em;
-	}
+[draggable]
+{
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	user-select: none;
+	/* Required to make elements draggable in old WebKit *//*
+	-khtml-user-drag: element;
+	-webkit-user-drag: element;
+}
+[draggable] .dndh
+{
+	cursor: move;
+	margin: 0 0.5em 0 0 !important;
+	font-size: 1.2em;
+	float: left;
+	position: relative;
+	top: -2px;
+	padding-left: 3px;
+	padding-right: 3px;
+}
+
+#settings-popup-content > .content > *
+{
+	margin: 3px 0 3px 0;
+	display: table;
+}
+
+.user > svg
+{
+	margin-right: 0.3em;
+}
 
 /*fixing menu wrapping too soon*//*
-	@media screen and (max-width: 1000px)
-	{
-		body #menu li,
-		body:not(.userViewer) #menu li
-		{ display: inline-block; }
-		body #menu li .nu,
-		body:not(.userViewer) #menu li .nu
-		{ min-width: unset; }
-		body #account-popup,
-		body:not(.userViewer) #account-popup
-		{ top: 50px; }
-	}
-	#menu .nu
-	{
-		font-weight: bold;
-	}
-	#menu .close
-	{
-		font-size: 0.9em;
-		position: relative;
-		top: -0.6em;
-		cursor: pointer;
-		padding: 0.3em;
-	}
-	#menu .close > svg
-	{
-		width: 0.9em;
-		height: 0.9em;
-		position: unset;
-	}
+@media screen and (max-width: 1000px)
+{
+	body #menu li,
+	body:not(.userViewer) #menu li
+	{ display: inline-block; }
+	body #menu li .nu,
+	body:not(.userViewer) #menu li .nu
+	{ min-width: unset; }
+	body #account-popup,
+	body:not(.userViewer) #account-popup
+	{ top: 50px; }
+}
+#menu .nu
+{
+	font-weight: bold;
+}
+#menu .close
+{
+	font-size: 0.9em;
+	position: relative;
+	top: -0.6em;
+	cursor: pointer;
+	padding: 0.3em;
+}
+#menu .close > svg
+{
+	width: 0.9em;
+	height: 0.9em;
+	position: unset;
+}
 
-	.user > svg,
-	.back > svg,
-	.content > div > span > svg
-	{
-		width: 1.3em;
-		height: 1.3em;
-		vertical-align: bottom;
-	}
-	#searchResults > div.entry > div.title,
-	body:not(.shortTitle) div > div.entry > div.title,
-	body.shortTitle.shortTitleExpand div.day.expand > div.entry > div.title,
-	body.shortTitle div.day.opened > div.entry > div.title
-	{
-		display: flex;
-	}
-	body.shortTitle:not(.shortTitleExpand) div.day.expand:not(.opened) > div.entry > div.title > input[type="checkbox"],
-	body.shortTitle div.day:not(.expand):not(.opened) div.title > input[type="checkbox"]
-	{
-		float: left;
-	}
-	body.shortTitle:not(.shortTitleExpand) div.day.expand:not(.opened) > div.entry > div.title,
-	body.shortTitle div.day:not(.expand):not(.opened) > div.entry > div.title
-	{
-		text-overflow: ellipsis;
-		white-space: nowrap;
-		overflow: hidden;
-	}
-	div.spacer
-	{
-		height: 0;
-		border-bottom: 1px dotted silver;
-		margin-top: 0.5em !important;
-		margin-bottom: 0.5em !important;
-		display: block !important;
-	}
-	a.parentheses,
-	a.file
-	{
-		margin-left: 1em;
-	}
-	a.parentheses:before,
-	a.file:before
-	{
-		text-decoration: none;
-		display: inline-block;
-		content: "(";
-	}
-	a.parentheses:after,
-	a.file:after
-	{
-		text-decoration: none;
-		display: inline-block;
-		content: ")";
-	}
+.user > svg,
+.back > svg,
+.content > div > span > svg
+{
+	width: 1.3em;
+	height: 1.3em;
+	vertical-align: bottom;
+}
+#searchResults > div.entry > div.title,
+body:not(.shortTitle) div > div.entry > div.title,
+body.shortTitle.shortTitleExpand div.day.expand > div.entry > div.title,
+body.shortTitle div.day.opened > div.entry > div.title
+{
+	display: flex;
+}
+body.smallLogo > #menu + h1 > img
+{
+	height: 1em;
+	margin-bottom: -0.3em;
+}
+body.smallLogo > #menu + h1,
+body.smallLogo > #menu + h1 + h2
+{
+	margin: 0;
+}
+/*
+body.smallLogo > #menu + h1 > img
+{
+	margin-top: 0.67em;
+	position: absolute;
+	z-index: -10;
+}
+body.smallLogo > #menu + h1
+{
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: 100%;
+}
+body.smallLogo > #menu + h1,
+body.smallLogo > #menu + h1 + h2
+{
+	background-color: rgba(255,255,255,0.6);
+}
+*//*
+body.shortTitle:not(.shortTitleExpand) div.day.expand:not(.opened) > div.entry > div.title > input[type="checkbox"],
+body.shortTitle div.day:not(.expand):not(.opened) div.title > input[type="checkbox"]
+{
+	float: left;
+}
+body.shortTitle:not(.shortTitleExpand) div.day.expand:not(.opened) > div.entry > div.title,
+body.shortTitle div.day:not(.expand):not(.opened) > div.entry > div.title
+{
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+}
+div.spacer
+{
+	height: 0;
+	border-bottom: 1px dotted silver;
+	margin-top: 0.5em !important;
+	margin-bottom: 0.5em !important;
+	display: block !important;
+}
+.parentheses,
+a.file
+{
+	margin-left: 1em;
+}
+.parentheses:before,
+a.file:before
+{
+	text-decoration: none;
+	display: inline-block;
+	content: "(";
+}
+.parentheses:after,
+a.file:after
+{
+	text-decoration: none;
+	display: inline-block;
+	content: ")";
+}
 
-	#searchResults > .info
-	{
-		margin-bottom: 0.7em;
-	}
-	
-	#searchResults > .info > small
-	{
-		vertical-align: text-bottom;
-	}
-	#searchResults > .info > small > span:not(.info)
-	{
-		position: absolute;
-		right: 1em;
-	}
-	span.button
-	{
-		cursor: pointer;
-		background-color: #DDDDDD;
-		border-radius: 4px;
-		padding: 3px;
-	}
-	
+#searchResults > .info
+{
+	margin-bottom: 0.7em;
+}
+
+#searchResults > .info > small
+{
+	vertical-align: text-bottom;
+}
+#searchResults > .info > small > span:not(.info)
+{
+	position: absolute;
+	right: 1em;
+}
+span.button
+{
+	cursor: pointer;
+	background-color: #DDDDDD;
+	border-radius: 4px;
+	padding: 3px;
+}
+
 /* fix search field box covers text on bottom *//*
-	#searchFieldContainer
-	{
-		height: 0;
-	}
+#searchFieldContainer
+{
+	height: 0;
+}
+/* changes log *//*
+
+body:not(.changesLog) #changesLog
+{
+	display: none;
+}
+
+body.changesLog > :not(#changesLog)
+{
+	filter: blur(5px);
+}
+
+div[noback] .back
+{
+	display: none;
+}
+#changesLog
+{
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	z-index: 10;
+}
+#changesLogBox
+{
+	position: relative;
+	max-width: 1024px;
+	margin: 1em;
+	overflow: auto;
+	background-color: white;
+	border: 1px solid black;
+	font-family: Monaco,"DejaVu Sans Mono",'courier new', 'times new roman', fixed, monospace;
+	background-color: whitesmoke;
+	color: black;
+	-webkit-box-shadow: 0px 0px 50px 0px;
+	-moz-box-shadow:    0px 0px 50px 0px;
+	box-shadow:         0px 0px 50px 0px;
+}
+
+#changesLogHead
+{
+	text-align: center;
+}
+#changesLogLegend
+{
+	padding: 4px;
+	border-bottom: 1px solid #D4D4D4;
+}
+#changesLogLegend > span > span:first-child
+{
+	margin-left: inherit;
+}
+#changesLogLegend > span:not(:last-child) > span:last-child
+{
+	margin-right: 1em;
+}
+#changesLogLegend > span
+{
+	padding-left: inherit;
+}
+#changesLogContent
+{
+	padding: 4px;
+}
+#changesLogContent > div > div:not(.cl_ver_head)
+{
+	margin-top: 1px;
+	display: flex;
+	white-space: pre-wrap;
+}
+#changesLogContent > div[class^="cl_ver_"]:not(:last-child)
+{
+	padding-bottom: 1px;
+	border-bottom: 1px solid #D4D4D4;
+}
+.cl_ver_head
+{
+	font-weight: bold;
+	margin-top: 0.5em;
+}
+.cl_added,
+.cl_changed,
+.cl_fixed,
+.cl_removed,
+.cl_comment
+{
+}
+
+.cl_added > span:first-child,
+.cl_changed > span:first-child,
+.cl_fixed > span:first-child,
+.cl_removed > span:first-child
+{
+	font-weight: bold;
+	margin: 0 0.5em 0 1em;
+	width: 0.7em;
+	display: inline-block;
+	text-align: center;
+}
+.cl_added > span:first-child
+{
+	background-color: #C9F5C9;
+}
+.cl_changed > span:first-child
+{
+	background-color: #BFEEFF;
+}
+.cl_fixed > span:first-child
+{
+	background-color: #FFFFBF;
+}
+.cl_removed > span:first-child
+{
+	background-color: #FFBFBF;
+}
+.cl_comment > span:last-child
+{
+	font-style: italic;
+	opacity: 0.5;
+}
+.cl_added > span:last-child,
+.cl_changed > span:last-child,
+.cl_fixed > span:last-child,
+.cl_removed > span:last-child
+{
+}
 */});//css
 
 	style.innerHTML = css;
@@ -3295,14 +3588,14 @@ let func = function(event)
 	{
 		ul.children("li:last-child").css("margin-right", "1.5em");
 		let li = $(multiline(function(){/*
-<li>Viewing as 
+<li>Viewing as
 	<span class="user">
 		<svg viewBox="0 0 24 24">
 			<path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"></path>
 		</svg>
 	</span>
 	<span class="nu"></span>
-	<a class="close" href="*/}) + window.location.href.replace(/\/u\/[^?#]+/, "") + multiline(function(){/*">
+	<a class="close" title="Close" href="*/}) + window.location.href.replace(/\/u\/[^?#]+/, "") + multiline(function(){/*">
 		<svg viewBox="0 0 24 24">
 			<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
 		</svg>
@@ -3400,13 +3693,17 @@ if (!DB.loggedInUsername)
 		{
 			ev.preventDefault();
 			$(this).removeClass('x onX').val('').change();
+
+			if (window.hashChanged.hashSearch && location.href.match("#"))
+				removeHash();
+
 		});
 	//fix no X button after page refresh and browser auto fill search bar with previous text
 		$('input.clearable').trigger("input");
 	});
 
 
-
+/*
 	//injecting userscript function execution
 		showPast(function()
 		{
@@ -3415,6 +3712,7 @@ if (!DB.loggedInUsername)
 	//collapse multiple entries of the same series in one day
 			$("div.day").each(collapseMulti);
 		});
+*/
 		showHideLoad();
 
 	//list of user's shows
@@ -3516,21 +3814,21 @@ if (!DB.loggedInUsername)
 				if (sat > 0)
 				{
 					if (r == max)
-					{ 
+					{
 						hue = 60 * (((g - min) - (b - min)) / chr);
 						if (hue < 0)
 							hue += 360;
 					}
 					else if (g == max)
-					{ 
-						hue = 120 + 60 * (((b - min) - (r - min)) / chr); 
+					{
+						hue = 120 + 60 * (((b - min) - (r - min)) / chr);
 					} else if (b == max)
-					{ 
-						hue = 240 + 60 * (((r - min) - (g - min)) / chr); 
+					{
+						hue = 240 + 60 * (((r - min) - (g - min)) / chr);
 					}
 				}
 			}
-			
+
 			/* Modifies existing objects by adding HSV values. */
 			list[list.length] = {
 				id: i,
@@ -3586,7 +3884,7 @@ if (!DB.loggedInUsername)
 				showMyShows.box.appendChild(entry);
 			}
 			let text = "You don't have any shows";
-		
+
 			if (count)
 			{
 				function getSortName()
@@ -3601,7 +3899,7 @@ if (!DB.loggedInUsername)
 			{
 				if (++Settings.prefs.sortBy > 1)
 					Settings.prefs.sortBy = 0;
-				
+
 				Settings.save();
 				display();
 			});;
@@ -3689,14 +3987,10 @@ if (!DB.loggedInUsername)
 
 			Settings.hide();
 			customLinks.hide();
+			changesLog.hide();
 		});
 		$("#account-overview").click(function loop(e)
 		{
-			if (e.isTrigger)
-				return;
-
-			Settings.hide();
-			customLinks.hide();
 			$("#account-popup").removeAttr("hidden");
 			let as = $("#account-popup-content .content a");
 			if( !$( "#account-popup" ).hasClass("loaded") || (!as.length && accountLoop--))
@@ -3722,7 +4016,7 @@ if (!DB.loggedInUsername)
 			{
 //some browsers don't have proper icon in the font
 				let span = document.createElement("span");
-				span.innerHTML = header[0].firstChild.textContent.replace("🍪", multiline(function(){/*<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"viewBox="0 0 512 512" style="width:1.2em;height:1.2em;enable-background:new 0 0 512 512;" xml:space="preserve"><circle style="fill:#D5A150;" cx="256" cy="256" r="256"/><path style="fill:#AD712C;" d="M415.237,55.557c34.771,43.71,55.556,99.043,55.556,159.236c0,141.385-114.615,256-256,256c-60.193,0-115.527-20.785-159.237-55.556C102.456,474.194,174.808,512,256,512c141.385,0,256-114.615,256-256C512,174.809,474.194,102.456,415.237,55.557z"/><path style="fill:#C98A2E;" d="M139.553,145.28c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595c15.135,0,29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C150.099,143.269,144.826,145.28,139.553,145.28z"/><circle style="fill:#674230;" cx="165.045" cy="99.186" r="36.056"/><path style="fill:#7A5436;" d="M129.154,95.733c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C144.353,65.025,130.744,78.748,129.154,95.733z"/><path style="fill:#C98A2E;" d="M57.139,310.109c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13C53.272,213.243,67.5,207.35,82.635,207.35s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C67.685,308.098,62.411,310.109,57.139,310.109z"/><circle style="fill:#674230;" cx="82.631" cy="264.015" r="36.056"/><path style="fill:#7A5436;" d="M46.739,260.562c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.93,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C61.939,229.854,48.33,243.577,46.739,260.562z"/><path style="fill:#C98A2E;" d="M129.252,413.127c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.918-2.919-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C139.798,411.116,134.524,413.127,129.252,413.127z"/><circle style="fill:#674230;" cx="154.743" cy="367.033" r="36.056"/><path style="fill:#7A5436;" d="M118.852,363.58c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.984-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C134.051,332.872,120.443,346.595,118.852,363.58z"/><path style="fill:#C98A2E;" d="M242.572,485.24c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595c15.135,0,29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C253.118,483.229,247.844,485.24,242.572,485.24z"/><circle style="fill:#674230;" cx="268.063" cy="439.146" r="36.056"/><path style="fill:#7A5436;" d="M232.172,435.692c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.984-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C247.371,404.985,233.762,418.708,232.172,435.692z"/><path style="fill:#C98A2E;" d="M263.175,196.929c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C273.721,194.918,268.448,196.929,263.175,196.929z"/><circle style="fill:#674230;" cx="288.667" cy="150.829" r="36.056"/><path style="fill:#7A5436;" d="M252.776,147.382c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C267.975,116.674,254.366,130.397,252.776,147.382z"/><path style="fill:#C98A2E;" d="M386.797,382.222c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C397.343,380.211,392.069,382.222,386.797,382.222z"/><circle style="fill:#674230;" cx="412.289" cy="336.127" r="36.056"/><path style="fill:#7A5436;" d="M376.397,332.674c-0.013,0.139-0.025,0.277-0.036,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.984-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C391.597,301.967,377.988,315.69,376.397,332.674z"/><path style="fill:#C98A2E;" d="M376.495,186.488c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.918-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C387.041,184.477,381.768,186.488,376.495,186.488z"/><circle style="fill:#674230;" cx="401.987" cy="140.393" r="36.056"/><path style="fill:#7A5436;" d="M366.095,136.94c-0.013,0.139-0.025,0.277-0.036,0.416c-0.983,11.93,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C381.295,106.232,367.686,119.955,366.095,136.94z"/><path style="fill:#C98A2E;" d="M221.968,310.109c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.918-2.919-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C232.514,308.098,227.24,310.109,221.968,310.109z"/><circle style="fill:#674230;" cx="247.46" cy="264.015" r="36.056"/><path style="fill:#7A5436;" d="M211.568,260.562c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.93,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C226.768,229.854,213.159,243.577,211.568,260.562z"/><g><circle style="fill:#AD712C;" cx="129.803" cy="294.632" r="7.726"/><circle style="fill:#AD712C;" cx="181.312" cy="294.632" r="7.726"/><circle style="fill:#AD712C;" cx="155.557" cy="248.274" r="7.726"/><circle style="fill:#AD712C;" cx="62.841" cy="340.99" r="7.726"/><circle style="fill:#AD712C;" cx="165.859" cy="454.31" r="7.726"/><circle style="fill:#AD712C;" cx="196.765" cy="413.103" r="7.726"/><circle style="fill:#AD712C;" cx="248.274" cy="351.292" r="7.726"/><circle style="fill:#AD712C;" cx="330.688" cy="320.386" r="7.726"/><circle style="fill:#AD712C;" cx="310.085" cy="340.99" r="7.726"/><circle style="fill:#AD712C;" cx="340.99" cy="371.895" r="7.726"/><circle style="fill:#AD712C;" cx="340.99" cy="433.706" r="7.726"/><circle style="fill:#AD712C;" cx="454.31" cy="217.368" r="7.726"/><circle style="fill:#AD712C;" cx="423.404" cy="423.404" r="7.726"/><circle style="fill:#AD712C;" cx="268.877" cy="31.936" r="7.726"/><circle style="fill:#AD712C;" cx="83.445" cy="124.652" r="7.726"/><circle style="fill:#AD712C;" cx="42.237" cy="186.463" r="7.726"/><circle style="fill:#AD712C;" cx="160.708" cy="201.915" r="7.726"/><circle style="fill:#AD712C;" cx="191.614" cy="186.463" r="7.726"/><circle style="fill:#AD712C;" cx="160.708" cy="171.01" r="7.726"/><circle style="fill:#AD712C;" cx="304.934" cy="248.274" r="7.726"/><circle style="fill:#AD712C;" cx="237.972" cy="93.746" r="7.726"/><circle style="fill:#AD712C;" cx="335.839" cy="186.463" r="7.726"/><circle style="fill:#AD712C;" cx="351.292" cy="232.821" r="7.726"/><circle style="fill:#AD712C;" cx="382.197" cy="232.821" r="7.726"/><circle style="fill:#AD712C;" cx="382.197" cy="263.726" r="7.726"/><circle style="fill:#AD712C;" cx="325.537" cy="78.294" r="7.726"/><circle style="fill:#AD712C;" cx="356.443" cy="62.841" r="7.726"/></svg>*/}));
+				span.innerHTML = header[0].firstChild.textContent.replace("🍪", multiline(function(){/*<span title="Cookies"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"viewBox="0 0 512 512" style="width:1.2em;height:1.2em;enable-background:new 0 0 512 512;" xml:space="preserve"><circle style="fill:#D5A150;" cx="256" cy="256" r="256"/><path style="fill:#AD712C;" d="M415.237,55.557c34.771,43.71,55.556,99.043,55.556,159.236c0,141.385-114.615,256-256,256c-60.193,0-115.527-20.785-159.237-55.556C102.456,474.194,174.808,512,256,512c141.385,0,256-114.615,256-256C512,174.809,474.194,102.456,415.237,55.557z"/><path style="fill:#C98A2E;" d="M139.553,145.28c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595c15.135,0,29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C150.099,143.269,144.826,145.28,139.553,145.28z"/><circle style="fill:#674230;" cx="165.045" cy="99.186" r="36.056"/><path style="fill:#7A5436;" d="M129.154,95.733c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C144.353,65.025,130.744,78.748,129.154,95.733z"/><path style="fill:#C98A2E;" d="M57.139,310.109c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13C53.272,213.243,67.5,207.35,82.635,207.35s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C67.685,308.098,62.411,310.109,57.139,310.109z"/><circle style="fill:#674230;" cx="82.631" cy="264.015" r="36.056"/><path style="fill:#7A5436;" d="M46.739,260.562c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.93,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C61.939,229.854,48.33,243.577,46.739,260.562z"/><path style="fill:#C98A2E;" d="M129.252,413.127c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.918-2.919-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C139.798,411.116,134.524,413.127,129.252,413.127z"/><circle style="fill:#674230;" cx="154.743" cy="367.033" r="36.056"/><path style="fill:#7A5436;" d="M118.852,363.58c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.984-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C134.051,332.872,120.443,346.595,118.852,363.58z"/><path style="fill:#C98A2E;" d="M242.572,485.24c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595c15.135,0,29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C253.118,483.229,247.844,485.24,242.572,485.24z"/><circle style="fill:#674230;" cx="268.063" cy="439.146" r="36.056"/><path style="fill:#7A5436;" d="M232.172,435.692c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.984-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C247.371,404.985,233.762,418.708,232.172,435.692z"/><path style="fill:#C98A2E;" d="M263.175,196.929c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C273.721,194.918,268.448,196.929,263.175,196.929z"/><circle style="fill:#674230;" cx="288.667" cy="150.829" r="36.056"/><path style="fill:#7A5436;" d="M252.776,147.382c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C267.975,116.674,254.366,130.397,252.776,147.382z"/><path style="fill:#C98A2E;" d="M386.797,382.222c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C397.343,380.211,392.069,382.222,386.797,382.222z"/><circle style="fill:#674230;" cx="412.289" cy="336.127" r="36.056"/><path style="fill:#7A5436;" d="M376.397,332.674c-0.013,0.139-0.025,0.277-0.036,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.984-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C391.597,301.967,377.988,315.69,376.397,332.674z"/><path style="fill:#C98A2E;" d="M376.495,186.488c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.918-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C387.041,184.477,381.768,186.488,376.495,186.488z"/><circle style="fill:#674230;" cx="401.987" cy="140.393" r="36.056"/><path style="fill:#7A5436;" d="M366.095,136.94c-0.013,0.139-0.025,0.277-0.036,0.416c-0.983,11.93,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C381.295,106.232,367.686,119.955,366.095,136.94z"/><path style="fill:#C98A2E;" d="M221.968,310.109c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.918-2.919-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C232.514,308.098,227.24,310.109,221.968,310.109z"/><circle style="fill:#674230;" cx="247.46" cy="264.015" r="36.056"/><path style="fill:#7A5436;" d="M211.568,260.562c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.93,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C226.768,229.854,213.159,243.577,211.568,260.562z"/><g><circle style="fill:#AD712C;" cx="129.803" cy="294.632" r="7.726"/><circle style="fill:#AD712C;" cx="181.312" cy="294.632" r="7.726"/><circle style="fill:#AD712C;" cx="155.557" cy="248.274" r="7.726"/><circle style="fill:#AD712C;" cx="62.841" cy="340.99" r="7.726"/><circle style="fill:#AD712C;" cx="165.859" cy="454.31" r="7.726"/><circle style="fill:#AD712C;" cx="196.765" cy="413.103" r="7.726"/><circle style="fill:#AD712C;" cx="248.274" cy="351.292" r="7.726"/><circle style="fill:#AD712C;" cx="330.688" cy="320.386" r="7.726"/><circle style="fill:#AD712C;" cx="310.085" cy="340.99" r="7.726"/><circle style="fill:#AD712C;" cx="340.99" cy="371.895" r="7.726"/><circle style="fill:#AD712C;" cx="340.99" cy="433.706" r="7.726"/><circle style="fill:#AD712C;" cx="454.31" cy="217.368" r="7.726"/><circle style="fill:#AD712C;" cx="423.404" cy="423.404" r="7.726"/><circle style="fill:#AD712C;" cx="268.877" cy="31.936" r="7.726"/><circle style="fill:#AD712C;" cx="83.445" cy="124.652" r="7.726"/><circle style="fill:#AD712C;" cx="42.237" cy="186.463" r="7.726"/><circle style="fill:#AD712C;" cx="160.708" cy="201.915" r="7.726"/><circle style="fill:#AD712C;" cx="191.614" cy="186.463" r="7.726"/><circle style="fill:#AD712C;" cx="160.708" cy="171.01" r="7.726"/><circle style="fill:#AD712C;" cx="304.934" cy="248.274" r="7.726"/><circle style="fill:#AD712C;" cx="237.972" cy="93.746" r="7.726"/><circle style="fill:#AD712C;" cx="335.839" cy="186.463" r="7.726"/><circle style="fill:#AD712C;" cx="351.292" cy="232.821" r="7.726"/><circle style="fill:#AD712C;" cx="382.197" cy="232.821" r="7.726"/><circle style="fill:#AD712C;" cx="382.197" cy="263.726" r="7.726"/><circle style="fill:#AD712C;" cx="325.537" cy="78.294" r="7.726"/><circle style="fill:#AD712C;" cx="356.443" cy="62.841" r="7.726"/></svg><span>*/}));
 				header[0].replaceChild(span, header[0].firstChild);
 			}
 			let content = $("#account-popup-content").find("div.content");
@@ -3871,12 +4165,29 @@ if (!DB.loggedInUsername)
 			a.textContent = "Options";
 			parent.appendChild(span);
 
+			span = document.createElement("span");
 			a = document.createElement("a");
 			a.href = "https://github.com/vanowm/airdates.tv_enhancer/issues";
 			a.target = "_blank";
 			a.textContent = "Support";
-			a.className = "parentheses support";
-			parent.insertBefore(a, h.nextSibling);
+			span.className = "parentheses support";
+			span.appendChild(a);
+			span.appendChild(document.createTextNode(" | "));
+			a = document.createElement("a");
+			a.href = "#changes";
+			a.textContent = "Changes";
+			a.id = "changesLog-open";
+			a.addEventListener("click", function(e)
+			{
+				e.preventDefault();
+				changesLog.show();
+				$("#account-popup").toggle(false);
+				if (window.hashChanged.hashSearch && location.hash == "#changes")
+					removeHash();
+
+			}, false);
+			span.appendChild(a);
+			parent.insertBefore(span, h.nextSibling);
 
 		});
 
@@ -3933,8 +4244,8 @@ if (!DB.loggedInUsername)
 			DB.infoLoaded = true;
 			if (added)
 				DB.infoSave();
-		})();
 
+		})();
 		if (DB.loggedInUsername)
 		{
 			$("#account-overview").find("span.nu")[0].innerHTML = '<svg viewBox="0 0 24 24"><path d="M12,4C15.64,4 18.67,6.59 19.35,10.04C21.95,10.22 24,12.36 24,15A5,5 0 0,1 19,20H6A6,6 0 0,1 0,14C0,10.91 2.34,8.36 5.35,8.04C6.6,5.64 9.11,4 12,4M7.5,9.69C6.06,11.5 6.2,14.06 7.82,15.68C8.66,16.5 9.81,17 11,17V18.86L13.83,16.04L11,13.21V15C10.34,15 9.7,14.74 9.23,14.27C8.39,13.43 8.26,12.11 8.92,11.12L7.5,9.69M9.17,8.97L10.62,10.42L12,11.79V10C12.66,10 13.3,10.26 13.77,10.73C14.61,11.57 14.74,12.89 14.08,13.88L15.5,15.31C16.94,13.5 16.8,10.94 15.18,9.32C14.34,8.5 13.19,8 12,8V6.14L9.17,8.97Z"></path></svg>' + $("#account-overview").find("span.nu")[0].innerHTML;
@@ -3975,64 +4286,215 @@ if (!DB.loggedInUsername)
 			if (!DB.viewing)
 			{
 				$.each( DB.savedColors, function( i, c )
-				{ 
+				{
 					assignColor( i, null, true );
 				} );
-				alert( "Done!" ); 
+				alert( "Done!" );
 			}
 			else
 				alert( "You don't have permission!" );
 
-			return false; 
+			return false;
 		});
 
 
 	});//document.ready()
 	$(document.body).on( "click touchstart", function(e)
 	{
-		if (e.isTrigger)
+		if (e.isTrigger || e.target.isTrigger)
 			return;
-
-		let close = $(e.target).parents(".close").get().length,
-				p = $( e.target ).parents("#manage-links-popup").get().length;
+		let target = $(e.target),
+				close = target.hasClass("close") || target.parents(".close").get().length,
+				p = target.parents("#manage-links-popup").get().length;
 
 		if (e.target.id != "manage-links-open" && (p == 0 || (p && close)))
 			customLinks.hide();
 
-		p = $( e.target ).parents("#settings-popup").get().length;
+		p = target.parents("#settings-popup").get().length;
 		if (e.target.id != "settings-open" && (p == 0 || (p && close)))
 			Settings.hide();
+
+		p = target.parents("#changesLog").get().length;
+
+		if (e.target.id != "changesLog-open" && (p == 0 || (p && close)))
+		{
+			changesLog.hide();
+			if (window.hashChanged.hashSearch && location.hash == "#changes")
+				removeHash();
+		}
+
 	});
 	//reset password auto fill username
 	if (location.pathname == "/_u/forgot-password")
 		$("#username").val(DB.loggedInUsername);
 
-	$(window).on("hashchange", function(e)
+/* changes log */
+	changesLog = function changesLog(f)
 	{
-		if (location.hash == "#myshows")
-			search("info:myshows");
-		else if (location.hash == "#hidden")
-			search("info:hidden");
+		if (!f && (Settings.pref("noChangesLog") || Settings.pref("version") == adeVersion))
+			return;
 
-	}).trigger("hashchange");
+		changesLog.getData();
+	}
 
+	changesLog.show = function(noBack)
+	{
+		changesLog();
+		if (noBack)
+			changesLog.div.setAttribute("noback", "");
+		else
+			changesLog.div.removeAttribute("noback");
+
+		$("body").toggleClass("changesLog", true);
+	}
+	
+	changesLog.hide = function ()
+	{
+		$("body").toggleClass("changesLog", false);
+	}
+
+	changesLog.getData = function ()
+	{
+		if (changesLog.div)
+			return;
+
+		let list = {},
+				lines = changesLogText.replace(/\r\n/, "\n").split("\n"),
+				ver = "",
+				verFirst = "",
+				stopVer = "v" + Settings.pref("version");
+
+		for (let i = 0; i < lines.length; i++)
+		{
+			let line = lines[i],
+					_ver = line.match(/^([0-9]+[^ ]*)( |$)/);
+			if (_ver)
+			{
+				ver = 'v' + _ver[1];
+//				if (ver == stopVer)
+//					break;
+				let date = line.match(/ (.*)/);
+				list[ver] = [];
+				list[ver].s = {0:0,"+":0,"-":0,"*":0,"!":0};
+				list[ver].d = date ? date[1] : "";
+				if (!verFirst)
+					verFirst = ver;
+			}
+			else
+			{
+				let type = line.match(/^\t?([+\-*!])/);
+				type = type ? type[1] : "";
+				line = line.trim();
+				if (line === "")
+					continue;
+
+				if (type)
+					line = line.substr(1).trim();
+
+				list[ver].s[type]++;
+				list[ver][list[ver].length] = [type, line];
+			}
+		}
+		changesLog.list = list;
+		let legend = {
+			"+": "added",
+			"!": "fixed",
+			"*": "changed",
+			"-": "removed",
+			"": "comment"
+		},
+		html = multiline(function(){/*
+<div id="changesLog">
+	<div id="changesLogBox">
+		<div id="changesLogHead" class="header">
+			<div class="back" title="Back">
+				<svg viewBox="0 0 24 24">
+					<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
+				</svg>
+			</div>
+			<h4>Airdates.tv enhancer v# Changes Log</h4>
+			<div class="close" title="Close">
+				<svg viewBox="0 0 24 24">
+					<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
+				</svg>
+				<svg viewBox="0 0 24 24">
+					<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
+				</svg>
+			</div>
+		</div>
+		<div id="changesLogLegend">
+			<span class="cl_added"><span>+</span><span>Added</span></span>
+			<span class="cl_fixed"><span>!</span><span>Fixed</span></span>
+			<span class="cl_changed"><span>*</span><span>Changed</span></span>
+			<span class="cl_removed"><span>-</span><span>Removed</span></span>
+		</div>
+		<div id="changesLogContent" class="content"></div>
+	</div>
+</div>
+		*/});
+		changesLog.div = $(html).appendTo("body")[0];
+		let head = $("#changesLogHead"),
+				cont = $("#changesLogContent");
+
+		head.html(head.html().replace("#", adeVersion));
+		for(let v in list)
+		{
+			let ver = $('<div class="cl_ver_' + v.replace(/\./g, "_") + '"></div>').appendTo(cont);
+			$('<div class="cl_ver_head">' + v + (list[v].d ? " " + list[v].d : "") + '</div>').appendTo(ver);
+			for(let i = 0; i < list[v].length; i++)
+			{
+				let line = list[v][i];
+				$('<span/>').appendTo($('<div class="cl_' + legend[line[0]] + '">' + (line[0] ? "\t" : "") + '<span>' + line[0] + '</span></div>').appendTo(ver))[0].innerHTML += line[1];
+			}
+		}
+		let as = cont.find("a").each(function(i, o)
+		{
+			if (o.href.indexOf(location.hostname) != -1)
+			{
+				$(this).click(function(e)
+				{
+					changesLog.hide();
+					hashChanged(null, o.hash);
+				});
+			}
+		});
+//		Settings.pref("version", verFirst);
+	}
+/* changes log end */
+
+	$(window).on("hashchange", hashChanged).trigger("hashchange");
+
+	$("body").on("click", ".back", function()
+	{
+		customLinks.hide();
+		Settings.hide();
+		changesLog.hide();
+		setTimeout(function()
+		{
+			$("#account-overview").click();
+		});
+	});
 };//func()
 
 //disqus
+var trollList;
+function trollListCallback(v)
+{
+	trollList = v;
+}
 if (window.top !== window.self)
 {
 	func = function(){};
 
+
 //disqus troll filter
 	if (window.location.href.indexOf("disqus.com") != -1)
 	{
-		let trollHide = false;
-		let trollList = ls("trolls"),
+		let trollHide = false,
 				trollTimer,
 				comments = {};
 
-		if (!trollList || typeof(trollList) != "object")
-			trollList = ["Tubasing"];
+		trollList = ls("trolls", undefined, "trollListCallback");
 
 		let isTroll = function (name)
 		{
@@ -4175,45 +4637,258 @@ if (window.top !== window.self)
 			}
 			return obj.innerHTML;
 		};
-
 		window.addEventListener("load", function(e)
 		{
-			let timer = setInterval (function()
+			let dis = 1000,
+					wasBusy = false;
+			(function loop()
 			{
-				let posts = document.getElementById("post-list");
-				if (!posts)
-					return;
-
-				clearInterval(timer);
-				timer = setInterval (function()
+				if (typeof(trollList) == "undefined")
 				{
-					let names = posts.getElementsByClassName("author");
-					if (!names.length)
-						return;
-					clearInterval(timer);
+					if (dis--)
+						setTimeout(loop);
 
-					let style = document.createElement("style");
-					style.innerHTML = multiline(function(){/*
+					return;
+				}
+
+				if ($(".btn.load-more__button.busy").length)
+				{
+					wasBusy = true
+					return setTimeout(loop);
+				}
+				else
+				{
+					if (wasBusy)
+					{
+						wasBusy = false;
+						setTimeout(loop, 1000);
+					}
+					else
+					{
+					}
+				}
+
+				if (!trollList || typeof(trollList) != "object")
+					trollList = ["Tubasing"];
+
+				(function loop2()
+				{
+					let postsList = document.getElementsByClassName("post-list"),
+							loopStop = false;
+
+					if (postsList.length < 3)
+						return setTimeout(loop2, 100);
+
+					for(let i = 0; i < postsList.length; i++)
+					{
+						let posts = postsList[i];
+						if (!posts.innerHTML && !posts.id)
+							continue;
+
+						(function loop3()
+						{
+							let names = posts.getElementsByClassName("author");
+							if (!names.length)
+								return setTimeout(loop2, 100);
+
+							if (!posts.__inited)
+							{
+								$(".btn.load-more__button").click(function()
+								{
+									setTimeout(loop);
+								});
+								posts.__inited = true;
+							}
+							function initPosts(names)
+							{
+								for(let i = 0; i < names.length; i++)
+								{
+
+									let body = findParent(names[i], "post-content");
+									if (!body)
+									{
+										continue;
+									}
+
+									let parent = findParent(names[i], "post-byline"),
+											img = document.createElement("span"),
+											name = names[i].innerText,
+											troll = (isTroll(name) != -1),
+											post = body.getElementsByClassName("post-message")[0];
+
+									post._parent = parent;
+									if (post.__inited)
+										continue;
+
+									img.className = "troll";
+										names[i].parentNode.insertBefore(img, names[i].nextSibling);
+/*
+									if (names[i].parentNode.querySelectorAll('span:not([class])').length)
+										names[i].parentNode.insertBefore(img, names[i].nextSibling);
+									else
+										names[i].parentNode.appendChild(img);
+*/
+
+									parent.setAttribute("troll", troll);
+
+									names[i].innerHTML = names[i].innerHTML.replace("Tubasing", "Tubashit");
+
+									if (typeof(comments[name]) == "undefined")
+										comments[name] = [];
+
+/* replace disqus links with actual links */
+									let as = post.getElementsByTagName("a");
+									for(let i = 0; i < as.length; i++)
+									{
+										let a = as[i],
+												url = decodeURIComponent(a.href).match(/\/\/disq\.us\/url\?url=(.+)/);
+
+										if (url)
+										{
+											url = url[1].substring(0, url[1].indexOf(a.title) + a.title.length);
+										}
+										if (!url)
+											url = a.href;
+
+										if (url.match(/^#/))
+											url = "http://airdates.tv/" + url;
+
+										a.href = url;
+										if (!url.match(/https?:\/\/(www\.)?airdates\.tv(\/.*|$)/i))
+											a.target = "_blank";
+										else
+										{
+											a.addEventListener("click", function(e)
+											{
+												e.preventDefault();
+												window.top.postMessage({id: "ade", func: "hashChanged", args: [0, a.hash], return:null}, "http://www.airdates.tv");
+											}, false);
+										}
+									}
+
+									comments[name].push({
+										parent: parent,
+										post: post
+									});
+
+									img.addEventListener("click", function(e)
+									{
+										e.stopPropagation();
+										e.preventDefault();
+
+										let troll = toggleTroll(post);
+										if (troll)
+											trollAdd(name);
+										else
+											trollRemove(name);
+
+										for(let i = 0; i < comments[name].length; i++)
+										{
+											if (post === comments[name][i].post)
+												continue;
+
+											toggleTroll(comments[name][i].post);
+										}
+									}, true);
+									post.__inited = true;
+
+									if (!body.__inited)
+									{
+										let eventHandler = function(e)
+												{
+													if (parent.getAttribute("troll") != "true")
+														return;
+
+													if (this.prev == e.type)
+														return;
+
+													let type = e.type == "mouseenter";
+													this.prev = e.type;
+													clearTimeout(this.timer);
+													this.timer = setTimeout(function()
+													{
+														censorText(post, type);
+													}, type ? 200 : 1000);
+												};
+										body.addEventListener("mouseenter", eventHandler, false);
+										body.addEventListener("mouseleave", eventHandler, false);
+										body.__inited = true;
+									}
+									if (!troll)
+										continue;
+
+									censorText(post);
+								}
+							}
+							initPosts(names);
+						})();//loop3()
+					}
+				})();//loop2()
+			})();//loop()
+			let style = document.createElement("style");
+			style.innerHTML = multiline(function(){/*
 .trollComment
 {
 	cursor: pointer;
 	opacity: 0.4;
-	transform: scaleX(-1)
+	transform: scaleX(-1);
 }
-.post-byline:not([troll="true"]) img.troll
+.post-byline:not([troll="true"]) span.troll
 {
 	opacity: 0.1;
 	transform: scaleX(-1);
 }
-img.troll
+span.troll
 {
 	background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAA3NCSVQICAjb4U/gAAAACXBIWXMAAAsSAAALEgHS3X78AAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1M1cbXjNgAAABZ0RVh0Q3JlYXRpb24gVGltZQAxMi8yOC8xMZSAjI8AAAA/UExURf///wAAAAEBAQICAgMDAwQEBAUFBQYGBgcHBwgICAkJCQoKCgsLCw0NDQ8PDxAQEBISEhMTExYWFvr6+v////L9RbYAAAABdFJOUwBA5thmAAAAZklEQVQYGY3BWw6CMABFwXtQKLZafJz9r1WaaPgycSb5wwys8KT1DFcPZIeHlgQBZ5jcbUnTByq4oDXpopMDd88JWlCZEEtSKUsHRCUJr1W8iVqTIBeWAirZ4Rdk6A6cWPMBHfLbGzqjB8v8i7F/AAAAAElFTkSuQmCC");
+	background-repeat: no-repeat;
+	background-position: center;
 	width: 16px;
 	height: 16px;
 	cursor: pointer;
-	margin-left: 0.3em;
 	vertical-align: top;
 	display: inline-block;
+	padding: 0.7em 1em;
+	margin: 0 -0.3em 0 2px;
+}
+.post-byline:not([troll="true"]) span.troll:hover
+{
+	opacity: 1;
+	-webkit-animation: move2 0.5s ease-in-out infinite alternate;
+	animation: move2 1s ease-in-out infinite;
+}
+span.troll:hover
+{
+	-webkit-animation: move 0.5s ease-in-out infinite alternate;
+	animation: move 1s ease-in-out infinite;
+}
+@keyframes move {
+	25%
+	{
+		transform: rotate(-20deg);
+	}
+	75%
+	{
+		transform: rotate(20deg);
+	}
+}
+@keyframes move2 {
+	25%
+	{
+		transform: scaleX(-1) rotate(20deg);
+	}
+	75%
+	{
+		transform: scaleX(-1) rotate(-20deg);
+	}
+}
+span.troll:nth-child(3)
+{
+	margin-left: 0.4em;
+}
+span[class="author"] + span.troll
+{
+	margin-left: 0.3em;
 }
 .trollMenuImg
 {
@@ -4224,90 +4899,46 @@ img.troll
 	height: auto;
 	line-height: 1.3em;
 }
+/* comment links *//*
+.post-message a:not(.mention)
+{
+	text-decoration: underline !important;
+}
 */
-					});
-					document.getElementsByTagName("head")[0].appendChild(style);
-					for(let i = 0; i < names.length; i++)
-					{
-
-						let body = findParent(names[i], "post-content");
-						if (!body)
-							continue;
-
-						let parent = findParent(names[i], "post-byline"),
-								img = document.createElement("img"),
-								name = names[i].innerText,
-								troll = (isTroll(name) != -1),
-								post = body.getElementsByClassName("post-message")[0];
-
-						post._parent = parent;
-
-						img.className = "troll";
-						parent.insertBefore(img, parent.firstChild.nextSibling);
-
-						parent.setAttribute("troll", troll);
-
-						names[i].innerHTML = names[i].innerHTML.replace("Tubasing", "Tubashit");
-
-						if (typeof(comments[name]) == "undefined")
-							comments[name] = [];
-
-						comments[name].push({
-							parent: parent,
-							post: post
-						});
-
-						img.addEventListener("click", function(e)
-						{
-							let troll = toggleTroll(post);
-							if (troll)
-								trollAdd(name);
-							else
-								trollRemove(name);
-
-							for(let i = 0; i < comments[name].length; i++)
-							{
-								if (post === comments[name][i].post)
-									continue;
-
-								toggleTroll(comments[name][i].post);
-							}
-						}, false);
-
-
-
-						let timer,
-								prev,
-								eventHandler = function(e)
-								{
-									if (parent.getAttribute("troll") != "true")
-										return;
-
-									let type = e.type == "mouseenter";
-
-									if (prev == e.type)
-										return;
-
-									prev = e.type;
-									clearTimeout(timer);
-									timer = setTimeout(function()
-									{
-										censorText(post, type);
-									}, type ? 100 : 1000);
-								};
-						body.addEventListener("mouseenter", eventHandler, false);
-						body.addEventListener("mouseleave", eventHandler, false);
-
-						if (!troll)
-							continue;
-
-						censorText(post);
-					}
-				}, 100);
-			}, 100);
+			});//disqus css
+			document.getElementsByTagName("head")[0].appendChild(style);
 		}, false);
 	}
 }//disqus
+
+
+var changesLogText = multiline(function(){/*
+1.28 (2018-02-04)
+	+ search by adding #s:keyword in the address
+	+ changes log
+	+ ability use hash tags as links in comments (<a href="#s:test">#s:<i>search-keyword</i></a>, <a href="#info:1234">#info:<i>NN</i></a>, <a href="#myshows">#myshows</a>, <a href="#hidden">#hidden</a>, <a href="#changes">#changes</a>). Without ADE it will open a blank page.
+	+ option for small logo
+	! disqus troll would not work at all in some browsers
+	! disqus troll would not work on additionally loaded comments
+	! "watched" checkboxes shown through search field
+	! close button on popups would not work if cursor not in the middle of it
+	* removed disq.us from links in comments
+	* links in comments open in new tab
+	* when searching via hash tag, clearing search field with X icon would also remove the hash tag from address bar
+1.27.5 (2018-01-22)
+	! broken fix for paste via right click in search bar
+1.27.4 (2018-01-22)
+	+ cloud icon next to member name
+1.27.3 (2018-01-22)
+	! fails initialize with some invalid colors in cookies
+	* replaced some icons with SVG, should now be more browser independent and consistent
+1.27.2 (2018-01-21)
+	! sorting by color with fallback to sorting by name was in reverse
+1.27 (2018-01-21)
+	+ link to support website
+	! middle click on title would attempt open 2 tabs for each selected link
+	! significantly improved initialization speed for guests and members with no colors (very noticeable with #showhidden in the address)
+*/}, true).trim();
 if (document.readyState != "loading")
 	func();
 else
