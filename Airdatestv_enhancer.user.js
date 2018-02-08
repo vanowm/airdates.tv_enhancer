@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.28
+// @version     1.28.1
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -657,11 +657,13 @@ let Settings = {
 			Settings.box.attr("noback");
 
 		Settings.box.show();
+		setPopup(true);
 	},
 
 	hide: function()
 	{
 		Settings.box.hide();
+		setPopup(false);
 	},
 }//Settings
 
@@ -1099,10 +1101,12 @@ customLinks.show = function(noBack)
 		div.attr("noback");
 
 	div.show();
+	setPopup(true);
 }
 customLinks.hide = function()
 {
 	$(customLinks.div).hide();
+	setPopup(false);
 }
 
 customLinks.manager = function customLinksManager(callback)
@@ -1828,11 +1832,13 @@ colorsManager.show = function(noBack)
 		div.attr("noback");
 
 	div.show();
+	setPopup(true);
 }
 
 colorsManager.hide = function()
 {
 	$(colorsManager.div).hide();
+	setPopup(false);
 }
 
 
@@ -3150,7 +3156,13 @@ body:not(.changesLog) #changesLog
 
 body.changesLog > :not(#changesLog)
 {
+/*
+	-webkit-filter: blur(5px);
+	-moz-filter: blur(5px);
+	-o-filter: blur(5px);
+	-ms-filter: blur(5px);
 	filter: blur(5px);
+*//*
 }
 
 div[noback] .back
@@ -3180,9 +3192,21 @@ div[noback] .back
 	font-family: Monaco,"DejaVu Sans Mono",'courier new', 'times new roman', fixed, monospace;
 	background-color: whitesmoke;
 	color: black;
-	-webkit-box-shadow: 0px 0px 50px 0px;
-	-moz-box-shadow:    0px 0px 50px 0px;
-	box-shadow:         0px 0px 50px 0px;
+}
+
+#changesLogBox,
+div[id*="-popup"],
+body:not(.popup) .cp-color-picker
+{
+	-webkit-box-shadow: 0px 0px 50px 0px black;
+	-moz-box-shadow:    0px 0px 50px 0px black;
+	box-shadow:         0px 0px 50px 0px black;
+}
+body:not(.popup) div.entry[opened]
+{
+	-webkit-box-shadow: 0px 0px 30px 0px black;
+	-moz-box-shadow:    0px 0px 30px 0px black;
+	box-shadow:         0px 0px 30px 0px black;
 }
 
 #changesLogHead
@@ -3988,6 +4012,7 @@ if (!DB.loggedInUsername)
 			Settings.hide();
 			customLinks.hide();
 			changesLog.hide();
+			setPopup($("#account-popup").is( ":visible" ), true);
 		});
 		$("#account-overview").click(function loop(e)
 		{
@@ -4112,6 +4137,7 @@ if (!DB.loggedInUsername)
 				e.preventDefault();
 				search("info:myshows");
 				$("#account-popup").toggle(false);
+				setPopup(false);
 			}, false);
 			a.textContent = (DB.viewing ? DB.username + " user's" : "My") + " shows";
 			parent.appendChild(span);
@@ -4127,6 +4153,7 @@ if (!DB.loggedInUsername)
 				e.preventDefault();
 				search("info:hidden");
 				$("#account-popup").toggle(false);
+				setPopup(false);
 			}, false);
 			a.textContent = "Hidden shows";
 			parent.appendChild(span);
@@ -4303,6 +4330,7 @@ if (!DB.loggedInUsername)
 	{
 		if (e.isTrigger || e.target.isTrigger)
 			return;
+
 		let target = $(e.target),
 				close = target.hasClass("close") || target.parents(".close").get().length,
 				p = target.parents("#manage-links-popup").get().length;
@@ -4321,8 +4349,8 @@ if (!DB.loggedInUsername)
 			changesLog.hide();
 			if (window.hashChanged.hashSearch && location.hash == "#changes")
 				removeHash();
-		}
 
+		}
 	});
 	//reset password auto fill username
 	if (location.pathname == "/_u/forgot-password")
@@ -4346,11 +4374,13 @@ if (!DB.loggedInUsername)
 			changesLog.div.removeAttribute("noback");
 
 		$("body").toggleClass("changesLog", true);
+		setPopup(true);
 	}
 	
 	changesLog.hide = function ()
 	{
 		$("body").toggleClass("changesLog", false);
+		setPopup(false);
 	}
 
 	changesLog.getData = function ()
@@ -4469,11 +4499,26 @@ if (!DB.loggedInUsername)
 		customLinks.hide();
 		Settings.hide();
 		changesLog.hide();
+		setPopup(true);
 		setTimeout(function()
 		{
 			$("#account-overview").click();
 		});
 	});
+
+	function setPopup(opened)
+	{
+		if (opened)
+			this.opened = true;
+
+		let func = function()
+		{
+			$("body").toggleClass("popup", opened || this.opened ? true : false);
+			this.opened = false;
+		}
+		clearTimeout(this.timer);
+		this.timer = setTimeout(func);
+	}
 };//func()
 
 //disqus
@@ -4913,6 +4958,8 @@ span[class="author"] + span.troll
 
 
 var changesLogText = multiline(function(){/*
+1.28.1 (2018-02-07)
+	+ shadow on "popups", making them more pronounced
 1.28 (2018-02-04)
 	+ search by adding #s:keyword in the address
 	+ changes log
