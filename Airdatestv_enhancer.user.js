@@ -1196,10 +1196,20 @@ customLinks.manager = function customLinksManager(callback)
 			engSortReset = $("#sort-reset"),
 			engResHidden = $('<div id="engine-hidden" class="entry" data-series-id="1234" data-series-source="List of Monsuno episodes" data-date="20120223"><div class="title">Monsuno S01E01</div></div>').appendTo(popup),
 			prevTarget = null,
-			prevVal = null;
+			prevVal = null,
+			entry = $("div.entry");
 
-			if (enginesSort.changed())
-				popup.attr("changed", true);
+	if (entry.length)
+	{
+		entry = $(entry[Math.floor(Math.random() * entry.length)]);
+		engResHidden.attr("data-series-id", entry.attr("data-series-id"));
+		engResHidden.attr("data-series-source", entry.attr("data-series-source"));
+		engResHidden.attr("data-date", entry.attr("data-date"));
+		engResHidden.find("div.title").text(entry.find("div.title").text());
+	}
+
+	if (enginesSort.changed())
+		popup.attr("changed", true);
 
 	function change(e)
 	{
@@ -5002,6 +5012,7 @@ span[class="author"] + span.troll
 
 var changesLogText = multiline(function(){/*
 1.28.4 (2018-02-07)
+	+ random series as example in links manager
 	! editing/adding a link while a show opened would produce incorrect links in the opened show until page refresh
 1.28.3 (2018-02-07)
 	! Firefox decided render shadow much bigger then supposed to
