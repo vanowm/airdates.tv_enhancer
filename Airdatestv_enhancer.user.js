@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.28.3
+// @version     1.28.4
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -1358,8 +1358,11 @@ customLinks.manager = function customLinksManager(callback)
 			{
 				flash($(update));
 			}));
-			let entry = $("div.entry").find("." + id);
-			entry.filter("a.link").attr("href", engine.href).text(engine.name);
+			let entry = $("div.entry");
+			entry.each(function()
+			{
+				$(this).find("." + id).filter("a.link").attr("href", parseLink(this, engine).href).text(engine.name);
+			});
 			flash(update);
 		}
 		else
@@ -3414,34 +3417,53 @@ body:not(.popup) div.entry[opened]
 		let func = function(e)
 		{
 			let el = $(this),
+					div = this,
 					MONKEY_ID = encodeURIComponent( el.data("series-id") );
+
 			if (!entry && !DB.getColor(MONKEY_ID))
 				return;
 
-	//		let title = el.children("div.title").text().replace("?", "").replace(/[0-9]+-[0-9]+-[0-9]+/, ""),
-			let title = this._title && this._title._titleOrig ? this._title._titleOrig : el.children("div.title").text();
-			title = title.replace("?", "").replace(/[0-9]+-[0-9]+-[0-9]+/, "");
-	//				MONKEY = encodeURIComponent( title ),
-			let MONKEY = encodeURIComponent( title.replace(/ E[0-9]+/g, "") ),
-					MONKEY_N = encodeURIComponent( title.replace( /S[0-9]+E[0-9]+$/g, '' ) ),
-					WIKI_TITLE = encodeURIComponent( el.data("series-source") );
 			$.each( _engines, function( i, engine )
 			{
 				if (!$("body").hasClass("engine_" + cleanName(engine.host)))
 					return;
 
-				let href = engine.href
-					.replace( "MONKEY_ID", MONKEY_ID )
-					.replace( "MONKEY_N", MONKEY_N )
-					.replace( "MONKEY", MONKEY )
-					.replace( "{WIKI_TITLE}", WIKI_TITLE );
-
-				href = fixLink(href, engine.name);
-				window.open(href, (MONKEY + engine.name).replace(/ /g, "").replace(/%.{2}/g, ""));
+				let link = parseLink(div, engine);
+				window.open(link.href, (link.MONKEY + engine.name).replace(/ /g, "").replace(/%.{2}/g, ""));
 			});
 		};
 		parent.each(func);
-	}
+	}//middleClick()
+
+	function parseLink(div, engine)
+	{
+
+		//		let title = el.children("div.title").text().replace("?", "").replace(/[0-9]+-[0-9]+-[0-9]+/, ""),
+		let el = $(div),
+				title = div._title && div._title._titleOrig ? div._title._titleOrig : el.children("div.title").text();
+
+		title = title.replace("?", "").replace(/[0-9]+-[0-9]+-[0-9]+/, "");
+	//				MONKEY = encodeURIComponent( title ),
+		let MONKEY = encodeURIComponent( title.replace(/ E[0-9]+/g, "") ),
+				MONKEY_N = encodeURIComponent( title.replace( /\s*S[0-9]+E[0-9]+$/g, '' ) ),
+				WIKI_TITLE = encodeURIComponent( el.data("series-source") ),
+				MONKEY_ID = encodeURIComponent( el.data("series-id") ),
+				href = engine.href
+							.replace( "MONKEY_ID", MONKEY_ID )
+							.replace( "MONKEY_N", MONKEY_N )
+							.replace( "MONKEY", MONKEY )
+							.replace( "{WIKI_TITLE}", WIKI_TITLE );
+
+		return {
+			href: fixLink(href, engine.name),
+			title: title,
+			MONKEY: MONKEY,
+			MONKEY_N: MONKEY_N,
+			MONKEY_ID: MONKEY_ID,
+			WIKI_TITLE: WIKI_TITLE
+		};
+	}//parseLink()
+
 	$("body").on("mousedown", "div.date,div.title", middleClick);
 
 	let _markSearchResults = markSearchResults;
@@ -4979,6 +5001,8 @@ span[class="author"] + span.troll
 
 
 var changesLogText = multiline(function(){/*
+1.28.4 (2018-02-07)
+	! editing/adding a link while a show opened would produce incorrect links in the opened show until page refresh
 1.28.3 (2018-02-07)
 	! Firefox decided render shadow much bigger then supposed to
 1.28.2 (2018-02-07)
