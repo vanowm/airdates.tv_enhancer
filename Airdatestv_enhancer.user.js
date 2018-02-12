@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.28.4
+// @version     1.29
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -156,6 +156,7 @@ receiveMessage._self = this;
 window.addEventListener("message", receiveMessage, false);
 let func = function(event)
 {
+
 let adeName = "Airdates.tv enhancer",
 		adeVersion = "n/a",
 		force = false,
@@ -715,7 +716,7 @@ function fileSave(name, data, type)
 	a.isTrigger = true;
 	a.href = window.URL.createObjectURL(blob);
 	a.dataset.downloadurl = [type, a.download, a.href].join(':');
-	document.body.appendChild(a);
+	$("#account-popup").append(a);
 	a.click();
 	a.parentNode.removeChild(a);
 }
@@ -876,7 +877,7 @@ function isEqual (a, b)
 
 function cleanName(id)
 {
-	return id.replace(/[^a-zA-Z0-9-_]/g, "_");
+	return id !== null ? id.replace(/[^a-zA-Z0-9-_]/g, "_") : "";
 }
 
 function getHost(url)
@@ -1145,37 +1146,47 @@ customLinks.manager = function customLinksManager(callback)
 		this.id = this.id.replace("account", "manage-links");
 	});
 
-	let	content = $(popup).find(".content").html("");
+	let content = $(popup).find(".content").html("");
 	html = multiline(function(){/*
 <div class="reset">
-	<a id="sort-reset" href="#">reset sort</a>
+	<span>
+		<a id="sort-reset" href="#">reset sort</a>
+	</span>
 </div>
 <form>
 	<div id="engine-edit">
 		<div>
 			<label>Name:</label>
-			<input id="engine-name">
+			<div>
+				<input id="engine-name">
+			</div>
 		</div>
 		<div>
 			<label>URL:</label>
-			<input id="engine-url">
-			<select id="engine-tags" size="1">
-				<option value=""></option>
-				<option value="MONKEY_N">Name</option>
-				<option value="MONKEY">Name+Episode</option>
-				<option value="MONKEY_ID">ID</option>
-				<option value="{WIKI_TITLE}">Wiki page</option>
-				<option value="MONKEY_ARCHIVELINK">Archive link</option>
-			</select>
+			<div>
+				<input id="engine-url">
+				<select id="engine-tags" size="1">
+					<option value=""></option>
+					<option value="MONKEY_N">Name</option>
+					<option value="MONKEY">Name+Episode</option>
+					<option value="MONKEY_ID">ID</option>
+					<option value="{WIKI_TITLE}">Wiki page</option>
+					<option value="MONKEY_ARCHIVELINK">Archive link</option>
+				</select>
+			</div>
 		</div>
 		<div>
 			<label>ID:</label>
-			<input id="engine-id" placeholder="&lt;optional&gt;">
+			<div>
+				<input id="engine-id" placeholder="&lt;optional&gt;">
+			</div>
 		</div>
 		<div>
 			<label></label>
-			<input id="engine-submit" type="button" value="Add">
-			<input id="engine-reset" type="reset" value="Reset">
+			<div>
+				<input id="engine-submit" type="button" value="Add">
+				<input id="engine-reset" type="reset" value="Reset">
+			</div>
 		</div>
 		<div>
 			<label>Result:</label>
@@ -1213,53 +1224,38 @@ customLinks.manager = function customLinksManager(callback)
 
 	function change(e)
 	{
-		if (prevTarget === e.target && prevVal === e.target.value)
-			return;
-
 		clearTimeout(change.timer);
 		change.timer = setTimeout(function()
 		{
 			prevVal = e.target.value;
 			prevTarget = e.target;
 			engResHidden.find(".details").remove();
-			let opened = $('.details[style="display: block;"]').toggleClass("details", false);
-			enginesBackup();
 			let eng = [{
 						name: engName.val(),
-						host: engId.val(),
-						href: engUrl.val()
+						host: engId.val().trim(),
+						href: engUrl.val().trim()
 					}];
 
 			if (!eng[0].href.match(/[a-z]+:\/\//i))
 				eng[0].href = "http://" + eng[0].href;
 
 			engineFixHost(eng[0]);
-			window.engines = eng;
-			engResHidden.find(".title").trigger("click");
-			opened.toggleClass("details", true);
-			setTimeout(function()
-			{
-				let list = engResHidden.find(".engines").children(),
-						a = list.filter("a")[0],
-						img = list.filter("img")[0],
-						children = engRes.children();
+			entryOpen({target: $(engResHidden).find(".title")[0]}, eng);
 
-				img.src = "http://www.google.com/s2/favicons?domain=" + getHost(eng[0].href);
+			let list = engResHidden.find(".engines").children(),
+					a = list.filter("a"),
+					img = a.find("img")[0],
+					children = engRes.children(),
+					domain = getHost(eng[0].href);
 
-				if (!children.length)
-				{
-					engRes.append(img).append(a);
-				}
-				else
-				{
-					$(children[0]).replaceWith(img);
-					$(children[1]).replaceWith(a);
-				}
-				if (enginesBackup)
-				{
-					enginesRestore();
-				}
-			});
+			if (domain)
+				img.src = "http://www.google.com/s2/favicons?domain=" + domain;
+			else
+				img.src = "";
+
+			engRes.html("");
+			engRes.append(a);
+			return;
 		}, 300);
 	}//change()
 	engId.on("input change", change);
@@ -1368,10 +1364,14 @@ customLinks.manager = function customLinksManager(callback)
 			{
 				flash($(update));
 			}));
-			let entry = $("div.entry");
+			let entry = $("div.entry").find(".engines");
 			entry.each(function()
 			{
-				$(this).find("." + id).filter("a.link").attr("href", parseLink(this, engine).href).text(engine.name);
+				$(this).find("." + id).filter("a.link").attr("href", parseLink(this, engine).href).contents().filter(function()
+				{
+					if (this.nodeType === 3)
+						this.textContent = engine.name;
+				});
 			});
 			flash(update);
 		}
@@ -1431,8 +1431,9 @@ customLinks.manager = function customLinksManager(callback)
 			{
 				$("#engine-id").val(host);
 				$("#engine-name").val(name);
-				$("#engine-url").val(href);
-				$("#engine-url").trigger("input");
+				let url = $("#engine-url");
+				url.val(href);
+				url.trigger("input");
 			}
 		});
 		customLinks.show();
@@ -1558,12 +1559,8 @@ customLinks.manager = function customLinksManager(callback)
 		let clone = engResHidden.clone();
 		$("body").append(clone);
 		clone.find(".details").remove();
-		let opened = $('.details[style="display: block;"]').toggleClass("details", false);
+		entryOpen({target: $(clone).find(".title")[0]}, [engine]);
 
-		enginesBackup();
-		window.engines = [engine];
-		clone.find(".title").trigger("click");
-		opened.toggleClass("details", true);
 		let n = 100;
 		setTimeout(function loop()
 		{
@@ -1574,8 +1571,8 @@ customLinks.manager = function customLinksManager(callback)
 				setTimeout(loop);
 				return;
 			}
-			let	a = list.filter("a")[0],
-					img = list.filter("img")[0],
+			let	a = list.filter("a"),
+					img = a.find("img")[0],
 					def = false;
 
 			for (let i = 0; i < enginesDefault.length; i++)
@@ -1586,18 +1583,17 @@ customLinks.manager = function customLinksManager(callback)
 					break;
 				}
 			}
-			if (a && img)
-				img.src = "http://www.google.com/s2/favicons?domain=" + getHost(a.href);
+			if (a.length && img)
+				img.src = "http://www.google.com/s2/favicons?domain=" + getHost(a[0].href);
 
 			$(div).append(img);
 			$(div).append(a);
 			if (def)
 				$(div).toggleClass("def", true);
 
-			enginesRestore();
 			clone.remove();
-
-			$('<span class="edit" title="Edit"><svg viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path></svg></span>').appendTo(div).click(function(e)
+			let editBox = $('<span class="editBox"></span>').appendTo(div);
+			$('<span class="edit" title="Edit"><svg viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path></svg></span>').appendTo(editBox).click(function(e)
 			{
 				engId.val((getHost(engine.href) == engine.host) ? "" : engine.host);
 				engName.val(engine.name);
@@ -1606,7 +1602,7 @@ customLinks.manager = function customLinksManager(callback)
 			});
 			if (customLinks._list[engine.host])
 			{
-				$('<span class="del" title="' + (def ? "Clear" : "Delete") + '">' + '<svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"></path></svg>' + '</span>').appendTo(div).click(function(e)
+				$('<span class="del" title="' + (def ? "Clear" : "Delete") + '">' + '<svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"></path></svg>' + '</span>').appendTo(editBox).click(function(e)
 				{
 					e.stopPropagation();
 					e.preventDefault();
@@ -1677,8 +1673,9 @@ customLinks.manager = function customLinksManager(callback)
 							{
 								$("#engine-id").val(host);
 								$("#engine-name").val(name);
-								$("#engine-url").val(href);
-								$("#engine-url").trigger("input");
+								let url = $("#engine-url");
+								url.val(href);
+								url.trigger("input");
 							}
 						});
 						customLinks.show();
@@ -1690,7 +1687,7 @@ customLinks.manager = function customLinksManager(callback)
 		});
 		return div;
 	}//create();
-	enginesBackup();
+//	enginesBackup();
 
 	let eng = window.engines,
 			n = eng.length;
@@ -1703,7 +1700,7 @@ customLinks.manager = function customLinksManager(callback)
 	{
 		content.append(create(eng[i], callback ? finished : null));
 	};
-	setTimeout(enginesRestore,100);
+//	setTimeout(enginesRestore,100);
 }//customLinks.manager()
 
 function customLinksAdd()
@@ -1965,7 +1962,7 @@ function rand(min, max)
 		e.stopPropagation();
 		e.preventDefault();
 		e.stopImmediatePropagation();
-		loadArchiveFromPathname("#today", "#today");
+		_loadArchiveFromPathname("#today", "#today");
 		return false;
 	});
 
@@ -2001,7 +1998,7 @@ function rand(min, max)
 		history.go(-1);
 	}
 
-	function loadArchiveFromPathname(originalPath,highlightSelector)
+	function _loadArchiveFromPathname(originalPath,highlightSelector)
 	{
 		path = originalPath||document.location.pathname;
 		var match = path.match(/^\/archive\/([0-9]+)-([0-9]+)$/);
@@ -2062,8 +2059,9 @@ function rand(min, max)
 		{
 			whenDone();
 		}
+		_loadArchiveFromPathname.firstRun = true;
 	}
-	window.loadArchiveFromPathname = loadArchiveFromPathname;
+	window.loadArchiveFromPathname = _loadArchiveFromPathname;
 	/*
 	end fixing browser history inflating after each page refresh and prev/next history jump don't work
 	*/
@@ -2291,7 +2289,7 @@ function rand(min, max)
 		let state = e.originalEvent.state;
 		prevPath = (state ? state.originalPath : undefined) || e.target.location.pathname;
 
-		loadArchiveFromPathname(prevPath, state ? state.highlightSelector : undefined);
+		_loadArchiveFromPathname(prevPath, state ? state.highlightSelector : undefined);
 	});
 
 	function showPast(callback)
@@ -2486,58 +2484,6 @@ function rand(min, max)
 		showWeeks();
 	}//pastLoaded()
 
-	var prevOpened = null,
-			prevParentOpened = null,
-			prevParentOpenTimer = null;
-	//adding attribute "opened" to the entry allows us show/hide things from CSS based on entry state
-	$("body").on("click", "div.entry div.title", function(e)
-	{
-		if (e.isTrigger)
-			return;
-
-		let $entry = $( this ).parent(),
-				parent = $entry.parent();
-
-		if (prevOpened)
-		{
-			let po = prevOpened,
-					ppo = prevParentOpened;
-
-			prevParentOpenTimer = setTimeout(function()
-			{
-				collapseMulti.setTitle(ppo[0].list, Settings.prefs.collapseMulti && !ppo.hasClass("expand")? "_titleCollapsed" : "_titleOrig");
-
-				po.parent().toggleClass("opened", false);
-			}, 400);
-
-			prevOpened.attr("opened", "");
-			setTimeout(function()
-			{
-				po.removeAttr("opened");
-			}, 300);
-			prevOpened = null;
-		}
-
-
-		if ($entry.attr("opened") === undefined)
-		{
-			$entry.attr("opened", "");
-			parent.toggleClass("opened", true);
-			collapseMulti.setTitle(parent[0].list, "_titleOrig");
-	//idealy this should've been done via "on complete" function submitted for slideUp/slideDown
-			if (prevParentOpened && parent[0] == prevParentOpened[0])
-				clearTimeout(prevParentOpenTimer);
-
-			setTimeout(function()
-			{
-				$entry.attr("opened", "1");
-			}, 300);
-
-			prevParentOpened = parent;
-			prevOpened = $entry;
-		}
-	});
-
 	//create stylesheet. A little trick to have multi-line text in javascript
 	let	style = document.createElement("style"),
 			css = multiline(function(){/*
@@ -2635,6 +2581,13 @@ div[opened] + div
 	vertical-align: text-bottom !important;
 }
 
+.engines
+{
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	display: block;
+}
 div.entry
 {
 	float: left;
@@ -2653,6 +2606,27 @@ div.entry,
 	cursor: pointer;
 }
 
+.showhide0 > svg,
+.showhide1 > svg
+{
+	margin: 0 0.1em 0 -1px;
+	width: 18px;
+  height: 16px;
+}
+div.details > span.engines > div.tools
+{
+	margin-top: 0.3em;
+	border-top: 1px dashed #eee;
+	padding-top: 0.3em;
+}
+div.colors
+{
+	margin-top: 0.3em;
+}
+div.details > span.engines > div.tools > *
+{
+	margin: 0.2em;
+}
 .past,
 .showhide0,
 span[checked] > .checkoff,
@@ -2769,7 +2743,12 @@ body.collapseMulti div.day:not(.expand):not(.opened) div.entry.multif div.title:
 	display: inline-block;
 	vertical-align: bottom;
 }
-
+#manage-links-popup-content .content a.link
+{
+	max-width: 15em;
+	text-overflow: ellipsis;
+	overflow: hidden;
+}
 #settings-popup,
 #manage-links-popup
 {
@@ -2788,7 +2767,7 @@ body.collapseMulti div.day:not(.expand):not(.opened) div.entry.multif div.title:
 	left: 0px;
 	background-color: #ffff00;
 	border: 1px dotted black;
-	width: 300px;
+	min-width: 300px;
 	min-height: 10px;
 }
 div.back
@@ -2828,46 +2807,47 @@ div:not(#account-popup-content) > .header
 #engine-edit
 {
 	padding: 3px 10px;
+	overflow: auto;
+	max-height: 30em;
 }
-#engine-edit > div:not(#engine-res),
-#manage-links-popup .content > div:not(#engine-res)
+#engine-edit
+{
+	overflow: inherit;
+	border-top: 1px dotted;
+	padding-top: 0.5em;
+}
+#engine-edit > div,
+#manage-links-popup .content > div
 {
 	display: table-row;
 	white-space: nowrap;
 }
-#engine-edit > div:not(#engine-res) > *,
-#manage-links-popup .content > div:not(#engine-res) > *
+#engine-edit > div > *,
+#manage-links-popup .content > div > *
 {
 	display: table-cell;
 	vertical-align: middle;
-	margin: 2px 4px 2px 1px;
+	margin: 0 4px 0 1px;
+	padding: 1px 0;
 }
-#manage-links-popup .content > div:not(#engine-res) > img
+#manage-links-popup .content > div > img
 {
 	vertical-align: bottom;
 	display: list-item;
+	margin: 0 4px 2px 0;
 }
 
-#manage-links-popup .content > div:not(#engine-res) > filter
-{
-	padding-left: 0.3em;
-}
-#manage-links-popup .content > div:not(#engine-res) > .edit,
-#manage-links-popup .content > div:not(#engine-res) > .del
+.editBox > .edit,
+.editBox > .del
 {
 	cursor: pointer;
-	margin: 3px;
-	position: relative;
-	top: -0.1em;
-	font-size: 80%;
 	padding: 3px;
 	display: inline-block;
 	height: 1em;
-	float: left;
 }
 div.back:hover,
 #manage-links-popup .content > div.dragging:not(.hide),
-#manage-links-popup .content:not(.dragging) > div:not(#engine-res):hover
+#manage-links-popup .content:not(.dragging) > div:hover
 {
 	background-color: #FFFFB7;
 	outline: 1px dotted grey;
@@ -2902,52 +2882,70 @@ div.back:hover,
 	color: red;
 	margin-left: 0.2em;
 }
-#engine-edit > div:not(#engine-res) > label
+#engine-edit > div > label
 {
 	text-align: right;
 }
-#engine-edit > div:not(#engine-res) > input
+#engine-edit > div:last-child > label
 {
-	width: 95%;
-	margin-left: 0.5em;
-	padding-right: 1.5em;
+	vertical-align: top;
+	padding-top: 0.3em;
 }
-#engine-edit > div:not(#engine-res) > select
+#engine-edit > div > div
+{
+	width: 100%;
+	padding: 0.1em 0.5em;
+	max-width: 15em;
+}
+#engine-edit > div > div > input
+{
+	width: 100%;
+}
+
+#engine-edit > div > div > select
 {
 	width: 1.5em;
 	position: relative;
-	left: -1.8em;
+	left: -1.5em;
 	margin: 0;
 	padding: 0;
 }
 #engine-res
 {
-	overflow-x: auto;
-	overflow-y: hidden;
-	min-height: 18px;
-	display: block !important;
-	margin-left: 0.5em !important;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	min-height: 2em;
+	padding: 0.3em 0 0.3em 0.5em !important;
 }
+
+#engine-res > a > img.icon:not([src])
+{
+	display: none;
+}
+
 #engine-hidden
 {
 	display: none !important;
 }
-#engine-res > *
+#engine-res > a > img
 {
 	vertical-align: middle;
 	display: inline-block;
 	margin: 0 4px 0 0;
 }
+
 #engine-submit,
 #engine-reset
 {
 	font-size: 90%;
 	display: inline-block !important;
-	width: 50% !important;
+	width: 48% !important;
+	float: left;
 }
 #engine-reset
 {
-	margin-left: 1em;
+	float: right;
+	margin-right: -0.4em;
 }
 div.reset
 {
@@ -2957,7 +2955,7 @@ div.reset
 {
 	display: block !important;
 }
-#sort-reset
+div.reset > span
 {
 	display: block !important;
 	text-align: right;
@@ -2966,7 +2964,6 @@ div.reset
 }
 #engine-edit
 {
-	 border-top: 1px dotted;
 }
 #manage-links-popup .nu,
 #manage-links-popup .nu
@@ -2999,7 +2996,6 @@ div.reset
 	font-size: 1.2em;
 	float: left;
 	position: relative;
-	top: -2px;
 	padding-left: 3px;
 	padding-right: 3px;
 }
@@ -3116,7 +3112,7 @@ div.spacer
 .parentheses,
 a.file
 {
-	margin-left: 1em;
+	margin-left: 0.5em;
 }
 .parentheses:before,
 a.file:before
@@ -3207,6 +3203,10 @@ div[noback] .back
 	color: black;
 }
 
+div[id*="-popup"]
+{
+	white-space: nowrap;
+}
 #changesLogBox,
 div[id*="-popup"],
 body:not(.popup) .cp-color-picker
@@ -3232,14 +3232,12 @@ body:not(.popup) div.entry[opened]
 		box-shadow:         0px 0px 30px 0px black;
 		-webkit-box-shadow: 0px 0px 30px 0px black;
 		-moz-box-shadow:    0px 0px 30px 0px black;
-		z-index: 1;
 	}
 	body:not(.popup) div.entry[opened]
 	{
 		box-shadow:         0px 0px 20px 0px black;
 		-webkit-box-shadow: 0px 0px 20px 0px black;
 		-moz-box-shadow:    0px 0px 20px 0px black;
-		z-index: 1;
 	}
 }
 #changesLogHead
@@ -3497,28 +3495,128 @@ body:not(.popup) div.entry[opened]
 		e.stopPropagation();
 	});
 	//sanitizing engine links
-	$("body").on("click", "div.entry div.title", function(e)
+	setTimeout(function()
 	{
-		if (e.isTrigger && !force)
+		var prevOpened = null,
+				prevParentOpened = null,
+				prevParentOpenTimer = null;
+
+		$("body").off("click", "div.entry div.title");
+		$("body").on("click", "div.entry div.title", entryOpen);//$("body").on("click", "div.entry div.title", function(e)
+	});
+	let aniSpeed = (device.tablet() || device.mobile())?0:200;
+	function entryOpen(e, _engs)
+	{
+		if (!e.target)
 			return;
 
-		force = false;
-		let obj = this;
-		setTimeout(function()
+		if (!$(e.target).hasClass("title"))
 		{
-			let details = $(obj).parent().find(".details");
-			if (!details.length || details[0].inited)
+			return entryOpen({target: e.target.parentNode});
+		}
+		force = false;
+		let obj = e.target,
+				$entry = $(obj).parent(),
+				details = $entry.find(".details");
+
+		if (!details.length )
+		{
+			if( $entry.children( "div.details" ).length == 0 )
+			{
+				var engs = _engs || window.engines;
+				if (!_engs)
+				{
+					if($entry.parents(".calendar").get().length>0)
+						engs = engs.concat([{name: "Show all episodes", host: "airdates.tv", href: "javascript:search('info:MONKEY_ID');"}]);
+					else
+						engs = engs.concat([{name: "Show in calendar", host: "airdates.tv", href: "MONKEY_ARCHIVELINK", cls:"archive-link"}]);
+				}
+				var e = $( $.parseHTML($( "#detailsTemplate" ).html()) ).appendTo( $entry );
+	    		
+				var MONKEY = encodeURIComponent( $entry.children("div.title").text() ); //.replace( /[^A-Za-z0-9 -]/g, '' ) ); 
+				var MONKEY_N = encodeURIComponent( $entry.children("div.title").text().replace( /S[0-9]+E[0-9]+$/g, '' ) ); 
+				var MONKEY_ID = encodeURIComponent( $entry.data("series-id") ); 
+				var WIKI_TITLE = encodeURIComponent( $entry.data("series-source") ); 
+				$.each( engs, function( i, engine ){
+					let eng = $( "#engineTemplate" ).children().clone().appendTo( e.find( ".engines" ) ),
+							a = eng.filter("a.link"),
+							img = eng.filter("img.icon"),
+							br = eng.filter("br"),
+							checkbox = document.createElement("input"),
+							id = "engine_" + cleanName(engine.host),
+							domain = getHost(engine.href),
+							href = engine.href
+										.replace("MONKEY_ARCHIVELINK", (""+$entry.closest("[data-date]").data("date")).replace(/([0-9]{4})([0-9]{2})([0-9]{1,2})/,"/archive/$1-$2#$3"))
+										.replace( "MONKEY_ID", MONKEY_ID )
+										.replace( "MONKEY_N", MONKEY_N )
+										.replace( "MONKEY", MONKEY )
+										.replace( "{WIKI_TITLE}", WIKI_TITLE );
+
+					a.attr( "href", href )
+						.addClass(engine.cls||"")
+						.text( engine.name );
+					a[0].insertBefore(img[0], a[0].firstChild);
+					eng.css( "display", "" ); 
+					img.attr("src","http://www.google.com/s2/favicons?domain=" + engine.host );
+					if(engine.host == "airdates.tv") a.attr("target",""); 
+
+					if (domain)
+						img.attr("src", "http://www.google.com/s2/favicons?domain=" + domain);
+
+					img.toggleClass(id, true);
+					a.toggleClass(id, true);
+					br.toggleClass(id, true);
+					if (a.hasClass("archive-link") && (showMyShows.box || showMyHidden.box))
+					{
+						a.toggleClass("archive-link", false);
+						a[0].textContent = "Show all episodes";
+						a[0].href = "javascript:search('info:" + showId + "');";
+					}
+					a[0].href = fixLink(a[0].href, a[0].text);
+					if (_engs)
+					{
+						br.remove();
+						return;
+					}
+
+					if (engine.host == "airdates.tv")
+					{
+						let div = document.createElement("div");
+						div.className = "tools";
+						a[0].parentNode.appendChild(div);
+						div.appendChild(a[0]);
+						br.remove();
+						return;
+					}
+					$(checkbox).toggleClass(id, true);
+					checkbox.engine = engine.host;
+					checkbox.type = "checkbox";
+					checkbox.title = "Open with middle click on title";
+					checkbox.checked = enginesCheck(engine.host) != -1;
+					img[0].parentNode.insertBefore(checkbox, img[0]);
+					$(checkbox).on("click", "", function(e)
+					{
+						if (checkbox.checked)
+							enginesAdd(checkbox.engine);
+						else
+							enginesRemove(checkbox.engine);
+
+						$("input." + id).prop("checked", checkbox.checked);
+					});
+				} );
+			}
+			if (_engs)
 				return;
 
-			details[0].inited = true;
-			let showHideObj = document.createElement("a"),
+			let showHideBox = document.createElement("div"),
+					showHideObj = document.createElement("a"),
 					showId = $(obj.parentNode).attr("data-series-id"),
 					show = document.createElement("span"),
 					hide = document.createElement("span");
 
-			show.innerHTML = "Show";
+			show.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9M12,4.5C17,4.5 21.27,7.61 23,12C21.27,16.39 17,19.5 12,19.5C7,19.5 2.73,16.39 1,12C2.73,7.61 7,4.5 12,4.5M3.18,12C4.83,15.36 8.24,17.5 12,17.5C15.76,17.5 19.17,15.36 20.82,12C19.17,8.64 15.76,6.5 12,6.5C8.24,6.5 4.83,8.64 3.18,12Z"></path></svg>Show';
 			show.className = "showhide0";
-			hide.innerHTML = "Hide";
+			hide.innerHTML = '<svg viewBox="0 0 24 24"><path d="M2,5.27L3.28,4L20,20.72L18.73,22L15.65,18.92C14.5,19.3 13.28,19.5 12,19.5C7,19.5 2.73,16.39 1,12C1.69,10.24 2.79,8.69 4.19,7.46L2,5.27M12,9A3,3 0 0,1 15,12C15,12.35 14.94,12.69 14.83,13L11,9.17C11.31,9.06 11.65,9 12,9M12,4.5C17,4.5 21.27,7.61 23,12C22.18,14.08 20.79,15.88 19,17.19L17.58,15.76C18.94,14.82 20.06,13.54 20.82,12C19.17,8.64 15.76,6.5 12,6.5C10.91,6.5 9.84,6.68 8.84,7L7.3,5.47C8.74,4.85 10.33,4.5 12,4.5M3.18,12C4.83,15.36 8.24,17.5 12,17.5C12.69,17.5 13.37,17.43 14,17.29L11.72,15C10.29,14.85 9.15,13.71 9,12.28L5.6,8.87C4.61,9.72 3.78,10.78 3.18,12Z"></path></svg>Hide';
 			hide.className = "showhide1";
 			showHideObj.appendChild(show);
 			showHideObj.appendChild(hide);
@@ -3532,58 +3630,37 @@ body:not(.popup) div.entry[opened]
 				e.preventDefault();
 				showHide(parseInt(showId), 2);
 			}, false);
+			showHideBox.appendChild(showHideObj);
+			$entry.find(".engines > .tools").append(showHideBox);
+		}
+		if (_engs)
+			return;
+		let parent = $entry.parent();
+		$( "div.entry" ).filter("[opened]").find("div.details").slideUp(aniSpeed, function()
+		{
+			let entry = $(this).parent(),
+					parent = entry.parent();
 
-			let list = $(obj).parent().find(".engines").append(showHideObj).children();
-			for (let i = 0; i < list.length; i += 3)
+			entry.removeAttr("opened");
+			parent.toggleClass("opened", false);
+			if (parent[0])
+				collapseMulti.setTitle(parent[0].list, Settings.prefs.collapseMulti && !parent.hasClass("expand")? "_titleCollapsed" : "_titleOrig");
+		}); 
+		if( !$entry.find( ".details" ).is( ":visible" ) )
+		{
+			$entry.find( ".details" ).slideDown(aniSpeed, function()
 			{
-				let img = list[i],
-						a = list[i+1],
-						br = list[i+2],
-						checkbox = document.createElement("input"),
-						engine = window.engines[i/3] ? window.engines[i/3].host : img.src ? img.src.match(/\?domain=(.*)/)[1] : null,
-						id = "engine_" + cleanName(engine),
-						engineInfo = window.engines[enginesFind(engine)],
-						domain = engineInfo ? getHost(engineInfo.href) : null;
-
-				if (domain)
-					img.src = "http://www.google.com/s2/favicons?domain=" + domain;
-
-				$(img).toggleClass(id, true);
-				$(a).toggleClass(id, true);
-				$(br).toggleClass(id, true);
-				$(checkbox).toggleClass(id, true);
-				checkbox.engine = engine;
-				checkbox.type = "checkbox";
-				checkbox.title = "Open with middle click on title";
-				checkbox.checked = enginesCheck(engine) != -1;
-				img.parentNode.insertBefore(checkbox, img);
-				if (a.className.indexOf("archive-link") != -1 && (showMyShows.box || showMyHidden.box))
-				{
-					$(a).toggleClass("archive-link", false);
-					a.textContent = "Show all episodes";
-					a.href = "javascript:search('info:" + showId + "');";
-				}
-				if (engine == "airdates.tv" || a.className == "showhide")
-				{
-					checkbox.style.visibility = "hidden";
-					return;
-				}
-				a.href = fixLink(a.href, a.text);
-
-				$(checkbox).on("click", "", function(e)
-				{
-					if (checkbox.checked)
-						enginesAdd(checkbox.engine);
-					else
-						enginesRemove(checkbox.engine);
-
-					$("input." + id).prop("checked", checkbox.checked);
-				});
-
-			};
-		});
-	});//$("body").on("click", "div.entry div.title", function(e)
-
+				$entry.attr("opened", "");
+				parent.toggleClass("opened", true);
+				if (parent[0])
+					collapseMulti.setTitle(parent[0].list, "_titleOrig");
+			});
+			$entry.attr("opened", "");
+			parent.attr("opened", "");
+			if (parent[0])
+				collapseMulti.setTitle(parent[0].list, "_titleOrig");
+		}
+	}//entryOpen()
 	function fixLink(link, engine)
 	{
 		link = link.replace("%3F", "").replace(/[0-9]+-[0-9]+-[0-9]+(%20)?/, "").replace(/( |%20)E[0-9]+/, "");
@@ -4124,6 +4201,7 @@ if (!DB.loggedInUsername)
 
 				e.preventDefault();
 				e.stopPropagation();
+				e.stopImmediatePropagation();
 
 				let data = exportGetColors(),
 						d = new Date(),
@@ -4378,6 +4456,18 @@ if (!DB.loggedInUsername)
 
 
 	});//document.ready()
+
+//ESC(27) = close popups
+	$(document.body).on("keydown", function(e)
+	{
+		if (e.which == 27 && $("body").hasClass("popup"))
+		{
+			customLinks.hide();
+			Settings.hide();
+			changesLog.hide();
+			$("#account-popup").toggle(false);
+		}
+	});
 	$(document.body).on( "click touchstart", function(e)
 	{
 		if (e.isTrigger || e.target.isTrigger)
@@ -4389,10 +4479,16 @@ if (!DB.loggedInUsername)
 
 		if (e.target.id != "manage-links-open" && (p == 0 || (p && close)))
 			customLinks.hide();
+		else if (p)
+			return;
 
 		p = target.parents("#settings-popup").get().length;
 		if (e.target.id != "settings-open" && (p == 0 || (p && close)))
+		{
 			Settings.hide();
+		}
+		else if (p)
+			return;
 
 		p = target.parents("#changesLog").get().length;
 
@@ -4572,6 +4668,12 @@ if (!DB.loggedInUsername)
 		clearTimeout(that.timer);
 		that.timer = setTimeout(func);
 	}
+	setTimeout(function()
+	{
+		if (!_loadArchiveFromPathname.firstRun)
+			_loadArchiveFromPathname();
+	});
+
 };//func()
 
 //disqus
@@ -5011,6 +5113,19 @@ span[class="author"] + span.troll
 
 
 var changesLogText = multiline(function(){/*
+1.29 (2018-02-12)
+	+ ESC key closes popups
+	+ show/hide this show icon
+	* links with long names are longer "wrap"
+	* significally improved performance of Links manager
+	* faster opening/closing show animation
+	* selectable links in show details are now separate from other links
+	* links manager popup now has limited max size
+	! when number of visible links different from default, opening a show would make the animation jump
+	! long text wrapped in popup windows
+	! clicking on edit link icon in Links Manager, would not display correct lin in the "Result" row
+	! "reset sort" link in Links Manager would take whole row
+	! MS Edge would not initialize properly
 1.28.4 (2018-02-07)
 	+ random series as example in links manager
 	! editing/adding a link while a show opened would produce incorrect links in the opened show until page refresh
