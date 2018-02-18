@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.29
+// @version     1.30
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -212,6 +212,7 @@ let Settings = {
 		version: "",
 		noChangesLog: 0,
 		smallLogo: 0,
+		animSpeed: 2,
 		colorsCustom: {
 			"807fff": {name: ""},
 			"ff7fff": {name: ""},
@@ -220,12 +221,27 @@ let Settings = {
 			"ff7f7f": {name: ""},
 		},
 	},
+	prefsFilter: {
+		animSpeed: function(p)
+		{
+			return Math.max(0, Math.min(9, p));
+		},
+	},
+
+	filter: function(id, val)
+	{
+		if (id in this.prefsFilter)
+			return this.prefsFilter[id](val);
+
+		return val;
+	},
+
 	pref: function(id, val)
 	{
 		if (typeof(val) == "undefined")
 			return typeof(this.prefs[id]) == "undefined" ? null : this.prefs[id];
 
-		this.prefs[id] = val;
+		this.prefs[id] = this.filter(id, val);
 		this.save();
 	},
 	init: function()
@@ -369,6 +385,39 @@ let Settings = {
 //		content.append(createCheckbox("animateExpand", "Animate during expanding", this.prefs.animateExpand ? true : false, this.callback, null, "pointer"));
 		opt = createCheckbox("smallLogo", "Small logo", this.prefs.smallLogo ? true : false, this.callback, null, "pointer");
 		content.append(opt);
+		if (!device.tablet() && !device.mobile())
+		{
+			opt = $(multiline(function(){/*
+<div id="animSpeedBox" title="Speed for opening/closing a show">
+	Animation speed
+	<div>
+		<input id="animSpeed" type="range" min="1" max="10" class="slider" list="animSpeedTicks" >
+		<span class="ticks">
+			<span>1</span>
+			<span>2</span>
+			<span>3</span>
+			<span>4</span>
+			<span>5</span>
+			<span>6</span>
+			<span>7</span>
+			<span>8</span>
+			<span>9</span>
+			<span>10</span>
+		</span>
+	</div>
+	<span id="animSpeedVal"></span>
+</div>
+*/}));
+			opt.appendTo(content)
+				.find("#animSpeed")
+				.val(10-Settings.pref("animSpeed"))
+				.on("input", function(e)
+				{
+					Settings.pref("animSpeed", 10-Number(this.value));
+					$("#animSpeedVal").text(this.value);
+				})
+				.trigger("input");
+		}
 		content.append('<div class="spacer"/>');
 
 		a.href = "#";
@@ -431,8 +480,9 @@ let Settings = {
 			e.preventDefault();
 
 			let str = backup();
+
 			if (str)
-					prompt( adeName + " Settings \nYou can save it in a normal textfile and/or restore it to another computer/browser.", str );
+					_prompt( function(){}, adeName + " Settings \nYou can save it in a normal textfile and/or restore it to another computer/browser.", str );
 			else
 					alert("Nothing to backup");
 			return false;
@@ -484,7 +534,7 @@ let Settings = {
 				json = JSON.parse(str);
 			}
 			catch(e){}
-			if (json)
+			if (json && typeof(json) == "object")
 			{
 				if ("hidden" in json)
 				{
@@ -620,7 +670,14 @@ let Settings = {
 		a.addEventListener("click", function(e)
 		{
 			e.preventDefault();
-			restore(prompt( "Please enter the " + adeName + " settings text" ));
+			_prompt( function(data)
+			{
+				setTimeout(function()
+				{
+					restore(data);
+				});
+			},
+			"Please enter the " + adeName + " settings text" );
 		}, false);
 
 		d.addEventListener("click", function(e)
@@ -1246,12 +1303,9 @@ customLinks.manager = function customLinksManager(callback)
 					a = list.filter("a"),
 					img = a.find("img")[0],
 					children = engRes.children(),
-					domain = getHost(eng[0].href);
+					domain = getHost(eng[0].href) || null;
 
-			if (domain)
-				img.src = "http://www.google.com/s2/favicons?domain=" + domain;
-			else
-				img.src = "";
+			img.src = "http://www.google.com/s2/favicons?domain=" + domain;
 
 			engRes.html("");
 			engRes.append(a);
@@ -1281,8 +1335,24 @@ customLinks.manager = function customLinksManager(callback)
 		engRes.html("");
 		prevVal = null;
 	});
-	function flash(obj, color)
+
+	function flash(obj, color, scroll)
 	{
+		let p = obj[0].parentElement.getBoundingClientRect(),
+				el = obj[0].getBoundingClientRect();
+
+		if (scroll)
+		{
+			if (p.bottom < el.bottom)
+			{
+				obj[0].parentElement.scrollTop = obj[0].parentElement.scrollTop + (el.top - p.bottom) + el.height + 3;
+			}
+			if (el.top < p.top)
+			{
+				obj[0].parentElement.scrollTop = obj[0].parentElement.scrollTop + (el.bottom - p.top) - el.height - 3;
+			}
+		}
+
 		obj.toggleClass("update", false);
 		obj.css("background-color", color ? color : "#90FF90");
 		setTimeout(function()
@@ -1323,7 +1393,7 @@ customLinks.manager = function customLinksManager(callback)
 		}
 		if (equal)
 		{
-			flash(update);
+			flash(update, null, true);
 			return false;
 		}
 
@@ -1344,7 +1414,7 @@ customLinks.manager = function customLinksManager(callback)
 		}
 		function updater(update)
 		{
-			flash($(update));
+			flash($(update), null, true);
 			updateDetails();
 		}
 		if (update.length)
@@ -1362,7 +1432,7 @@ customLinks.manager = function customLinksManager(callback)
 			}
 			update.replaceWith(create(engine, !exists ? updater : function(update)
 			{
-				flash($(update));
+				flash($(update), null, true);
 			}));
 			let entry = $("div.entry").find(".engines");
 			entry.each(function()
@@ -1373,7 +1443,7 @@ customLinks.manager = function customLinksManager(callback)
 						this.textContent = engine.name;
 				});
 			});
-			flash(update);
+			flash(update, null, true);
 		}
 		else
 		{
@@ -1404,7 +1474,7 @@ customLinks.manager = function customLinksManager(callback)
 	}
 	engSortReset.click(function(e)
 	{
-		e.stopPropagation();
+//		e.stopPropagation();
 		e.preventDefault();
 		let host = engId.val(),
 				name = engName.val(),
@@ -1446,12 +1516,15 @@ customLinks.manager = function customLinksManager(callback)
 		switch(e.type)
 		{
 			case "mousedown":
-				if (typeof(e.target.className) != "string" || e.target.className.indexOf("dndh") != -1)
+//				if (typeof(e.target.className) != "string" || e.target.className.indexOf("dndh") != -1)
+				if (typeof(e.target.className) == "string" && e.target.className.indexOf("dndh") != -1)
 					dragged = e.target.parentNode;
 				break;
 			case "dragstart":
 				if (!dragged)
+				{
 					return;
+				}
 
 				e.dataTransfer.effectAllowed = 'move';
 				dragged = this;
@@ -1465,7 +1538,14 @@ customLinks.manager = function customLinksManager(callback)
 				break;
 			case "dragenter":
 				if (!dragged)
+				{
+					if (e.stopPropagation)
+						e.stopPropagation();
+
+					if (e.preventDefault)
+							e.preventDefault(); // Necessary. Allows us to drop.
 					return;
+				}
 
 				let node = this,
 						up = (node.nextSibling == dragged),
@@ -1476,7 +1556,14 @@ customLinks.manager = function customLinksManager(callback)
 				break;
 			case "dragover":
 				if (!dragged)
+				{
+					if (e.stopPropagation)
+						e.stopPropagation();
+
+					if (e.preventDefault)
+							e.preventDefault(); // Necessary. Allows us to drop.
 					return;
+				}
 
 				e.dataTransfer.dropEffect = 'move';
 				if (e.stopPropagation)
@@ -1583,8 +1670,6 @@ customLinks.manager = function customLinksManager(callback)
 					break;
 				}
 			}
-			if (a.length && img)
-				img.src = "http://www.google.com/s2/favicons?domain=" + getHost(a[0].href);
 
 			$(div).append(img);
 			$(div).append(a);
@@ -1606,7 +1691,8 @@ customLinks.manager = function customLinksManager(callback)
 				{
 					e.stopPropagation();
 					e.preventDefault();
-					flash($("#" + id), e.isTrigger ? null : "#FF9090");
+					flash($("#" + id), e.isTrigger ? null : "#FF9090", true);
+					let scroll = $(customLinks.div).find(".content")[0].scrollTop;
 					setTimeout(function()
 					{
 						let host = engId.val(),
@@ -1677,9 +1763,11 @@ customLinks.manager = function customLinksManager(callback)
 								url.val(href);
 								url.trigger("input");
 							}
+							if (scroll)
+								$(customLinks.div).find(".content")[0].scrollTop = scroll;
 						});
 						customLinks.show();
-					}, 200);
+					}, 300);
 				});
 			}
 			if (callback)
@@ -1881,7 +1969,7 @@ function createCheckbox(id, label, cookie, callback, title, className)
 	let func = function(e, val)
 	{
 		e.preventDefault();
-		e.stopPropagation();
+//		e.stopPropagation();
 		let check = span.hasAttribute("checked");
 		if (val !== undefined)
 			check = !val;
@@ -2755,17 +2843,18 @@ body.collapseMulti div.day:not(.expand):not(.opened) div.entry.multif div.title:
 	position: absolute;
 	z-index: 1234;
 	top: 50px;
-	left: 2.2%;
+	left: 4.7%;
 	width: 1px;
 	display: none;
 }
+#account-popup-content,
 #settings-popup-content,
 #manage-links-popup-content
 {
 	position: absolute;
 	top: 0px;
 	left: 0px;
-	background-color: #ffff00;
+	background-color: whitesmoke;
 	border: 1px dotted black;
 	min-width: 300px;
 	min-height: 10px;
@@ -2777,8 +2866,9 @@ div.back
 	height: 1.3em;
 	cursor: pointer;
 	position: absolute;
-	top: 5px;
-	left: 5px;
+	top: 0;
+	left: 0;
+	padding: 5px 3px 4px 5px;
 }
 .close > svg:first-child
 {
@@ -2793,7 +2883,7 @@ div.close
 	position: absolute;
 	top: 0;
 	right: 0;
-	padding: 5px;
+	padding: 7px 3px 2px 5px;
 }
 div:not(#account-popup-content) > .header
 {
@@ -2808,7 +2898,7 @@ div:not(#account-popup-content) > .header
 {
 	padding: 3px 10px;
 	overflow: auto;
-	max-height: 30em;
+	max-height: 30.7em;
 }
 #engine-edit
 {
@@ -2845,12 +2935,16 @@ div:not(#account-popup-content) > .header
 	display: inline-block;
 	height: 1em;
 }
-div.back:hover,
 #manage-links-popup .content > div.dragging:not(.hide),
 #manage-links-popup .content:not(.dragging) > div:hover
 {
 	background-color: #FFFFB7;
 	outline: 1px dotted grey;
+}
+.close:hover,
+.back:hover
+{
+	background-color: rgba(255,255,255,0.5);
 }
 .close:hover > svg
 {
@@ -3327,6 +3421,322 @@ body:not(.popup) div.entry[opened]
 .cl_removed > span:last-child
 {
 }
+#animSpeedBox
+{
+	margin-top: 0.5em;
+}
+#animSpeedBox > div
+{
+	position: relative;
+	margin: 0 0.5em;
+}
+#animSpeedBox > div
+{
+	width: 10em !important;
+}
+/* The slider itself *//*
+.slider {
+	-webkit-appearance: none;  /* Override default CSS styles *//*
+	appearance: none;
+	width: 100%; /* Full-width *//*
+	height: 5px; /* Specified height *//*
+	background: #d3d3d3; /* Grey background *//*
+	-webkit-transition: .2s; /* 0.2 seconds transition on hover *//*
+	transition: opacity .2s;
+	margin: 0;
+	vertical-align: middle !important;
+}
+
+/* Mouse-over effects *//*
+.slider:focus {
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) *//*
+.slider::-webkit-slider-thumb:after {
+	background-color: red;
+	width: 10px;
+}
+.slider::-webkit-slider-thumb {
+	-webkit-appearance: none; /* Override default look *//*
+	appearance: none;
+	width: 1em; /* Set a specific slider handle width *//*
+	height: 1em; /* Slider handle height *//*
+	background: #66A2E3; /* Green background *//*
+	cursor: pointer; /* Cursor on hover *//*
+	border-radius: 50%;
+	content: "wtf";
+}
+
+.slider::-moz-range-thumb {
+	width: 1em; /* Set a specific slider handle width *//*
+	height: 1em; /* Slider handle height *//*
+	background: #66A2E3; /* Green background *//*
+	cursor: pointer; /* Cursor on hover *//*
+	border-radius: 50%;
+	content: "wtf";
+}
+
+.ticks
+{
+	width: 10em;
+}
+.ticks > span
+{
+	position: absolute;
+	top: -10px;
+	font-size: 0.7em;
+}
+.ticks > span:after
+{
+	content: " ";
+	width: 1px;
+	height: 10px;
+	background-color: black;
+}
+.ticks > span:nth-child(1)
+{
+	left: 4%;
+}
+.ticks > span:nth-child(2)
+{
+	left: 14%;
+}
+.ticks > span:nth-child(3)
+{
+	left: 24%;
+}
+.ticks > span:nth-child(4)
+{
+	left: 34%;
+}
+.ticks > span:nth-child(5)
+{
+	left: 43%;
+}
+.ticks > span:nth-child(6)
+{
+	left: 53.5%;
+}
+.ticks > span:nth-child(7)
+{
+	left: 63.5%;
+}
+.ticks > span:nth-child(8)
+{
+	left: 73%;
+}
+.ticks > span:nth-child(9)
+{
+	left: 83%;
+}
+.ticks > span:nth-child(10)
+{
+	left: 91%;
+}
+
+.promptbox
+{
+	display: none;
+}
+.prompt-content
+{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: 999999;
+}
+.prompt-form
+{
+	background: #FBFBFB;
+	border: 1px solid silver;
+	padding: 1em;
+	border-radius: 3px;
+	-webkit-box-shadow: 0 4px 4px -2px grey;
+	-moz-box-shadow: 0 4px 4px -2px grey;
+	box-shadow: 0 4px 4px -2px grey;
+}
+.promptbox > .fade
+{
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 999998;
+	background-color: rgba(0,0,0, 0.4);
+}
+.prompt-form > .msg
+{
+	margin-bottom: 1em;
+	white-space: pre-wrap;
+}
+.prompt-form > .control
+{
+	float: right;
+	margin-top: 1em;
+}
+
+.prompt-form > .control > span
+{
+	display: inline-block;
+}
+.prompt-form > .control input[type="button"]
+{
+	height: 2.6em;
+	width: 6.1em;
+	font-size: 0.96em;
+	border-radius: 2px;
+	border-image: none;
+	border: 1px solid rgba(0,0,0,0.3);
+	margin-left: 1em;
+}
+.prompt-form > .control > input.ok
+{
+	background-color: #5A97FF;
+	color: white;
+}
+.prompt-form > .control > input.ok:hover
+{
+	background-color: #629CFF;
+}
+.prompt-form > .control > input.ok:active
+{
+	background-color: #4279D8;
+}
+.prompt-form .input
+{
+	width: 100%;
+	min-width: 5em;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+.prompt-form > textarea
+{
+	height: 4em;
+}
+body.prompt
+{
+	overflow: hidden;
+}
+body:not(.prompt) > .promptbox
+{
+	display: none !important;
+}
+body.prompt > .promptbox
+{
+	display: block !important;
+}
+body.prompts > *:not(.promptbox)
+{
+	-webkit-filter: grayscale(100%);
+	filter: grayscale(100%);
+}
+body.prompt.scrollbar
+{
+	position: absolute;
+}
+
+
+/*
+	https://kazzkiq.github.io/balloon.css/
+*//*
+[msg] {
+	position: relative;
+	cursor: pointer;
+}
+[msg]:after {
+	filter: alpha(opacity=0);
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+	-moz-opacity: 0;
+	-khtml-opacity: 0;
+	opacity: 0;
+	pointer-events: none;
+	-webkit-transition: all 0.05s ease-out 0.05s;
+	-moz-transition: all 0.05s ease-out 0.05s;
+	-ms-transition: all 0.05s ease-out 0.05s;
+	-o-transition: all 0.05s ease-out 0.05s;
+	transition: all 0.05s ease-out 0.05s;
+	font-family: sans-serif !important;
+	font-weight: normal !important;
+	font-style: normal !important;
+	text-shadow: none !important;
+	font-size: 12px !important;
+	background: rgba(17, 17, 17, 0.9);
+	border-radius: 4px;
+	color: #fff;
+	content: attr(msg);
+	padding: .5em 1em;
+	position: absolute;
+	white-space: nowrap;
+	z-index: 10;
+	bottom: 100%;
+	left: 50%;
+	margin-bottom: 11px;
+	-webkit-transform: translate(-50%, 10px);
+	-moz-transform: translate(-50%, 10px);
+	-ms-transform: translate(-50%, 10px);
+	transform: translate(-50%, 10px);
+	-webkit-transform-origin: top;
+	-moz-transform-origin: top;
+	-ms-transform-origin: top;
+	transform-origin: top;
+}
+[msg]:before {
+	background: no-repeat url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http://www.w3.org/2000/svg%22%20width%3D%2236px%22%20height%3D%2212px%22%3E%3Cpath%20fill%3D%22rgba(17, 17, 17, 0.9)%22%20transform%3D%22rotate(0)%22%20d%3D%22M2.658,0.000%20C-13.615,0.000%2050.938,0.000%2034.662,0.000%20C28.662,0.000%2023.035,12.002%2018.660,12.002%20C14.285,12.002%208.594,0.000%202.658,0.000%20Z%22/%3E%3C/svg%3E");
+	background-size: 100% auto;
+	width: 18px;
+	height: 6px;
+	filter: alpha(opacity=0);
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+	-moz-opacity: 0;
+	-khtml-opacity: 0;
+	opacity: 0;
+	pointer-events: none;
+	-webkit-transition: all 0.05s ease-out 0.05s;
+	-moz-transition: all 0.05s ease-out 0.05s;
+	-ms-transition: all 0.05s ease-out 0.05s;
+	-o-transition: all 0.05s ease-out 0.05s;
+	transition: all 0.05s ease-out 0.05s;
+	content: '';
+	position: absolute;
+	z-index: 10;
+	bottom: 100%;
+	left: 50%;
+	margin-bottom: 5px;
+	-webkit-transform: translate(-50%, 10px);
+	-moz-transform: translate(-50%, 10px);
+	-ms-transform: translate(-50%, 10px);
+	transform: translate(-50%, 10px);
+	-webkit-transform-origin: top;
+	-moz-transform-origin: top;
+	-ms-transform-origin: top;
+	transform-origin: top;
+}
+[msg][msg-show]:before, [msg][msg-show]:after {
+	filter: alpha(opacity=100);
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
+	-moz-opacity: 1;
+	-khtml-opacity: 1;
+	opacity: 1;
+	pointer-events: auto;
+}
+[msg][msg-show]:after {
+	-webkit-transform: translate(-50%, 0);
+	-moz-transform: translate(-50%, 0);
+	-ms-transform: translate(-50%, 0);
+	transform: translate(-50%, 0);
+}
+[msg][msg-show]:before {
+	-webkit-transform: translate(-50%, 0);
+	-moz-transform: translate(-50%, 0);
+	-ms-transform: translate(-50%, 0);
+	transform: translate(-50%, 0);
+}
 */});//css
 
 	style.innerHTML = css;
@@ -3493,6 +3903,7 @@ body:not(.popup) div.entry[opened]
 	$("body").on("click", 'div.entry div.title>input[type="checkbox"]', function(e)
 	{
 		e.stopPropagation();
+		hidePopups();
 	});
 	//sanitizing engine links
 	setTimeout(function()
@@ -3504,7 +3915,7 @@ body:not(.popup) div.entry[opened]
 		$("body").off("click", "div.entry div.title");
 		$("body").on("click", "div.entry div.title", entryOpen);//$("body").on("click", "div.entry div.title", function(e)
 	});
-	let aniSpeed = (device.tablet() || device.mobile())?0:200;
+	let aniSpeed = (device.tablet() || device.mobile())? 0 : 100;
 	function entryOpen(e, _engs)
 	{
 		if (!e.target)
@@ -3551,17 +3962,14 @@ body:not(.popup) div.entry[opened]
 										.replace( "MONKEY_N", MONKEY_N )
 										.replace( "MONKEY", MONKEY )
 										.replace( "{WIKI_TITLE}", WIKI_TITLE );
-
 					a.attr( "href", href )
 						.addClass(engine.cls||"")
 						.text( engine.name );
 					a[0].insertBefore(img[0], a[0].firstChild);
 					eng.css( "display", "" ); 
-					img.attr("src","http://www.google.com/s2/favicons?domain=" + engine.host );
 					if(engine.host == "airdates.tv") a.attr("target",""); 
 
-					if (domain)
-						img.attr("src", "http://www.google.com/s2/favicons?domain=" + domain);
+					img.attr("src", "http://www.google.com/s2/favicons?domain=" + (domain || null));
 
 					img.toggleClass(id, true);
 					a.toggleClass(id, true);
@@ -3635,26 +4043,39 @@ body:not(.popup) div.entry[opened]
 		}
 		if (_engs)
 			return;
-		let parent = $entry.parent();
-		$( "div.entry" ).filter("[opened]").find("div.details").slideUp(aniSpeed, function()
+
+		details = $entry.find( ".details" );
+		let parent = $entry.parent(),
+				speed = Settings.pref("animSpeed") * aniSpeed,
+				open = details.is( ":visible" );
+
+		function callbackClose(obj)
 		{
-			let entry = $(this).parent(),
+			let entry = $(obj).parent(),
 					parent = entry.parent();
+
+			if (!open && $(obj).is(details))
+				return;
 
 			entry.removeAttr("opened");
 			parent.toggleClass("opened", false);
 			if (parent[0])
 				collapseMulti.setTitle(parent[0].list, Settings.prefs.collapseMulti && !parent.hasClass("expand")? "_titleCollapsed" : "_titleOrig");
-		}); 
-		if( !$entry.find( ".details" ).is( ":visible" ) )
+		}
+		$( "div.entry" ).filter("[opened]").find("div.details").slideUp(speed, function()
 		{
-			$entry.find( ".details" ).slideDown(aniSpeed, function()
+			callbackClose(this);
+		}); 
+		if( !open )
+		{
+			function callbackOpen()
 			{
 				$entry.attr("opened", "");
 				parent.toggleClass("opened", true);
 				if (parent[0])
 					collapseMulti.setTitle(parent[0].list, "_titleOrig");
-			});
+			}
+			details.slideDown(speed, callbackOpen);
 			$entry.attr("opened", "");
 			parent.attr("opened", "");
 			if (parent[0])
@@ -3729,10 +4150,34 @@ body:not(.popup) div.entry[opened]
 				e.stopImmediatePropagation();
 				let str = exportGetColors();
 				if (str)
-						prompt( "This is the crazy text. \nYou can save it in a normal textfile and/or import it to another computer/browser.", str );
+						_prompt( function(){}, "This is the crazy text. \nYou can save it in a normal textfile and/or import it to another computer/browser.", str );
 				else
 						alert("Nothing to export");
 				return false;
+			});
+			$("body").off("click", ".importColors");
+			$("body").on( "click", ".importColors", function(e)
+			{
+				e.stopImmediatePropagation();
+				_prompt( function(str){
+					if( str )
+					{
+						let num = 0;
+						$.each( str.split( ";" ), function( i, e ){
+							let arg = e.split("=").concat([true] );
+							if (arg.length == 3 && String(Number(arg[0])) === arg[0] && arg[1].match(/^#[a-zA-Z0-9]{6}/))
+							{
+								assignColor.apply( null, arg );
+								num++;
+							}
+						} );
+						setTimeout(function()
+						{
+							alert( "kk, imported " + num + " colors" );
+						});
+					}
+				}, "Please enter the crazy text!" ); 
+				return false; 
 			});
 	} //showHideLoad()
 	DB.viewing = DB.username != DB.loggedInUsername;
@@ -4227,10 +4672,19 @@ if (!DB.loggedInUsername)
 				{
 					if (str)
 					{
+						let num = 0;
 						$.each( str.split( ";" ), function( i, e ){
-							assignColor.apply( null, e.split("=").concat([true] ) );
+							let arg = e.split("=").concat([true] );
+							if (arg.length == 3 && String(Number(arg[0])) === arg[0] && arg[1].match(/^#[a-zA-Z0-9]{6}/))
+							{
+								assignColor.apply( null, arg );
+								num++;
+							}
 						} );
-						alert( "kk, imported " + str.split(";").length + " colors" );
+						setTimeout(function()
+						{
+							alert( "kk, imported " + num + " colors" );
+						});
 					}
 					else
 					{
@@ -4458,47 +4912,68 @@ if (!DB.loggedInUsername)
 	});//document.ready()
 
 //ESC(27) = close popups
-	$(document.body).on("keydown", function(e)
+	function hidePopups()
 	{
-		if (e.which == 27 && $("body").hasClass("popup"))
+		if ($("body").hasClass("prompt"))
+		{
+			_prompt.hide();
+		}
+		else if ($("body").hasClass("popup"))
 		{
 			customLinks.hide();
 			Settings.hide();
 			changesLog.hide();
 			$("#account-popup").toggle(false);
 		}
+	}
+	$(document.body).on("keydown", function(e)
+	{
+		if (e.which == 27)
+			hidePopups();
+
 	});
 	$(document.body).on( "click touchstart", function(e)
 	{
 		if (e.isTrigger || e.target.isTrigger)
 			return;
 
+		if (!$("body").hasClass("popup") || $("body").hasClass("prompt"))
+			return;
+
 		let target = $(e.target),
 				close = target.hasClass("close") || target.parents(".close").get().length,
-				p = target.parents("#manage-links-popup").get().length;
+				p = target.parents("#account-popup").get().length,
+				hide = [];
 
-		if (e.target.id != "manage-links-open" && (p == 0 || (p && close)))
-			customLinks.hide();
-		else if (p)
+		if (p)
 			return;
 
 		p = target.parents("#settings-popup").get().length;
 		if (e.target.id != "settings-open" && (p == 0 || (p && close)))
+			hide[hide.length] = Settings.hide;
+		else if (p)
+			return;
+		p = target.parents("#manage-links-popup").get().length;
+		if (e.target.id != "manage-links-open" && (p == 0 || (p && close)))
+			hide[hide.length] = customLinks.hide;
+		else if (p)
+			return;
+
+
+		p = target.parents("#changesLog").get().length;
+		if (e.target.id != "changesLog-open" && (p == 0 || (p && close)))
 		{
-			Settings.hide();
+			hide[hide.length] = changesLog.hide;
+			if (window.hashChanged.hashSearch && location.hash == "#changes")
+				removeHash();
 		}
 		else if (p)
 			return;
 
-		p = target.parents("#changesLog").get().length;
+log(hide);
+		for(let i = 0; i < hide.length; i++)
+			hide[i]();
 
-		if (e.target.id != "changesLog-open" && (p == 0 || (p && close)))
-		{
-			changesLog.hide();
-			if (window.hashChanged.hashSearch && location.hash == "#changes")
-				removeHash();
-
-		}
 	});
 	//reset password auto fill username
 	if (location.pathname == "/_u/forgot-password")
@@ -4673,6 +5148,177 @@ if (!DB.loggedInUsername)
 		if (!_loadArchiveFromPathname.firstRun)
 			_loadArchiveFromPathname();
 	});
+
+	let _prompt = (function()
+	{
+		let html = $(multiline(function(){/*
+	<div class="promptbox">
+		<div class="fade"></div>
+		<div class="prompt-content">
+			<form class="prompt-form">
+				<div class="msg"></div>
+				<span msg="Copied to clipboard!">
+					<input class="input"></input>
+				</span>
+				<div class="control">
+					<input type="button" value="Copy" class="copy">
+					<input type="button" value="OK" class="ok">
+					<input type="button" value="Cancel" class="cancel">
+				</div>
+			</form>
+		</div>
+	</div>
+	*/})).appendTo("body"),
+				msg = html.find(".msg"),
+				input = html.find(".input"),
+				ok = html.find(".ok"),
+				copy = html.find(".copy"),
+				cancel = html.find(".cancel"),
+				form= html.find("form"),
+				that = this,
+				padding = 0
+				rightOld = $("body")[0].style.right;
+		that.callback = function(){};
+		function close(e)
+		{
+			if (e)
+			{
+				e.stopPropagation();
+			}
+			let body = $("body");
+			body.toggleClass("scrollbar", false);
+			body.toggleClass("prompt", false);
+			body[0].style.right = rightOld;
+
+			setTimeout(function()
+			{
+				html.removeAttr("id");
+			});
+		}
+	/*
+		form.on("click", function(e)
+		{
+			e.preventDefault();
+			input.trigger( "focus" );
+			let inp = input[0];
+			if (inp.selectionStart == inp.selectionEnd)
+				inp.select();
+		});
+	*/
+		ok.on("click", function(e)
+		{
+			that.callback(input.val());
+			close(e);
+		});
+		copy.on("click", function(evt)
+		{
+			let inp = input[0],
+					s = inp.selectionStart,
+					e = inp.selectionEnd;
+			inp.focus();
+			inp.select();
+
+			let ok = false;
+			try
+			{
+				ok = document.execCommand("copy");
+			}
+			catch(e) {}
+	//		inp.selectionStart = s;
+	//		inp.selectionEnd = e;
+			let msg = ok ? "Copied to clipboard!" : "Error copying to clipboard!",
+					span = input.parent()[0];
+			span.setAttribute("msg", msg);
+			span.setAttribute("msg-show", "");
+			clearTimeout(this.timer);
+			this.timer = setTimeout(function()
+			{
+				span.removeAttribute("msg-show");
+			}, 2000);
+			
+		});
+
+		cancel.on("click", close);
+
+	/*
+		html.find(".fade").on("click", close);
+		html.find(".prompt-content").on("click", function(e)
+		{
+			if (e.currentTarget == e.target)
+				close();
+		});
+	*/
+		input.on("keydown", function(e)
+		{
+			if (e.keyCode == 13)
+			{
+				e.preventDefault();
+				ok.click();
+			}
+		});
+		input.on("input", function()
+		{
+			let s = this.selectionStart,
+					e = this.selectionEnd,
+					rs = 0,
+					re = 0,
+					r = "";
+			for(let i = 0; i < this.value.length; i++)
+			{
+				if (this.value.charAt(i) != "\n" && this.value.charAt(i) != "\r")
+				{
+					r += this.value[i];
+				}
+				else
+				{
+					if (i < s)
+						rs++
+
+					if (i < e)
+						re++
+				}
+			}
+			if (r != this.value)
+			{
+				this.value = r;
+				this.selectionStart = s-rs;
+				this.selectionEnd = e-re;
+			}
+		});
+
+		function _prompt(callback, txt, val)
+		{
+			that.callback = callback;
+			//faking this id so account popup in the background wouldn't close when clicked on our prompt
+			html.attr("id", "account-popup");
+			msg.text(txt);
+			input.val(val);
+			if (typeof(val) != "undefined")
+			{
+				input.attr("readonly", true);
+				input.select();
+				copy.show();
+			}
+			else
+			{
+				input.removeAttr("readonly");
+				copy.hide();
+			}
+			let body = document.body,
+					w = body.scrollWidth;
+
+			$(body).toggleClass("prompt", true);
+			let w2 = document.body.scrollWidth;
+			if (w2 != w)
+			{
+				padding = w2 - w;
+				$(body).css("right", padding + "px");
+			}
+			$(body).toggleClass("scrollbar", w2 != w)
+		}
+		_prompt.hide = close;
+		return _prompt;
+	})();//_prompt
 
 };//func()
 
@@ -5113,6 +5759,13 @@ span[class="author"] + span.troll
 
 
 var changesLogText = multiline(function(){/*
+1.30 (2018-02-18)
+	+ animation speed setting
+	+ links manager automatically scrolls to new (or edited) link after submit
+	+ custom prompt popup for import/export colors/settings
+	! exporting ~160 colors via text string would corrupt some colors due to Chrome limitations
+	! errors in console when attempting restore settings or import colors with invalid data
+	* importing colors now validates input before saving to the account
 1.29 (2018-02-12)
 	+ ESC key closes popups
 	+ show/hide this show icon
