@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.30.1
+// @version     1.31
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -84,47 +84,6 @@ function multiline(func, ws)
 	return ws ? func : func.replace(/[\n\t]*/g, "");
 }
 
-window.hashChanged = function hashChanged(e, hash)
-{
-	let match,
-			remove = false,
-			hashSearch = false;
-	hash = typeof(hash) == "undefined" ? location.hash : hash;
-
-	if (hash == "#myshows")
-	{
-		search("info:myshows");
-		hashSearch = true;
-	}
-	else if (hash == "#hidden")
-	{
-		search("info:hidden");
-		hashSearch = true;
-	}
-	else if (match = hash.match(/^#([sfq]|search|find):(.*)/))
-	{
-		search(match[2]);
-//		remove = true;
-		hashSearch = true;
-	}
-	else if (match = hash.match(/^#(info:.+)/))
-	{
-		search(match[1]);
-//		remove = true;
-		hashSearch = true;
-	}
-	else if (hash == "#changes")
-	{
-		hashSearch = true;
-		changesLog.show(true);
-	}
-	if (remove && hash == location.hash)
-	{
-		removeHash();
-		hashSearch = false;
-	}
-	hashChanged.hashSearch = hashSearch;
-}
 function removeHash()
 {
 	history.replaceState({}, "", location.href.replace(/#.*/, ''));
@@ -156,1890 +115,1910 @@ receiveMessage._self = this;
 window.addEventListener("message", receiveMessage, false);
 let func = function(event)
 {
+log(navigator.userAgent);
+	let browser = "";
+	if((navigator.userAgent.indexOf("Opera") || navigator.userAgent.indexOf('OPR')) != -1 )
+	{
+		browser = "opera"
+	}
+	else if(navigator.userAgent.indexOf("Edge") != -1)
+	{
+		browser = "edge";
+	}
+	else if(navigator.userAgent.indexOf("Safari") != -1)
+	{
+		browser = "safari";
+	}
+	else if(navigator.userAgent.indexOf("Firefox") != -1 )
+	{
+		browser = "ff";
+	}
+	else if((navigator.userAgent.indexOf("MSIE") != -1 ) || (!!document.documentMode == true )) //IF IE > 10
+	{
+		browser = "ie"
+	}
+	else if(navigator.userAgent.indexOf("Chrome") != -1 )
+	{
+		browser = "chrome";
+	}
+	if (browser)
+		document.body.classList.toggle(browser, true);
 
-let adeName = "Airdates.tv enhancer",
-		adeVersion = "n/a",
-		force = false,
-		enginesDefault = [],
-		_engines = [],
-		_hidden = ls("hidden") || [],
-		loo = 1000,
-		_enginesList = [];
+	let adeName = "Airdates.tv enhancer",
+			adeVersion = "n/a",
+			force = false,
+			enginesDefault = [],
+			_engines = [],
+			_hidden = ls("hidden") || [],
+			loo = 1000,
+			_enginesList = [];
 
 
-try
-{
-	adeName = GM_info.script.name;
-	adeVersion = GM_info.script.version;
-}catch(e){};
-cs.list = ["s","n"];
-cs.listLegacy = {
-	sh: "showHidden",
-	sn: "showNew",
-	sr: "showReturn",
-	cm: "collapseMulti",
-	w: "weeks",
-	wa: "enableWatched",
-	middleClick: "middleClick"
-};
+	try
+	{
+		adeName = GM_info.script.name;
+		adeVersion = GM_info.script.version;
+	}catch(e){};
+	cs.list = ["s","n"];
+	cs.listLegacy = {
+		sh: "showHidden",
+		sn: "showNew",
+		sr: "showReturn",
+		cm: "collapseMulti",
+		w: "weeks",
+		wa: "enableWatched",
+		middleClick: "middleClick"
+	};
 
-let enginesHide = ls("enginesHide") || [];
-let Settings = {
-	SORT_NAME: 0,
-	SORT_COLOR: 1,
-	inited: false,
-	box: null,
-	colorsDef: {
-		"807fff": {name: ""},
-		"ff7fff": {name: ""},
-		"80ff7f": {name: ""},
-		"7fffff": {name: ""},
-		"ff7f7f": {name: ""},
-	},
-	prefs: {},
-	prefsDef: {
-		enableWatched: 0,
-		shortTitle: 0,
-		shortTitleExpand: 1,
-//		animateExpand: 0,
-		showHidden: 0,
-		collapseMulti: 0,
-		showNew: 0,
-		showReturn: 0,
-		middleClick: [],
-		weeks: 0,
-		sortBy: 0,
-		version: "",
-		noChangesLog: 0,
-		smallLogo: 0,
-		animSpeed: 2,
-		colorsCustom: {
+	let enginesHide = ls("enginesHide") || [];
+	let Settings = {
+		SORT_NAME: 0,
+		SORT_COLOR: 1,
+		inited: false,
+		box: null,
+		colorsDef: {
 			"807fff": {name: ""},
 			"ff7fff": {name: ""},
 			"80ff7f": {name: ""},
 			"7fffff": {name: ""},
 			"ff7f7f": {name: ""},
 		},
-	},
-	prefsFilter: {
-		animSpeed: function(p)
-		{
-			return Math.max(0, Math.min(9, p));
-		},
-	},
-
-	filter: function(id, val)
-	{
-		if (id in this.prefsFilter)
-			return this.prefsFilter[id](val);
-
-		return val;
-	},
-
-	pref: function(id, val)
-	{
-		if (typeof(val) == "undefined")
-			return typeof(this.prefs[id]) == "undefined" ? null : this.prefs[id];
-
-		this.prefs[id] = this.filter(id, val);
-		this.save();
-	},
-	init: function()
-	{
-		if (this.inited)
-			return;
-
-		this.prefs = ls("settings") || Object.assign({}, this.prefsDef);
-		if (typeof(this.prefs) != "object")
-			this.prefs = Object.assign({}, this.prefsDef);
-
-		for(i in this.prefsDef)
-		{
-			if (!(i in this.prefs))
-				this.prefs[i] = this.prefsDef[i];
-		}
-		let c = cs("wa"),
-				s = false;
-
-		if (c !== null)
-		{
-			this.prefs.enableWatched = c ? 1 : 0;
-			eraseCookie("wa");
-			s = true;
-		}
-		c = cs("showhidden");
-		if (c !== null)
-		{
-			this.prefs.showHidden = c ? 1 : 0;
-			eraseCookie("showhidden");
-			s = true;
-		}
-		c = cs("sh");
-		if (c !== null)
-		{
-			this.prefs.showHidden = c ? 1 : 0;
-			eraseCookie("sh");
-			s = true;
-		}
-
-		c = cs("cm");
-		if (c !== null)
-		{
-			this.prefs.collapseMulti = c ? 1 : 0;
-			eraseCookie("cm");
-			s = true;
-		}
-
-		c = cs("middleClick");
-		if (c !== null)
-		{
-			this.prefs.middleClick = c ? c : [];
-			eraseCookie("middleClick");
-			s = true;
-		}
-
-		/* splitting New/Returning into two separate filters */
-		c = cs("sn");
-		if (c === null && this.pref("showNew") === null)
-		{
-			let n = cs("n") ? 1 : 0;
-			this.prefs.showNew = n;
-			this.prefs.showReturn = n;
-		}
-		else if (c !== null)
-		{
-			this.prefs.showNew = c;
-			eraseCookie("sn");
-			s = true;
-		}
-
-		c = cs("sr");
-		if (c !== null)
-		{
-			this.prefs.showReturn = c;
-			eraseCookie("sr");
-			s = true;
-		}
-
-		c = cs("w");
-		if (c !== null)
-		{
-			this.prefs.weeks = c;
-			eraseCookie("w");
-			s = true;
-		}
-
-		if (s)
-			this.save();
-
-		this.create();
-	},
-	create: function(callback)
-	{
-		if (Settings.box)
-			return callback ? callback() : true;
-
-		let html = multiline(function(){/*
-<div id="settings-popup">
-	<div id="settings-popup-content">
-		<div class="header">
-			<div class="back" title="Back">
-				<svg viewBox="0 0 24 24">
-					<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
-				</svg>
-			</div>
-			<h4>Options</h4>
-			<div class="close" title="Close" title="Close">
-				<svg viewBox="0 0 24 24">
-					<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
-				</svg>
-				<svg viewBox="0 0 24 24">
-					<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
-				</svg>
-			</div>
-		</div>
-		<div class="content">
-		</div>
-	</div>
-</div>
-		*/});//html
-
-		let popup = $(html).appendTo("body"),
-				content = popup.find(".content"),
-				a = document.createElement("a"),
-				i = document.createElement("span"),
-				span = document.createElement("div");
-
-		content.toggleClass("settings", true);
-		span.appendChild(i);
-		span.appendChild(a);
-
-		Settings.box = popup;
-		content.append(createCheckbox("enableWatched", "Enable watched", this.prefs.enableWatched ? true : false, this.callback, null, "pointer"));
-		let opt = createCheckbox("shortTitle", "Truncate long titles", this.prefs.shortTitle ? true : false, this.callback, null, "pointer");
-		opt.title = "Shorten titles to fit into single row.";
-		content.append(opt);
-		opt = createCheckbox("shortTitleExpand", "Auto expand truncated titles", this.prefs.shortTitleExpand ? true : false, this.callback, null, "pointer");
-		opt.title = "Show full title when cursor over it. If disabled you still be able see full title in tooltip or when show is opened.";
-		content.append(opt);
-//		content.append(createCheckbox("animateExpand", "Animate during expanding", this.prefs.animateExpand ? true : false, this.callback, null, "pointer"));
-		opt = createCheckbox("smallLogo", "Small logo", this.prefs.smallLogo ? true : false, this.callback, null, "pointer");
-		content.append(opt);
-		if (!device.tablet() && !device.mobile())
-		{
-			opt = $(multiline(function(){/*
-<div id="animSpeedBox" title="Speed for opening/closing a show">
-	Animation speed
-	<div>
-		<input id="animSpeed" type="range" min="1" max="10" class="slider" list="animSpeedTicks" >
-		<span class="ticks">
-			<span>1</span>
-			<span>2</span>
-			<span>3</span>
-			<span>4</span>
-			<span>5</span>
-			<span>6</span>
-			<span>7</span>
-			<span>8</span>
-			<span>9</span>
-			<span>10</span>
-		</span>
-	</div>
-	<span id="animSpeedVal"></span>
-</div>
-*/}));
-			opt.appendTo(content)
-				.find("#animSpeed")
-				.val(10-Settings.pref("animSpeed"))
-				.on("input", function(e)
-				{
-					Settings.pref("animSpeed", 10-Number(this.value));
-					$("#animSpeedVal").text(this.value);
-				})
-				.trigger("input");
-		}
-		content.append('<div class="spacer"/>');
-
-		a.href = "#";
-		i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12,3A9,9 0 0,0 3,12H0L4,16L8,12H5A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19C10.5,19 9.09,18.5 7.94,17.7L6.5,19.14C8.04,20.3 9.94,21 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M14,12A2,2 0 0,0 12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12Z" /></svg>';
-		a.textContent = "Backup settings";
-		span.title = "Backup all settings that also include links settings, watched and hidden shows lists, middle click selection.";
-		let backup = function()
-		{
-			let cookies = {},
-					str = "",
-					obj = {
-						version: adeVersion,
-						settings: Settings.prefs
-					};
-
-			for(let i = 0; i < cs.list.length; i++)
-			{
-				let v = cs(cs.list[i]);
-				if (v !== null)
-				{
-					cookies[cs.list[i]] = v;
-				}
-			}
-			for(let i in cookies)
-			{
-				obj.cookies = cookies;
-				break;
-			}
-			for(let i in _hidden)
-			{
-				obj.hidden = _hidden;
-				break;
-			}
-			for(let i in watched._list)
-			{
-				obj.watched = watched._list;
-				break;
-			}
-			for(let i in customLinks._list)
-			{
-				obj.customLinks = customLinks._list;
-				break;
-			}
-			for(let i in enginesHide)
-			{
-				obj.enginesHide = enginesHide;
-				break;
-			}
-			for(let i in enginesSort._list)
-			{
-				obj.enginesSort = enginesSort._list;
-				break;
-			}
-			str = JSON.stringify(obj);
-
-			return str;
-		}
-		a.addEventListener("click", function(e)
-		{
-			e.preventDefault();
-
-			let str = backup();
-
-			if (str)
-					_prompt( function(){}, adeName + " Settings \nYou can save it in a normal textfile and/or restore it to another computer/browser.", str );
-			else
-					alert("Nothing to backup");
-			return false;
-		}, false);
-		let d = a.cloneNode(true);
-
-
-		d.addEventListener("click", function(e)
-		{
-			if (e.isTrigger)
-				return;
-
-			e.preventDefault();
-			e.stopPropagation();
-
-			let d = new Date(),
-					date = d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
-
-			fileSave("Airdates.tv_enhancer_v" + adeVersion + "_settings_" + date + ".json", backup());
-		}, false);
-		d.textContent = "save to file";
-		d.className = "file";
-		span.appendChild(d);
-		content.append(span);
-
-		span = span.cloneNode(true);
-		span.title = "Note, your watched and hidden shows list will stay intact, new shows will be added to it. Custom links will only overwrite existing with matched ID. Everything else will be overwritten";
-		i = span.firstChild;
-		a = i.nextSibling;
-		d = span.lastChild;
-		i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3M12,8V13L16.28,15.54L17,14.33L13.5,12.25V8H12Z" /></svg>';
-		a.textContent = "Restore settings";
-		function restore(str)
-		{
-			let reload = false,
-					txt = "Error restoring settings";
-			if(!str)
-				return;
-
-			let hiddenNum = 0,
-					watchedNum = 0,
-					settingsNum = 0,
-					enginesNum = 0,
-					engineHideNum = 0;
-
-			let json = null;
-			try
-			{
-				json = JSON.parse(str);
-			}
-			catch(e){}
-			if (json && typeof(json) == "object")
-			{
-				if ("hidden" in json)
-				{
-					hiddenNum = json.hidden.length;
-					for(let i = 0; i < hiddenNum; i++)
-						showHide(parseInt(json.hidden[i]), 1);
-				}
-				if ("watched" in json)
-				{
-					for(let id in json.watched)
-					{
-						for(let i = 0; i < json.watched[id].length; i++)
-						{
-							let ep = json.watched[id][i];
-							watched.add(id, ep);
-							watchedNum++;
-							$('div.entry[data-series-id="' + id + '"]').each(function(n, entry)
-							{
-								if (watched.title(entry) == ep)
-									watched.update(entry, true);
-							});
-						}
-					}
-					watched.save(true);
-				}
-				if (!json.cookies)
-					json.cookies = {};
-
-				if ("settings" in json)
-				{
-					let save = false;
-					for(let i in json.settings)
-					{
-						let val = json.settings[i];
-						if (i in cs.listLegacy && !(i in Settings.prefsDef))
-						{
-							val = json.settings[i];
-							i = cs.listLegacy[i];
-						}
-
-						if (!(i in Settings.prefsDef))
-						{
-							if (!(i in json.cookies) && cs.list.indexOf(i) != -1)
-								json.cookies[i] = val;
-
-							continue;
-						}
-
-						if (!command(i, val))
-						{
-							settingsNum++;
-							Settings.prefs[i] = val;
-							reload = true;
-							save = true;
-						}
-					}
-					if (save)
-						Settings.save();
-				}
-
-				if ("cookies" in json)
-				{
-					for(let i in json.cookies)
-					{
-						if (cs.list.indexOf(i) == -1)
-							continue;
-
-						if (!command(i, json.cookies[i]))
-						{
-							settingsNum++;
-							cs(i, json.cookies[i]);
-							reload = true;
-						}
-					}
-				}
-				let enginesNew = [];
-				if ("customLinks" in json)
-				{
-					let changed = false;
-					for (i in json.customLinks)
-					{
-						enginesNum++;
-						changed = reload = true;
-						customLinks._list[i] = json.customLinks[i];
-						enginesNew.push(json.customLinks[i]);
-					}
-					if (changed)
-						ls("customLinks", customLinks._list);
-
-				}
-				if ("enginesHide" in json)
-				{
-					let changed = false;
-					let list = [];
-					for(let i = 0; i < json.enginesHide.length; i++)
-					{
-						if (enginesFind(json.enginesHide[i]) != -1 || enginesFind(json.enginesHide[i], enginesNew) != -1)
-						{
-							list[list.length] = json.enginesHide[i];
-							changed = reload = true;
-							engineHideNum++;
-						}
-					}
-					enginesHide = list;
-					if (changed)
-						ls("enginesHide", enginesHide);
-				}
-				if ("enginesSort" in json)
-				{
-					let changed = false;
-					enginesSort._list = [];
-					for(let i = 0; i < json.enginesSort.length; i++)
-					{
-						if (enginesFind(json.enginesSort[i]) != -1 || enginesFind(json.enginesSort[i], enginesNew) != -1)
-						{
-							changed = reload = true;
-							enginesSort._list.push(json.enginesSort[i]);
-						}
-					}
-					if (changed)
-						ls("enginesSort", enginesSort._list);
-				}
-				txt = settingsNum + " setting" + (settingsNum > 1 ? "s" : "") + " imported" + ((hiddenNum || watchedNum) ? " and marked " : "");
-				if (hiddenNum)
-					txt += hiddenNum + " show" + (hiddenNum > 1 ? "s" : "") + " as hidden";
-				if (watchedNum)
-					txt += (hiddenNum ? ", " : " ") + watchedNum + " as watched";
-			}
-			alert(txt);
-			if (reload)
-				window.location.reload();
-		}
-		a.addEventListener("click", function(e)
-		{
-			e.preventDefault();
-			_prompt( function(data)
-			{
-				setTimeout(function()
-				{
-					restore(data);
-				});
+		prefs: {},
+		prefsDef: {
+			enableWatched: 0,
+			shortTitle: 0,
+			shortTitleExpand: 1,
+	//		animateExpand: 0,
+			showHidden: 0,
+			collapseMulti: 0,
+			showNew: 0,
+			showReturn: 0,
+			middleClick: [],
+			weeks: 0,
+			sortBy: 0,
+			version: "",
+			noChangesLog: 0,
+			smallLogo: 0,
+			animSpeed: 2,
+			colorsCustom: {
+				"807fff": {name: ""},
+				"ff7fff": {name: ""},
+				"80ff7f": {name: ""},
+				"7fffff": {name: ""},
+				"ff7f7f": {name: ""},
 			},
-			"Please enter the " + adeName + " settings text" );
-		}, false);
-
-		d.addEventListener("click", function(e)
-		{
-			e.preventDefault();
-			e.stopPropagation();
-			fileLoad(function(text)
+		},
+		prefsFilter: {
+			animSpeed: function(p)
 			{
-				restore(text);
-			});
-		}, false);
-		d.textContent = "load from file";
-		span.appendChild(d);
-		content.append(span);
+				return Math.max(0, Math.min(9, p));
+			},
+		},
 
-
-	},//Settings.create()
-
-	callback: function(e, id, check)
-	{
-		Settings.prefs[id] = check ? 1 : 0;
-		Settings.save();
-	},
-
-	save: function(f)
-	{
-		ls("settings", this.prefs);
-	},
-
-	show: function(noBack)
-	{
-		if (noBack)
-			Settings.box.attr("noback", "");
-		else
-			Settings.box.attr("noback");
-
-		Settings.box.show();
-		setPopup(true);
-	},
-
-	hide: function()
-	{
-		Settings.box.hide();
-		setPopup(false);
-	},
-}//Settings
-
-function fileLoad(callback, ext)
-{
-	let f = document.createElement("input");
-	f.type = "file";
-	if (typeof(ext) == "undefined")
-		ext = ".json";
-
-	if (ext)
-		f.setAttribute("accept", ext);
-
-	function readFile(e)
-	{
-		f.removeEventListener("change", readFile, false);
-		let files = f.files;
-		if (!f.files.length)
+		filter: function(id, val)
 		{
-			alert('Please select a file!');
-			return;
-		}
-		let reader = new FileReader();
+			if (id in this.prefsFilter)
+				return this.prefsFilter[id](val);
 
-		reader.onloadend = function(evt)
+			return val;
+		},
+
+		pref: function(id, val)
 		{
-			if (evt.target.readyState == FileReader.DONE)
+			if (typeof(val) == "undefined")
+				return typeof(this.prefs[id]) == "undefined" ? null : this.prefs[id];
+
+			this.prefs[id] = this.filter(id, val);
+			this.save();
+		},
+		init: function()
+		{
+			if (this.inited)
+				return;
+
+			this.prefs = ls("settings") || Object.assign({}, this.prefsDef);
+			if (typeof(this.prefs) != "object")
+				this.prefs = Object.assign({}, this.prefsDef);
+
+			for(i in this.prefsDef)
 			{
-				callback(evt.target.result);
+				if (!(i in this.prefs))
+					this.prefs[i] = this.prefsDef[i];
 			}
-		};
+			let c = cs("wa"),
+					s = false;
 
-		let blob = f.files[0].slice(0, f.files[0].size);
-		reader.readAsBinaryString(blob);
-	}
-	f.addEventListener("change", readFile, false);
-	f.click();
-}
-
-function fileSave(name, data, type)
-{
-	type = type ? type : 'text/json';
-	let blob = new Blob([data], {type: type}),
-			a = document.createElement("a"),
-			d = new Date(),
-			date = d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
-
-	a.download = name;
-	a.isTrigger = true;
-	a.href = window.URL.createObjectURL(blob);
-	a.dataset.downloadurl = [type, a.download, a.href].join(':');
-	$("#account-popup").append(a);
-	a.click();
-	a.parentNode.removeChild(a);
-}
-
-function exportGetColors()
-{
-	let str = $.map(DB.savedColors,function(e,i){return i + "=" + e;}).join(";");
-	return str.replace(/;?[0-9]+=#FFFFFF/i, "");
-}
-
-function pad(t)
-{
-	return "" + t < 10 ? "0" + t : t;
-}
-
-function enginesBackup()
-{
-	if (!enginesBackup.backup)
-		enginesBackup.backup = window.engines;
-}
-
-function enginesRestore()
-{
-	if (enginesBackup.backup)
-	{
-		window.engines = enginesBackup.backup;
-		enginesBackup.backup = null
-	}
-}
-
-function enginesAdd(id)
-{
-	for(let i = 0; i < _engines.length; i++)
-	{
-		if (_engines[i].name == id || _engines[i].host == id)
-			return;
-	}
-	for(let i = 0; i < engines.length; i++)
-	{
-		if (engines[i].name == id || engines[i].host == id)
-		{
-			_enginesList.push(engines[i].host);
-			_engines.push(engines[i]);
-			Settings.pref("middleClick", _enginesList);
-			return;
-		}
-	}
-};
-
-function enginesRemove(id)
-{
-	for(let i = 0; i < _engines.length; i++)
-	{
-		if (_engines[i].name == id || _engines[i].host == id)
-		{
-			let n = _enginesList.indexOf(_engines[i].host);
-			if (n != -1)
-				_enginesList.splice(n, 1);
-
-			Settings.pref("middleClick", _enginesList);
-			_engines.splice(i, 1);
-			return;
-		}
-	}
-};
-
-function enginesCheck(id)
-{
-	for(let i = 0; i < _engines.length; i++)
-	{
-		if (_engines[i].name == id || _engines[i].host == id)
-			return i;
-	}
-	return -1;
-};
-
-function enginesFind(id, obj)
-{
-	obj = typeof(obj) == "undefined" ? window.engines : obj;
-	for(let i = 0; i < obj.length; i++)
-	{
-		if (obj[i].name == id || obj[i].host == id)
-			return i;
-	}
-	return -1;
-};
-
-function enginesSort(list, save)
-{
-	if (typeof(list) == "undefined")
-	{
-		list = ls("enginesSort") || [];
-		save = true;
-	}
-
-	let newList = [],
-			newEnginesList = [];
-
-	for(let i = 0; i < list.length; i++)
-	{
-		let index = enginesFind(list[i]);
-		if (index == -1 || newList.indexOf(window.engines[index].host) != -1)
-			continue;
-
-		newEnginesList[newEnginesList.length] = window.engines[index];
-		newList[newList.length] = window.engines[index].host;
-	}
-	for(let i = 0; i < window.engines.length; i++)
-	{
-		if (newList.indexOf(window.engines[i].host) == -1)
-		{
-			newEnginesList[newEnginesList.length] = window.engines[i];
-			newList[newList.length] = window.engines[i].host;
-		}
-	}
-	for(let i in customLinks._list)
-	{
-		if (newList.indexOf(i) == -1)
-		{
-			newEnginesList[newEnginesList.length] = customLinks._list[i];
-			newList[newList.length] = i;
-		}
-	}
-	if (save)
-		enginesSort._list = newList;
-
-	window.engines = newEnginesList;
-}
-enginesSort.changed = function()
-{
-	let list = [];
-	for (let i = 0; i < enginesDefault.length; i++)
-	{
-		list[list.length] = enginesDefault[i].host;
-	}
-	for (i in customLinks._list)
-	{
-		if (list.indexOf(i) == -1)
-			list[list.length] = i;
-	}
-	return !isEqual(list, enginesSort._list);
-}
-
-function isEqual (a, b)
-{
-	for(let i in a)
-	{
-		if (!(i in b) || a[i] != b[i])
-			return false
-	}
-	for(let i in b)
-	{
-		if (!(i in a) || a[i] != b[i])
-			return false
-	}
-	return true;
-}
-
-function cleanName(id)
-{
-	return id !== null ? id.replace(/[^a-zA-Z0-9-_]/g, "_") : "";
-}
-
-function getHost(url)
-{
-	let a = document.createElement('a');
-	a.href = url;
-	return a.hostname;
-}
-function engineFixHost(engine)
-{
-	if (engine.host)
-		return;
-
-	engine.host = getHost(engine.href);
-}
-
-function showHide(id, t)
-{
-	let hidden = _hidden.indexOf(id);
-	if (typeof(t) == "undefined")
-		return hidden != -1;
-
-	if (t == 2)
-		t = hidden == -1 ? 1 : 0;
-
-	switch(t)
-	{
-		case 0:
-			_hidden.splice(hidden, 1);
-			if (!DB.savedColors[id])
-				DB.infoRemove(id);
-
-			hidden = false;
-			break;
-		case 1:
-			if (hidden == -1)
+			if (c !== null)
 			{
-				_hidden.push(id);
-				DB.infoAdd(id);
+				this.prefs.enableWatched = c ? 1 : 0;
+				eraseCookie("wa");
+				s = true;
+			}
+			c = cs("showhidden");
+			if (c !== null)
+			{
+				this.prefs.showHidden = c ? 1 : 0;
+				eraseCookie("showhidden");
+				s = true;
+			}
+			c = cs("sh");
+			if (c !== null)
+			{
+				this.prefs.showHidden = c ? 1 : 0;
+				eraseCookie("sh");
+				s = true;
 			}
 
-			hidden = true;
-			break;
-	}
-	let css = $("#css" + id);
-	if (hidden)
-	{
-		if (!css.length)
+			c = cs("cm");
+			if (c !== null)
+			{
+				this.prefs.collapseMulti = c ? 1 : 0;
+				eraseCookie("cm");
+				s = true;
+			}
+
+			c = cs("middleClick");
+			if (c !== null)
+			{
+				this.prefs.middleClick = c ? c : [];
+				eraseCookie("middleClick");
+				s = true;
+			}
+
+			/* splitting New/Returning into two separate filters */
+			c = cs("sn");
+			if (c === null && this.pref("showNew") === null)
+			{
+				let n = cs("n") ? 1 : 0;
+				this.prefs.showNew = n;
+				this.prefs.showReturn = n;
+			}
+			else if (c !== null)
+			{
+				this.prefs.showNew = c;
+				eraseCookie("sn");
+				s = true;
+			}
+
+			c = cs("sr");
+			if (c !== null)
+			{
+				this.prefs.showReturn = c;
+				eraseCookie("sr");
+				s = true;
+			}
+
+			c = cs("w");
+			if (c !== null)
+			{
+				this.prefs.weeks = c;
+				eraseCookie("w");
+				s = true;
+			}
+
+			if (s)
+				this.save();
+
+			this.create();
+		},
+		create: function(callback)
 		{
-			let style = "<style id='css" + id + "'>"+
-									"div.calendar:not(.showHidden).activeOnly .entry[data-series-id='" + id + "'][opened]:not(.multi){ display: block !important; }"+
-									"div.calendar:not(.showHidden) .entry[data-series-id='" + id + "']:not([opened]):not(.searchResult){ display: none !important; }"+
-									".entry[data-series-id='" + id + "'] .title{ font-style: italic; }"+
-									"div:not(#searchResults) > .entry[data-series-id='" + id + "']:not([opened]):not(.searchResult){ opacity: 0.3;}"+
-									".entry[data-series-id='" + id + "'] .showhide0{ display: inline; }"+
-									".entry[data-series-id='" + id + "'] .showhide1{ display: none; }"+
-									"</style>";
-			$(style).appendTo("body");
+			if (Settings.box)
+				return callback ? callback() : true;
+
+			let html = multiline(function(){/*
+	<div id="settings-popup">
+		<div id="settings-popup-content">
+			<div class="header">
+				<div class="back" title="Back">
+					<svg viewBox="0 0 24 24">
+						<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
+					</svg>
+				</div>
+				<h4>Options</h4>
+				<div class="close" title="Close" title="Close">
+					<svg viewBox="0 0 24 24">
+						<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
+					</svg>
+					<svg viewBox="0 0 24 24">
+						<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
+					</svg>
+				</div>
+			</div>
+			<div class="content">
+			</div>
+		</div>
+	</div>
+			*/});//html
+
+			let popup = $(html).appendTo("body"),
+					content = popup.find(".content"),
+					a = document.createElement("a"),
+					i = document.createElement("span"),
+					span = document.createElement("div");
+
+			content.toggleClass("settings", true);
+			span.appendChild(i);
+			span.appendChild(a);
+
+			Settings.box = popup;
+			content.append(createCheckbox("enableWatched", "Enable watched", this.prefs.enableWatched ? true : false, this.callback, null, "pointer"));
+			let opt = createCheckbox("shortTitle", "Truncate long titles", this.prefs.shortTitle ? true : false, this.callback, null, "pointer");
+			opt.title = "Shorten titles to fit into single row.";
+			content.append(opt);
+			opt = createCheckbox("shortTitleExpand", "Auto expand truncated titles", this.prefs.shortTitleExpand ? true : false, this.callback, null, "pointer");
+			opt.title = "Show full title when cursor over it. If disabled you still be able see full title in tooltip or when show is opened.";
+			content.append(opt);
+	//		content.append(createCheckbox("animateExpand", "Animate during expanding", this.prefs.animateExpand ? true : false, this.callback, null, "pointer"));
+			opt = createCheckbox("smallLogo", "Small logo", this.prefs.smallLogo ? true : false, this.callback, null, "pointer");
+			content.append(opt);
+			if (!device.tablet() && !device.mobile())
+			{
+				opt = $(multiline(function(){/*
+	<div id="animSpeedBox" title="Speed for opening/closing a show">
+		Animation speed
+		<div>
+			<input id="animSpeed" type="range" min="1" max="10" class="slider" list="animSpeedTicks" >
+			<span class="ticks">
+				<span>1</span>
+				<span>2</span>
+				<span>3</span>
+				<span>4</span>
+				<span>5</span>
+				<span>6</span>
+				<span>7</span>
+				<span>8</span>
+				<span>9</span>
+				<span>10</span>
+			</span>
+		</div>
+		<span id="animSpeedVal"></span>
+	</div>
+	*/}));
+				opt.appendTo(content)
+					.find("#animSpeed")
+					.val(10-Settings.pref("animSpeed"))
+					.on("input", function(e)
+					{
+						Settings.pref("animSpeed", 10-Number(this.value));
+						$("#animSpeedVal").text(this.value);
+					})
+					.trigger("input");
+			}
+			content.append('<div class="spacer"/>');
+
+			a.href = "#";
+			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12,3A9,9 0 0,0 3,12H0L4,16L8,12H5A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19C10.5,19 9.09,18.5 7.94,17.7L6.5,19.14C8.04,20.3 9.94,21 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M14,12A2,2 0 0,0 12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12Z" /></svg>';
+			a.textContent = "Backup settings";
+			span.title = "Backup all settings that also include links settings, watched and hidden shows lists, middle click selection.";
+			let backup = function()
+			{
+				let cookies = {},
+						str = "",
+						obj = {
+							version: adeVersion,
+							settings: Settings.prefs
+						};
+
+				for(let i = 0; i < cs.list.length; i++)
+				{
+					let v = cs(cs.list[i]);
+					if (v !== null)
+					{
+						cookies[cs.list[i]] = v;
+					}
+				}
+				for(let i in cookies)
+				{
+					obj.cookies = cookies;
+					break;
+				}
+				for(let i in _hidden)
+				{
+					obj.hidden = _hidden;
+					break;
+				}
+				for(let i in watched._list)
+				{
+					obj.watched = watched._list;
+					break;
+				}
+				for(let i in customLinks._list)
+				{
+					obj.customLinks = customLinks._list;
+					break;
+				}
+				for(let i in enginesHide)
+				{
+					obj.enginesHide = enginesHide;
+					break;
+				}
+				for(let i in enginesSort._list)
+				{
+					obj.enginesSort = enginesSort._list;
+					break;
+				}
+				str = JSON.stringify(obj);
+
+				return str;
+			}
+			a.addEventListener("click", function(e)
+			{
+				e.preventDefault();
+
+				let str = backup();
+
+				if (str)
+						_prompt({
+							callback: function(){},
+							text: adeName + " Settings \nYou can save it in a normal textfile and/or restore it to another computer/browser.",
+							value: str
+						});
+				else
+						alert("Nothing to backup");
+				return false;
+			}, false);
+
+			content.append(span);
+
+			span = span.cloneNode(true);
+			span.title = "Note, your watched and hidden shows list will stay intact, new shows will be added to it. Custom links will only overwrite existing with matched ID. Everything else will be overwritten";
+			i = span.firstChild;
+			a = i.nextSibling;
+			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3M12,8V13L16.28,15.54L17,14.33L13.5,12.25V8H12Z" /></svg>';
+			a.textContent = "Restore settings";
+			function restore(str)
+			{
+				let reload = false,
+						txt = "Error restoring settings";
+				if(!str)
+					return;
+
+				let hiddenNum = 0,
+						watchedNum = 0,
+						settingsNum = 0,
+						enginesNum = 0,
+						engineHideNum = 0;
+
+				let json = null;
+				try
+				{
+					json = JSON.parse(str);
+				}
+				catch(e){}
+				if (json && typeof(json) == "object")
+				{
+					if ("hidden" in json)
+					{
+						hiddenNum = json.hidden.length;
+						for(let i = 0; i < hiddenNum; i++)
+							showHide(parseInt(json.hidden[i]), 1);
+					}
+					if ("watched" in json)
+					{
+						for(let id in json.watched)
+						{
+							for(let i = 0; i < json.watched[id].length; i++)
+							{
+								let ep = json.watched[id][i];
+								watched.add(id, ep);
+								watchedNum++;
+								$('div.entry[data-series-id="' + id + '"]').each(function(n, entry)
+								{
+									if (watched.title(entry) == ep)
+										watched.update(entry, true);
+								});
+							}
+						}
+						watched.save(true);
+					}
+					if (!json.cookies)
+						json.cookies = {};
+
+					if ("settings" in json)
+					{
+						let save = false;
+						for(let i in json.settings)
+						{
+							let val = json.settings[i];
+							if (i in cs.listLegacy && !(i in Settings.prefsDef))
+							{
+								val = json.settings[i];
+								i = cs.listLegacy[i];
+							}
+
+							if (!(i in Settings.prefsDef))
+							{
+								if (!(i in json.cookies) && cs.list.indexOf(i) != -1)
+									json.cookies[i] = val;
+
+								continue;
+							}
+
+							if (!command(i, val))
+							{
+								settingsNum++;
+								Settings.prefs[i] = val;
+								reload = true;
+								save = true;
+							}
+						}
+						if (save)
+							Settings.save();
+					}
+
+					if ("cookies" in json)
+					{
+						for(let i in json.cookies)
+						{
+							if (cs.list.indexOf(i) == -1)
+								continue;
+
+							if (!command(i, json.cookies[i]))
+							{
+								settingsNum++;
+								cs(i, json.cookies[i]);
+								reload = true;
+							}
+						}
+					}
+					let enginesNew = [];
+					if ("customLinks" in json)
+					{
+						let changed = false;
+						for (i in json.customLinks)
+						{
+							enginesNum++;
+							changed = reload = true;
+							customLinks._list[i] = json.customLinks[i];
+							enginesNew.push(json.customLinks[i]);
+						}
+						if (changed)
+							ls("customLinks", customLinks._list);
+
+					}
+					if ("enginesHide" in json)
+					{
+						let changed = false;
+						let list = [];
+						for(let i = 0; i < json.enginesHide.length; i++)
+						{
+							if (enginesFind(json.enginesHide[i]) != -1 || enginesFind(json.enginesHide[i], enginesNew) != -1)
+							{
+								list[list.length] = json.enginesHide[i];
+								changed = reload = true;
+								engineHideNum++;
+							}
+						}
+						enginesHide = list;
+						if (changed)
+							ls("enginesHide", enginesHide);
+					}
+					if ("enginesSort" in json)
+					{
+						let changed = false;
+						enginesSort._list = [];
+						for(let i = 0; i < json.enginesSort.length; i++)
+						{
+							if (enginesFind(json.enginesSort[i]) != -1 || enginesFind(json.enginesSort[i], enginesNew) != -1)
+							{
+								changed = reload = true;
+								enginesSort._list.push(json.enginesSort[i]);
+							}
+						}
+						if (changed)
+							ls("enginesSort", enginesSort._list);
+					}
+					txt = settingsNum + " setting" + (settingsNum > 1 ? "s" : "") + " imported" + ((hiddenNum || watchedNum) ? " and marked " : "");
+					if (hiddenNum)
+						txt += hiddenNum + " show" + (hiddenNum > 1 ? "s" : "") + " as hidden";
+					if (watchedNum)
+						txt += (hiddenNum ? ", " : " ") + watchedNum + " as watched";
+				}
+				alert(txt);
+				if (reload)
+					window.location.reload();
+			}
+			a.addEventListener("click", function(e)
+			{
+				e.preventDefault();
+				_prompt( function(data)
+				{
+					setTimeout(function()
+					{
+						restore(data);
+					});
+				},
+				"Please enter the " + adeName + " settings text" );
+			}, false);
+
+			content.append(span);
+
+
+		},//Settings.create()
+
+		callback: function(e, id, check)
+		{
+			Settings.prefs[id] = check ? 1 : 0;
+			Settings.save();
+		},
+
+		save: function(f)
+		{
+			ls("settings", this.prefs);
+		},
+
+		show: function(noBack)
+		{
+			if (noBack)
+				Settings.box.attr("noback", "");
+			else
+				Settings.box.attr("noback");
+
+			Settings.box.show();
+			setPopup(true);
+		},
+
+		hide: function()
+		{
+			Settings.box.hide();
+			setPopup(false);
+		},
+	}//Settings
+
+	function fileLoad(callback, ext)
+	{
+		let f = document.createElement("input");
+		f.type = "file";
+		if (typeof(ext) == "undefined")
+			ext = ".json";
+
+		if (ext)
+			f.setAttribute("accept", ext);
+
+		function readFile(e)
+		{
+			f.removeEventListener("change", readFile, false);
+			let files = f.files;
+			if (!f.files.length)
+			{
+				alert('Please select a file!');
+				return;
+			}
+			let reader = new FileReader();
+
+			reader.onloadend = function(evt)
+			{
+				if (evt.target.readyState == FileReader.DONE)
+				{
+					callback(evt.target.result);
+				}
+			};
+
+			let blob = f.files[0].slice(0, f.files[0].size);
+			reader.readAsBinaryString(blob);
+		}
+		f.addEventListener("change", readFile, false);
+		f.click();
+	}
+
+	function fileSave(name, data, type)
+	{
+		type = type ? type : 'text/json';
+		let blob = new Blob([data], {type: type}),
+				a = document.createElement("a");
+
+		a.download = name;
+		a.isTrigger = true;
+		a.href = window.URL.createObjectURL(blob);
+		a.dataset.downloadurl = [type, a.download, a.href].join(':');
+		$("#account-popup").append(a);
+		a.click();
+		a.parentNode.removeChild(a);
+	}
+
+	function exportGetColors()
+	{
+		let str = $.map(DB.savedColors,function(e,i)
+		{
+			if (i.match(/[^0-9]/) || !e.match(/^#([0-9A-F]{6})|FFFFFF$/i))
+				return;
+
+			return i + "=" + e.trim();
+		}).join(";");
+		return str;
+	}
+
+	function pad(t)
+	{
+		return "" + t < 10 ? "0" + t : t;
+	}
+
+	function dateTimestamp()
+	{
+		let d = new Date();
+		return d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
+	}
+
+	function enginesBackup()
+	{
+		if (!enginesBackup.backup)
+			enginesBackup.backup = window.engines;
+	}
+
+	function enginesRestore()
+	{
+		if (enginesBackup.backup)
+		{
+			window.engines = enginesBackup.backup;
+			enginesBackup.backup = null
 		}
 	}
-	else
-		css.remove();
 
-	ls("hidden", _hidden);
-	return hidden;
-}
-
-
-function command(id, val)
-{
-	if (!command.list[id])
-		return false;
-
-	try
+	function enginesAdd(id)
 	{
-		command.list[id].func({preventDefault:function(){},stopPropagation:function(){}}, val);
-	}
-	catch(e)
-	{
-		return false;
-	}
-	return true;
-}
-command.list = {};
-command.add = function(id, objId, func)
-{
-	command.list[id] = {
-		id: id,
-		objId: objId,
-		func: func
+		for(let i = 0; i < _engines.length; i++)
+		{
+			if (_engines[i].name == id || _engines[i].host == id)
+				return;
+		}
+		for(let i = 0; i < engines.length; i++)
+		{
+			if (engines[i].name == id || engines[i].host == id)
+			{
+				_enginesList.push(engines[i].host);
+				_engines.push(engines[i]);
+				Settings.pref("middleClick", _enginesList);
+				return;
+			}
+		}
 	};
-};
 
-/* watched checkbox */
-function watched(entry)
-{
-	if (entry._input.checked)
-		watched.add(entry.getAttribute("data-series-id"), watched.title(entry));
-	else
-		watched.remove(entry.getAttribute("data-series-id"), watched.title(entry));
-
-	watched.update(entry, entry._input.checked);
-}
-watched._list = ls("watched") || {};
-watched._saving = false;
-watched.add = function(id, episode)
-{
-	if (!watched._list[id])
-		watched._list[id] = [];
-
-	if (watched._list[id].indexOf(episode) == -1)
-		watched._list[id].push(episode);
-
-	watched.save();
-};
-
-watched.remove = function(id, episode)
-{
-	if (!watched._list[id])
-		return;
-
-	let n = watched._list[id].indexOf(episode);
-	if (n == -1)
-		return;
-
-	watched._list[id].splice(n, 1);
-	if (!watched._list[id].length)
-		delete watched._list[id];
-
-	watched.save();
-};
-
-watched.save = function(f)
-{
-	if (watched._saving && !f)
-		return;
-
-	function func()
+	function enginesRemove(id)
 	{
-		watched._saving = false;
-		ls("watched", watched._list);
-	}
-	clearTimeout(watched._saving);
-	if (f)
-		func();
-	else
-		watched._saving = setTimeout(func, 500);
-};
-
-watched.has = function(entry)
-{
-	let id = entry.getAttribute("data-series-id");
-	return watched._list[id] && watched._list[id].indexOf(watched.title(entry)) != -1;
-};
-
-watched.title = function(entry)
-{
-	let txt = entry._title && entry._title._titleOrig ? entry._title._titleOrig : $(entry).find("div.title").text();
-	return txt.substring(txt.lastIndexOf(" ") + 1).replace(/\s+$/g, "");
-};
-
-watched.update = function(entry, enable)
-{
-	let text = "Watched";
-	if (enable)
-	{
-		entry.setAttribute("watched", "");
-	}
-	else
-	{
-		text = "Not watched";
-		entry.removeAttribute("watched");
-	}
-	entry.title = $(entry).find(".title > span")[0].lastChild.textContent + " (" + text + ")";
-	$(entry).find(".title > input").prop("title", text);
-	entry._input.checked = enable;
-
-};
-
-watched.attach = function(i,entry)
-{
-	if (entry._input)
-		return;
-
-	let input = document.createElement("input");
-	input.type = "checkbox";
-	input.checked = watched.has(entry);
-	entry._input = input;
-
-	input.addEventListener("change", function(e)
-	{
-		let title = watched.title(entry);
-		$('div.entry[data-series-id="' + entry.getAttribute("data-series-id") + '"]').each(function(i, entry)
+		for(let i = 0; i < _engines.length; i++)
 		{
-			if (watched.title(entry) == title)
-				watched.update(entry, input.checked);
-		});
-		watched(entry);
-	}, false);
-	let title = $(entry).find(".title")[0],
-			text = title.innerHTML;
-
-	title.innerHTML = "";
-	title.appendChild(input);
-	$(title).append("<span>" + text.trim() + "</span>");
-	watched.update(entry, input.checked);
-};
-
-
-/* custom links */
-function customLinks(obj)
-{
-
-}
-customLinks._list = ls("customLinks") || {};
-customLinks.show = function(noBack)
-{
-	let div = $(customLinks.div);
-	if (noBack)
-		div.attr("noback", "");
-	else
-		div.attr("noback");
-
-	div.show();
-	setPopup(true);
-}
-customLinks.hide = function()
-{
-	$(customLinks.div).hide();
-	setPopup(false);
-}
-
-customLinks.manager = function customLinksManager(callback)
-{
-	if (customLinks.div)
-		return callback ? callback() : true;
-
-	let html = multiline(function(){/*
-<div id="manage-links-popup">
-	<div id="manage-links-popup-content">
-		<div class="header">
-			<div class="back" title="Back">
-				<svg viewBox="0 0 24 24">
-					<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
-				</svg>
-			</div>
-			<h4>Links Manager</h4>
-			<div class="close" title="Close">
-				<svg viewBox="0 0 24 24">
-					<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
-				</svg>
-				<svg viewBox="0 0 24 24">
-					<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
-				</svg>
-			</div>
-		</div>
-		<div class="content"></div>
-	</div>
-</div>
-		*/});//html
-
-	let popup = $(html).appendTo("body");
-	customLinks.div = popup[0];
-	$(popup).find("[id^=account]").each(function()
-	{
-		this.id = this.id.replace("account", "manage-links");
-	});
-
-	let content = $(popup).find(".content").html("");
-	html = multiline(function(){/*
-<div class="reset">
-	<span>
-		<a id="sort-reset" href="#">reset sort</a>
-	</span>
-</div>
-<form>
-	<div id="engine-edit">
-		<div>
-			<label>Name:</label>
-			<div>
-				<input id="engine-name">
-			</div>
-		</div>
-		<div>
-			<label>URL:</label>
-			<div>
-				<input id="engine-url">
-				<select id="engine-tags" size="1">
-					<option value=""></option>
-					<option value="MONKEY_N">Name</option>
-					<option value="MONKEY">Name+Episode</option>
-					<option value="MONKEY_ID">ID</option>
-					<option value="{WIKI_TITLE}">Wiki page</option>
-					<option value="MONKEY_ARCHIVELINK">Archive link</option>
-				</select>
-			</div>
-		</div>
-		<div>
-			<label>ID:</label>
-			<div>
-				<input id="engine-id" placeholder="&lt;optional&gt;">
-			</div>
-		</div>
-		<div>
-			<label></label>
-			<div>
-				<input id="engine-submit" type="button" value="Add">
-				<input id="engine-reset" type="reset" value="Reset">
-			</div>
-		</div>
-		<div>
-			<label>Result:</label>
-			<div id="engine-res"></div>
-		</div>
-	</div>
-</form>
-	*/});//html
-
-	$(html).appendTo(content.parent());
-	let engId = $("#engine-id"),
-			engUrl = $("#engine-url"),
-			engName = $("#engine-name"),
-			engSubmit = $("#engine-submit"),
-			engTags = $("#engine-tags"),
-			engRes = $("#engine-res"),
-			engReset = $("#engine-reset"),
-			engSortReset = $("#sort-reset"),
-			engResHidden = $('<div id="engine-hidden" class="entry" data-series-id="1234" data-series-source="List of Monsuno episodes" data-date="20120223"><div class="title">Monsuno S01E01</div></div>').appendTo(popup),
-			prevTarget = null,
-			prevVal = null,
-			entry = $("div.entry");
-
-	if (entry.length)
-	{
-		entry = $(entry[Math.floor(Math.random() * entry.length)]);
-		engResHidden.attr("data-series-id", entry.attr("data-series-id"));
-		engResHidden.attr("data-series-source", entry.attr("data-series-source"));
-		engResHidden.attr("data-date", entry.attr("data-date"));
-		engResHidden.find("div.title").text(entry.find("div.title").text());
-	}
-
-	if (enginesSort.changed())
-		popup.attr("changed", true);
-
-	function change(e)
-	{
-		clearTimeout(change.timer);
-		change.timer = setTimeout(function()
-		{
-			prevVal = e.target.value;
-			prevTarget = e.target;
-			engResHidden.find(".details").remove();
-			let eng = [{
-						name: engName.val(),
-						host: engId.val().trim(),
-						href: engUrl.val().trim()
-					}];
-
-			if (!eng[0].href.match(/[a-z]+:\/\//i))
-				eng[0].href = "http://" + eng[0].href;
-
-			engineFixHost(eng[0]);
-			entryOpen({target: $(engResHidden).find(".title")[0]}, eng);
-
-			let list = engResHidden.find(".engines").children(),
-					a = list.filter("a"),
-					img = a.find("img")[0],
-					children = engRes.children(),
-					domain = getHost(eng[0].href) || null;
-
-			img.src = "http://www.google.com/s2/favicons?domain=" + domain;
-
-			engRes.html("");
-			engRes.append(a);
-			return;
-		}, 300);
-	}//change()
-	engId.on("input change", change);
-	engUrl.on("input change", change);
-	engName.on("input change", change);
-
-	engTags.on("change", function(e)
-	{
-		let start = engUrl[0].selectionStart,
-				end = engUrl[0].selectionEnd,
-				endNew = start + e.target.value.length,
-				startNew = endNew,
-				txt = engUrl.val();
-		engUrl.val(txt.substring(0, start) + e.target.value + txt.substring(end));
-		engUrl[0].selectionStart = startNew;
-		engUrl[0].selectionEnd = endNew;
-		engUrl.focus();
-		engUrl.trigger("input");
-		e.target.value = "";
-	});
-	engReset.click(function(e)
-	{
-		engRes.html("");
-		prevVal = null;
-	});
-
-	function flash(obj, color, scroll)
-	{
-		let p = obj[0].parentElement.getBoundingClientRect(),
-				el = obj[0].getBoundingClientRect();
-
-		if (scroll)
-		{
-			if (p.bottom < el.bottom)
+			if (_engines[i].name == id || _engines[i].host == id)
 			{
-				obj[0].parentElement.scrollTop = obj[0].parentElement.scrollTop + (el.top - p.bottom) + el.height + 3;
-			}
-			if (el.top < p.top)
-			{
-				obj[0].parentElement.scrollTop = obj[0].parentElement.scrollTop + (el.bottom - p.top) - el.height - 3;
+				let n = _enginesList.indexOf(_engines[i].host);
+				if (n != -1)
+					_enginesList.splice(n, 1);
+
+				Settings.pref("middleClick", _enginesList);
+				_engines.splice(i, 1);
+				return;
 			}
 		}
+	};
 
-		obj.toggleClass("update", false);
-		obj.css("background-color", color ? color : "#90FF90");
-		setTimeout(function()
-		{
-			obj.toggleClass("update", true);
-			obj.removeAttr("style");
-		}, 100);
-	}
-	engSubmit.click(function(e)
+	function enginesCheck(id)
 	{
-		let engine = {
-					name: engName.val().trim(),
-					href: engUrl.val().trim(),
-					host: engId.val().trim()
-				};
-		if (!engine.href.match(/[a-z]+:\/\//i))
-			engine.href = "http://" + engine.href;
+		for(let i = 0; i < _engines.length; i++)
+		{
+			if (_engines[i].name == id || _engines[i].host == id)
+				return i;
+		}
+		return -1;
+	};
 
-//		engUrl.val(engine.href);
-		engineFixHost(engine);
-		let id = "engine_" + cleanName(engine.host),
-				update = $("#" + id),
-				exists = customLinks._list[engine.host];
+	function enginesFind(id, obj)
+	{
+		obj = typeof(obj) == "undefined" ? window.engines : obj;
+		for(let i = 0; i < obj.length; i++)
+		{
+			if (obj[i].name == id || obj[i].host == id)
+				return i;
+		}
+		return -1;
+	};
 
-		if (!engine.name || !engine.href)
-			return false;
+	function enginesSort(list, save)
+	{
+		if (typeof(list) == "undefined")
+		{
+			list = ls("enginesSort") || [];
+			save = true;
+		}
 
-		let equal = false,
-				n = -1;
+		let newList = [],
+				newEnginesList = [];
+
+		for(let i = 0; i < list.length; i++)
+		{
+			let index = enginesFind(list[i]);
+			if (index == -1 || newList.indexOf(window.engines[index].host) != -1)
+				continue;
+
+			newEnginesList[newEnginesList.length] = window.engines[index];
+			newList[newList.length] = window.engines[index].host;
+		}
 		for(let i = 0; i < window.engines.length; i++)
 		{
-			if (window.engines[i].host == engine.host)
+			if (newList.indexOf(window.engines[i].host) == -1)
 			{
-				equal = isEqual(window.engines[i], engine);
-				n = i;
-				break;
+				newEnginesList[newEnginesList.length] = window.engines[i];
+				newList[newList.length] = window.engines[i].host;
 			}
 		}
-		if (equal)
+		for(let i in customLinks._list)
 		{
-			flash(update, null, true);
-			return false;
-		}
-
-		if (!exists || update.length)
-		{
-			customLinks._list[engine.host] = engine;
-			if (update.length)
+			if (newList.indexOf(i) == -1)
 			{
-				if (n > -1)
-					window.engines[n] = engine;
-
+				newEnginesList[newEnginesList.length] = customLinks._list[i];
+				newList[newList.length] = i;
 			}
-			else
-				window.engines.push(engine);
+		}
+		if (save)
+			enginesSort._list = newList;
 
-			ls("customLinks", customLinks._list);
-			customLinksAddCss(id);
-		}
-		function updater(update)
-		{
-			flash($(update), null, true);
-			updateDetails();
-		}
-		if (update.length)
-		{
-			if (exists)
-			{
-				for (let i = 0; i < enginesDefault.length; i++)
-				{
-					if (isEqual(enginesDefault[i], engine))
-					{
-						update.find(".del").trigger("click");
-						return;
-					}
-				}
-			}
-			update.replaceWith(create(engine, !exists ? updater : function(update)
-			{
-				flash($(update), null, true);
-			}));
-			let entry = $("div.entry").find(".engines");
-			entry.each(function()
-			{
-				$(this).find("." + id).filter("a.link").attr("href", parseLink(this, engine).href).contents().filter(function()
-				{
-					if (this.nodeType === 3)
-						this.textContent = engine.name;
-				});
-			});
-			flash(update, null, true);
-		}
-		else
-		{
-			let last = content.children(":last-child");
-			content.append(create(engine, updater));
-//			updateDetails();
-		}
-
-		engName.val("");
-		engId.val("");
-		engUrl.val("");
-	});//engSubmit.click()
-
-	function updateDetails()
-	{
-		let clone = engResHidden.clone();
-		clone.find(".details").remove();
-		$("body").append(clone);
-		let opened = $('.details[style="display: block;"]').toggleClass("details", false);
-		force = true;
-		clone.find(".title").trigger("click");
-		opened.toggleClass("details", true);
-		setTimeout(function()
-		{
-			$('div:not(#engine-hidden) .details[style="display: block;"]').find(".engines").replaceWith(clone.find(".engines"));
-			clone.remove();
-		}, 300);
+		window.engines = newEnginesList;
 	}
-	engSortReset.click(function(e)
+	enginesSort.changed = function()
 	{
-//		e.stopPropagation();
-		e.preventDefault();
-		let host = engId.val(),
-				name = engName.val(),
-				href = engUrl.val(),
-				list = [];
-
+		let list = [];
 		for (let i = 0; i < enginesDefault.length; i++)
 		{
 			list[list.length] = enginesDefault[i].host;
 		}
 		for (i in customLinks._list)
 		{
-			list[list.length] = customLinks._list[i].host;
+			if (list.indexOf(i) == -1)
+				list[list.length] = i;
 		}
-		enginesSort(list, true);
-		ls("enginesSort", []);
-		updateDetails();
-		$(customLinks.div).remove();
-		customLinks.div = null;
-		popup.removeAttr("changed");
-		customLinks.manager(function()
-		{
-			if (host || name || href)
-			{
-				$("#engine-id").val(host);
-				$("#engine-name").val(name);
-				let url = $("#engine-url");
-				url.val(href);
-				url.trigger("input");
-			}
-		});
-		customLinks.show();
-	});
-	let dragged = null;
-
-	function dndEvent(e)
-	{
-		let r = null;
-		switch(e.type)
-		{
-			case "mousedown":
-//				if (typeof(e.target.className) != "string" || e.target.className.indexOf("dndh") != -1)
-				if (typeof(e.target.className) == "string" && e.target.className.indexOf("dndh") != -1)
-					dragged = e.target.parentNode;
-				break;
-			case "dragstart":
-				if (!dragged)
-				{
-					return;
-				}
-
-				e.dataTransfer.effectAllowed = 'move';
-				dragged = this;
-				dragged.classList.add("dragging");
-				this.parentNode.classList.add("dragging");
-				setTimeout(function()
-				{
-					dragged.classList.add("hide");
-				});
-				e.dataTransfer.setData('application/x-moz-node', dragged);
-				break;
-			case "dragenter":
-				if (!dragged)
-				{
-					if (e.stopPropagation)
-						e.stopPropagation();
-
-					if (e.preventDefault)
-							e.preventDefault(); // Necessary. Allows us to drop.
-					return;
-				}
-
-				let node = this,
-						up = (node.nextSibling == dragged),
-						moveold = up ? node : node.nextSibling,
-						movenew = dragged;
-
-				node.parentNode.insertBefore(movenew, moveold);
-				break;
-			case "dragover":
-				if (!dragged)
-				{
-					if (e.stopPropagation)
-						e.stopPropagation();
-
-					if (e.preventDefault)
-							e.preventDefault(); // Necessary. Allows us to drop.
-					return;
-				}
-
-				e.dataTransfer.dropEffect = 'move';
-				if (e.stopPropagation)
-					e.stopPropagation();
-
-				if (e.preventDefault)
-						e.preventDefault(); // Necessary. Allows us to drop.
-
-				r = false;
-				break;
-			case "dragleave":
-				break;
-			case "dragend":
-				if (!dragged)
-					return;
-
-				dragged.classList.remove("dragging");
-				dragged.classList.remove("hide");
-				let div = document.querySelectorAll('#manage-links-popup-content .content [draggable]'),
-						list = [];
-				[].forEach.call(div, function (col)
-				{
-					list[list.length] = col._engine.host;
-				});
-				dragged.parentNode.classList.remove("dragging");
-				enginesSort(list, true);
-				ls("enginesSort", list);
-				if (enginesSort.changed())
-					popup.attr("changed", true);
-				else
-					popup.removeAttr("changed");
-
-				updateDetails();
-				dragged = false;
-				break;
-			case "drop":
-				if (!dragged)
-					return;
-
-				if (e.stopPropagation)
-					e.stopPropagation();
-				if (e.preventDefault)
-						e.preventDefault(); // Necessary. Allows us to drop.
-				break;
-		}
-		if (r !== null)
-			return r;
+		return !isEqual(list, enginesSort._list);
 	}
-	function create(engine, callback)
+
+	function isEqual (a, b)
 	{
-		let div = document.createElement("div"),
-				id = "engine_" + cleanName(engine.host),
-				cb = createCheckbox(id, "", enginesHide.indexOf(engine.host) == -1, function(e, id, checked)
-				{
-					if (checked)
-						enginesHide.splice(enginesHide.indexOf(engine.host), 1);
-					else
-						enginesHide.push(engine.host);
-
-					ls("enginesHide", enginesHide);
-			}, ["Visible", "Hidden"]),
-				dndHandle = document.createElement("span");
-		div._engine = engine;
-		div.id = id;
-
-		content[0].setAttribute("draggable", true);
-		div.setAttribute("draggable", true);
-		div.addEventListener('dragstart', dndEvent, false);
-		div.addEventListener('dragenter', dndEvent, false)
-		div.addEventListener('dragover', dndEvent, false);
-		div.addEventListener('dragleave', dndEvent, false);
-		div.addEventListener('drop', dndEvent, false);
-		div.addEventListener('dragend', dndEvent, false);
-		div.addEventListener("mousedown", dndEvent, false);
-
-		dndHandle.innerText = "☰";
-		dndHandle.className = "dndh";
-		div.appendChild(dndHandle);
-		div.appendChild(cb);
-		let clone = engResHidden.clone();
-		$("body").append(clone);
-		clone.find(".details").remove();
-		entryOpen({target: $(clone).find(".title")[0]}, [engine]);
-
-		let n = 100;
-		setTimeout(function loop()
+		for(let i in a)
 		{
-//			let list = clone.find(".engines").children().filter(".engine_" + cleanName(engine.host)),
-			let list = clone.find(".engines").children();
-			if (!list.length && n--)
-			{
-				setTimeout(loop);
-				return;
-			}
-			let	a = list.filter("a"),
-					img = a.find("img")[0],
-					def = false;
+			if (!(i in b) || a[i] != b[i])
+				return false
+		}
+		for(let i in b)
+		{
+			if (!(i in a) || a[i] != b[i])
+				return false
+		}
+		return true;
+	}
 
-			for (let i = 0; i < enginesDefault.length; i++)
-			{
-				if (enginesDefault[i].host == engine.host)
+	function cleanName(id)
+	{
+		return id !== null ? id.replace(/[^a-zA-Z0-9-_]/g, "_") : "";
+	}
+
+	function getHost(url)
+	{
+		let a = document.createElement('a');
+		a.href = url;
+		return a.hostname;
+	}
+	function engineFixHost(engine)
+	{
+		if (engine.host)
+			return;
+
+		engine.host = getHost(engine.href);
+	}
+
+	function showHide(id, t)
+	{
+		let hidden = _hidden.indexOf(id);
+		if (typeof(t) == "undefined")
+			return hidden != -1;
+
+		if (t == 2)
+			t = hidden == -1 ? 1 : 0;
+
+		switch(t)
+		{
+			case 0:
+				_hidden.splice(hidden, 1);
+				if (!DB.savedColors[id])
+					DB.infoRemove(id);
+
+				hidden = false;
+				break;
+			case 1:
+				if (hidden == -1)
 				{
-					def = true;
+					_hidden.push(id);
+					DB.infoAdd(id);
+				}
+
+				hidden = true;
+				break;
+		}
+		let css = $("#css" + id);
+		if (hidden)
+		{
+			if (!css.length)
+			{
+				let style = "<style id='css" + id + "'>"+
+										"div.calendar:not(.showHidden).activeOnly .entry[data-series-id='" + id + "'][opened]:not(.multi){ display: block !important; }"+
+										"div.calendar:not(.showHidden) .entry[data-series-id='" + id + "']:not([opened]):not(.searchResult){ display: none !important; }"+
+										".entry[data-series-id='" + id + "'] .title{ font-style: italic; }"+
+										"div:not(#searchResults) > .entry[data-series-id='" + id + "']:not([opened]):not(.searchResult){ opacity: 0.3;}"+
+										".entry[data-series-id='" + id + "'] .showhide0{ display: inline; }"+
+										".entry[data-series-id='" + id + "'] .showhide1{ display: none; }"+
+										"</style>";
+				$(style).appendTo("body");
+			}
+		}
+		else
+			css.remove();
+
+		ls("hidden", _hidden);
+		return hidden;
+	}
+
+
+	function command(id, val)
+	{
+		if (!command.list[id])
+			return false;
+
+		try
+		{
+			command.list[id].func({preventDefault:function(){},stopPropagation:function(){}}, val);
+		}
+		catch(e)
+		{
+			return false;
+		}
+		return true;
+	}
+	command.list = {};
+	command.add = function(id, objId, func)
+	{
+		command.list[id] = {
+			id: id,
+			objId: objId,
+			func: func
+		};
+	};
+
+	/* watched checkbox */
+	function watched(entry)
+	{
+		if (entry._input.checked)
+			watched.add(entry.getAttribute("data-series-id"), watched.title(entry));
+		else
+			watched.remove(entry.getAttribute("data-series-id"), watched.title(entry));
+
+		watched.update(entry, entry._input.checked);
+	}
+	watched._list = ls("watched") || {};
+	watched._saving = false;
+	watched.add = function(id, episode)
+	{
+		if (!watched._list[id])
+			watched._list[id] = [];
+
+		if (watched._list[id].indexOf(episode) == -1)
+			watched._list[id].push(episode);
+
+		watched.save();
+	};
+
+	watched.remove = function(id, episode)
+	{
+		if (!watched._list[id])
+			return;
+
+		let n = watched._list[id].indexOf(episode);
+		if (n == -1)
+			return;
+
+		watched._list[id].splice(n, 1);
+		if (!watched._list[id].length)
+			delete watched._list[id];
+
+		watched.save();
+	};
+
+	watched.save = function(f)
+	{
+		if (watched._saving && !f)
+			return;
+
+		function func()
+		{
+			watched._saving = false;
+			ls("watched", watched._list);
+		}
+		clearTimeout(watched._saving);
+		if (f)
+			func();
+		else
+			watched._saving = setTimeout(func, 500);
+	};
+
+	watched.has = function(entry)
+	{
+		let id = entry.getAttribute("data-series-id");
+		return watched._list[id] && watched._list[id].indexOf(watched.title(entry)) != -1;
+	};
+
+	watched.title = function(entry)
+	{
+		let txt = entry._title && entry._title._titleOrig ? entry._title._titleOrig : $(entry).find("div.title").text();
+		return txt.substring(txt.lastIndexOf(" ") + 1).replace(/\s+$/g, "");
+	};
+
+	watched.update = function(entry, enable)
+	{
+		let text = "Watched";
+		if (enable)
+		{
+			entry.setAttribute("watched", "");
+		}
+		else
+		{
+			text = "Not watched";
+			entry.removeAttribute("watched");
+		}
+		entry.title = $(entry).find(".title > span")[0].lastChild.textContent + " (" + text + ")";
+		$(entry).find(".title > input").prop("title", text);
+		entry._input.checked = enable;
+
+	};
+
+	watched.attach = function(i,entry)
+	{
+		if (entry._input)
+			return;
+
+		let input = document.createElement("input");
+		input.type = "checkbox";
+		input.checked = watched.has(entry);
+		entry._input = input;
+
+		input.addEventListener("change", function(e)
+		{
+			let title = watched.title(entry);
+			$('div.entry[data-series-id="' + entry.getAttribute("data-series-id") + '"]').each(function(i, entry)
+			{
+				if (watched.title(entry) == title)
+					watched.update(entry, input.checked);
+			});
+			watched(entry);
+		}, false);
+		let title = $(entry).find(".title")[0],
+				text = title.innerHTML;
+
+		title.innerHTML = "";
+		title.appendChild(input);
+		$(title).append("<span>" + text.trim() + "</span>");
+		watched.update(entry, input.checked);
+	};
+
+
+	/* custom links */
+	function customLinks(obj)
+	{
+
+	}
+	customLinks._list = ls("customLinks") || {};
+	customLinks.show = function(noBack)
+	{
+		let div = $(customLinks.div);
+		if (noBack)
+			div.attr("noback", "");
+		else
+			div.attr("noback");
+
+		div.show();
+		setPopup(true);
+	}
+	customLinks.hide = function()
+	{
+		$(customLinks.div).hide();
+		setPopup(false);
+	}
+
+	customLinks.manager = function customLinksManager(callback)
+	{
+		if (customLinks.div)
+			return callback ? callback() : true;
+
+		let html = multiline(function(){/*
+	<div id="manage-links-popup">
+		<div id="manage-links-popup-content">
+			<div class="header">
+				<div class="back" title="Back">
+					<svg viewBox="0 0 24 24">
+						<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
+					</svg>
+				</div>
+				<h4>Links Manager</h4>
+				<div class="close" title="Close">
+					<svg viewBox="0 0 24 24">
+						<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
+					</svg>
+					<svg viewBox="0 0 24 24">
+						<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
+					</svg>
+				</div>
+			</div>
+			<div class="content"></div>
+		</div>
+	</div>
+			*/});//html
+
+		let popup = $(html).appendTo("body");
+		customLinks.div = popup[0];
+		$(popup).find("[id^=account]").each(function()
+		{
+			this.id = this.id.replace("account", "manage-links");
+		});
+
+		let content = $(popup).find(".content").html("");
+		html = multiline(function(){/*
+	<div class="reset">
+		<span>
+			<a id="sort-reset" href="#">reset sort</a>
+		</span>
+	</div>
+	<form>
+		<div id="engine-edit">
+			<div>
+				<label>Name:</label>
+				<div>
+					<input id="engine-name">
+				</div>
+			</div>
+			<div>
+				<label>URL:</label>
+				<div class="engine-url">
+					<input id="engine-url">
+					<select id="engine-tags" size="1">
+						<option value=""></option>
+						<option value="MONKEY_N">Name</option>
+						<option value="MONKEY">Name+Episode</option>
+						<option value="MONKEY_ID">ID</option>
+						<option value="{WIKI_TITLE}">Wiki page</option>
+						<option value="MONKEY_ARCHIVELINK">Archive link</option>
+					</select>
+				</div>
+			</div>
+			<div>
+				<label>ID:</label>
+				<div>
+					<input id="engine-id" placeholder="&lt;optional&gt;">
+				</div>
+			</div>
+			<div>
+				<label></label>
+				<div>
+					<input id="engine-submit" type="button" value="Add">
+					<input id="engine-reset" type="reset" value="Reset">
+				</div>
+			</div>
+			<div>
+				<label>Result:</label>
+				<div id="engine-res"></div>
+			</div>
+		</div>
+	</form>
+		*/});//html
+
+		$(html).appendTo(content.parent());
+		let engId = $("#engine-id"),
+				engUrl = $("#engine-url"),
+				engName = $("#engine-name"),
+				engSubmit = $("#engine-submit"),
+				engTags = $("#engine-tags"),
+				engRes = $("#engine-res"),
+				engReset = $("#engine-reset"),
+				engSortReset = $("#sort-reset"),
+				engResHidden = $('<div id="engine-hidden" class="entry" data-series-id="1234" data-series-source="List of Monsuno episodes" data-date="20120223"><div class="title">Monsuno S01E01</div></div>').appendTo(popup),
+				prevTarget = null,
+				prevVal = null,
+				entry = $("div.entry");
+
+		if (entry.length)
+		{
+			entry = $(entry[Math.floor(Math.random() * entry.length)]);
+			engResHidden.attr("data-series-id", entry.attr("data-series-id"));
+			engResHidden.attr("data-series-source", entry.attr("data-series-source"));
+			engResHidden.attr("data-date", entry.attr("data-date"));
+			engResHidden.find("div.title").text(entry.find("div.title").text());
+		}
+
+		if (enginesSort.changed())
+			popup.attr("changed", true);
+
+		function change(e)
+		{
+			clearTimeout(change.timer);
+			change.timer = setTimeout(function()
+			{
+				prevVal = e.target.value;
+				prevTarget = e.target;
+				engResHidden.find(".details").remove();
+				let eng = [{
+							name: engName.val(),
+							host: engId.val().trim(),
+							href: engUrl.val().trim()
+						}];
+
+				if (!eng[0].href.match(/[a-z]+:\/\//i))
+					eng[0].href = "http://" + eng[0].href;
+
+				engineFixHost(eng[0]);
+				entryOpen({target: $(engResHidden).find(".title")[0]}, eng);
+
+				let list = engResHidden.find(".engines").children(),
+						a = list.filter("a"),
+						img = a.find("img")[0],
+						children = engRes.children(),
+						domain = getHost(eng[0].href) || null;
+
+				img.src = "http://www.google.com/s2/favicons?domain=" + domain;
+
+				engRes.html("");
+				engRes.append(a);
+				return;
+			}, 300);
+		}//change()
+		engId.on("input change", change);
+		engUrl.on("input change", change);
+		engName.on("input change", change);
+
+		engTags.on("change", function(e)
+		{
+			let start = engUrl[0].selectionStart,
+					end = engUrl[0].selectionEnd,
+					endNew = start + e.target.value.length,
+					startNew = endNew,
+					txt = engUrl.val();
+			engUrl.val(txt.substring(0, start) + e.target.value + txt.substring(end));
+			engUrl[0].selectionStart = startNew;
+			engUrl[0].selectionEnd = endNew;
+			engUrl.focus();
+			engUrl.trigger("input");
+			e.target.value = "";
+		});
+		engReset.click(function(e)
+		{
+			engRes.html("");
+			prevVal = null;
+		});
+
+		function flash(obj, color, scroll)
+		{
+			if (!obj[0].parentElement)
+				return;
+
+			let p = obj[0].parentElement.getBoundingClientRect(),
+					el = obj[0].getBoundingClientRect();
+			if (typeof(scroll) == "undefined")
+				scroll = true;
+
+			if (scroll)
+			{
+				if (p.bottom < el.bottom)
+				{
+					obj[0].parentElement.scrollTop = obj[0].parentElement.scrollTop + (el.top - p.bottom) + el.height + 3;
+				}
+				if (el.top < p.top)
+				{
+					obj[0].parentElement.scrollTop = obj[0].parentElement.scrollTop + (el.bottom - p.top) - el.height - 3;
+				}
+			}
+
+			obj.toggleClass("update", false);
+			obj.css("background-color", color ? color : "#90FF90");
+			setTimeout(function()
+			{
+				obj.toggleClass("update", true);
+				obj.removeAttr("style");
+			}, 100);
+		}
+		engSubmit.click(function(e)
+		{
+			let engine = {
+						name: engName.val().trim(),
+						href: engUrl.val().trim(),
+						host: engId.val().trim()
+					};
+			if (!engine.href.match(/[a-z]+:\/\//i))
+				engine.href = "http://" + engine.href;
+
+	//		engUrl.val(engine.href);
+			engineFixHost(engine);
+			let id = "engine_" + cleanName(engine.host),
+					update = $("#" + id),
+					exists = customLinks._list[engine.host];
+
+			if (!engine.name || !engine.href)
+				return false;
+
+			let equal = false,
+					n = -1;
+			for(let i = 0; i < window.engines.length; i++)
+			{
+				if (window.engines[i].host == engine.host)
+				{
+					equal = isEqual(window.engines[i], engine);
+					n = i;
 					break;
 				}
 			}
-
-			$(div).append(img);
-			$(div).append(a);
-			if (def)
-				$(div).toggleClass("def", true);
-
-			clone.remove();
-			let editBox = $('<span class="editBox"></span>').appendTo(div);
-			$('<span class="edit" title="Edit"><svg viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path></svg></span>').appendTo(editBox).click(function(e)
+			if (equal)
 			{
-				engId.val((getHost(engine.href) == engine.host) ? "" : engine.host);
-				engName.val(engine.name);
-				engUrl.val(engine.href.replace(/http:\/\//i, ""));
-				engId.trigger("input");
-			});
-			if (customLinks._list[engine.host])
+				flash(update);
+				return false;
+			}
+
+			if (!exists || update.length)
 			{
-				$('<span class="del" title="' + (def ? "Clear" : "Delete") + '">' + '<svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"></path></svg>' + '</span>').appendTo(editBox).click(function(e)
+				customLinks._list[engine.host] = engine;
+				if (update.length)
 				{
-					e.stopPropagation();
-					e.preventDefault();
-					flash($("#" + id), e.isTrigger ? null : "#FF9090", true);
-					let scroll = $(customLinks.div).find(".content")[0].scrollTop;
-					setTimeout(function()
+					if (n > -1)
+						window.engines[n] = engine;
+
+				}
+				else
+					window.engines.push(engine);
+
+				ls("customLinks", customLinks._list);
+				customLinksAddCss(id);
+			}
+			function updater(update)
+			{
+				flash($(update));
+				updateDetails();
+			}
+			if (update.length)
+			{
+				if (exists)
+				{
+					for (let i = 0; i < enginesDefault.length; i++)
 					{
-						let host = engId.val(),
-								name = engName.val(),
-								href = engUrl.val();
-
-						delete customLinks._list[engine.host];
-						let update = false;
-						for(let i = 0; i < window.engines.length; i++)
+						if (isEqual(enginesDefault[i], engine))
 						{
-							if (window.engines[i].host == engine.host)
-							{
-								for(let d = 0; d < enginesDefault.length; d++)
-								{
-									if (enginesDefault[d].host == engine.host)
-									{
-										update = d;
-										break;
-									}
-								}
-								if (update !== false)
-									window.engines[i] = enginesDefault[update];
-								else
-								{
-									let index = enginesSort._list.indexOf(engine.host);
-
-									if (index != -1)
-									{
-										enginesSort._list.splice(i, 1);
-										ls("enginesSort", enginesSort._list);
-									}
-									window.engines.splice(i, 1);
-								}
-								break;
-							}
+							update.find(".del").trigger("click");
+							return;
 						}
-						ls("customLinks", customLinks._list);
-						if (update === false)
-						{
-							$("#" + id).remove();
-							$(".engines").find("." + id).remove();
-							$("." + id).toggleClass(id, false);
-							$("#css_" + id).remove();
-							let index = enginesHide.indexOf(engine.host);
-							if (index != -1)
-							{
-								enginesHide.splice(index, 1);
-								ls("enginesHide", enginesHide);
-							}
-						}
-						$(customLinks.div).remove();
-						customLinks.div = null;
-						customLinks.manager(function()
-						{
-							if (update !== false)
-							{
-								let aNew = $("#manage-links-popup").find("#" + id).find("a.link"),
-										a = $('.details[style="display: block;"]').find(".engines").find("a." + id);
-
-								a.html(aNew.html());
-								a.attr("href", aNew.attr("href"));
-							}
-							if (host || name || href)
-							{
-								$("#engine-id").val(host);
-								$("#engine-name").val(name);
-								let url = $("#engine-url");
-								url.val(href);
-								url.trigger("input");
-							}
-							if (scroll)
-								$(customLinks.div).find(".content")[0].scrollTop = scroll;
-						});
-						customLinks.show();
-					}, 300);
+					}
+				}
+				update.replaceWith(create(engine, !exists ? updater : function(update)
+				{
+					flash($(update));
+				}));
+				let entry = $("div.entry").find(".engines");
+				entry.each(function()
+				{
+					$(this).find("." + id).filter("a.link").attr("href", parseLink(this, engine).href).contents().filter(function()
+					{
+						if (this.nodeType === 3)
+							this.textContent = engine.name;
+					});
 				});
 			}
-			if (callback)
-				callback(div);
-		});
-		return div;
-	}//create();
-//	enginesBackup();
-
-	let eng = window.engines,
-			n = eng.length;
-	function finished()
-	{
-		if (!--n)
-			callback();
-	}
-	for(let i = 0; i < eng.length; i++)
-	{
-		content.append(create(eng[i], callback ? finished : null));
-	};
-//	setTimeout(enginesRestore,100);
-}//customLinks.manager()
-
-function customLinksAdd()
-{
-
-	let listNew = [],
-			remove = [],
-			list = [];
-	for(let l in customLinks._list)
-	{
-		listNew.push(customLinks._list[l]);
-	}
-	let hosts = [];
-	for(let n = 0; n < window.engines.length; n++)
-	{
-		hosts[hosts.length] = window.engines[n].host;
-		enginesDefault[enginesDefault.length] = window.engines[n];
-	}
-	for(let i = 0; i < listNew.length; i++)
-	{
-		let n = hosts.indexOf(listNew[i].host);
-		if (n != -1)
-			window.engines[n] = listNew[i];
-		else
-			list.push(listNew[i]);
-
-		customLinks._list[listNew[i].host] = listNew[i];
-	}
-	ls("customLinks", customLinks._list);
-	window.engines = window.engines.concat(list);
-
-	enginesSort();
-	let css = [],
-			css2 = [];
-
-	for (let i = 0; i < window.engines.length; i++)
-	{
-		let id = "engine_" + cleanName(window.engines[i].host);
-		customLinksAddCss(id);
-	}
-	customLinks.manager();
-	$(customLinks.div).remove();
-	customLinks.div = null;
-
-
-/* middle click on day's title opens selected engines for user's shows */
-	_enginesList = Settings.pref("middleClick") || [];
-	let engines = enginesBackup.backup ? enginesBackup.backup : window.engines,
-			del = [],
-			add = [];
-
-	for(let i = 0; i < _enginesList.length; i++)
-	{
-		let found = false;
-		for (let n = 0; n < engines.length; n++)
-		{
-			if (engines[n].name == _enginesList[i])
-				_enginesList[i] = engines[n].host
-
-			if (engines[n].host == _enginesList[i])
+			else
 			{
-				_engines.push(engines[n]);
-
-/*
-				if (!i && engines[n].host == "thepiratebay.org")
-				{
-// sort by date instead of seeds
-					engines[n].href = engines[n].href.replace(/\.se\//, ".org").replace(/\/0\/7\/0$/, "/0/3/0");
-				}
-*/
-				found = true;
-				break
+				let last = content.children(":last-child");
+				content.append(create(engine, updater));
+	//			updateDetails();
 			}
+
+			engName.val("");
+			engId.val("");
+			engUrl.val("");
+		});//engSubmit.click()
+
+		function updateDetails()
+		{
+			let clone = engResHidden.clone();
+			clone.find(".details").remove();
+			$("body").append(clone);
+			let opened = $('.details[style="display: block;"]').toggleClass("details", false);
+			force = true;
+			clone.find(".title").trigger("click");
+			opened.toggleClass("details", true);
+			setTimeout(function()
+			{
+				$('div:not(#engine-hidden) .details[style="display: block;"]').find(".engines").replaceWith(clone.find(".engines"));
+				clone.remove();
+			}, 300);
 		}
-		if (!found)
-			del.push(_enginesList[i]);
-	}
-	for(let i = 0; i < del.length; i++)
+		engSortReset.click(function(e)
+		{
+	//		e.stopPropagation();
+			e.preventDefault();
+			let host = engId.val(),
+					name = engName.val(),
+					href = engUrl.val(),
+					list = [];
+
+			for (let i = 0; i < enginesDefault.length; i++)
+			{
+				list[list.length] = enginesDefault[i].host;
+			}
+			for (i in customLinks._list)
+			{
+				list[list.length] = customLinks._list[i].host;
+			}
+			enginesSort(list, true);
+			ls("enginesSort", []);
+			updateDetails();
+			$(customLinks.div).remove();
+			customLinks.div = null;
+			popup.removeAttr("changed");
+			customLinks.manager(function()
+			{
+				if (host || name || href)
+				{
+					$("#engine-id").val(host);
+					$("#engine-name").val(name);
+					let url = $("#engine-url");
+					url.val(href);
+					url.trigger("input");
+				}
+			});
+			customLinks.show();
+		});
+		let dragged = null;
+
+		function dndEvent(e)
+		{
+			let r = null;
+			switch(e.type)
+			{
+				case "mousedown":
+	//				if (typeof(e.target.className) != "string" || e.target.className.indexOf("dndh") != -1)
+					if (typeof(e.target.className) == "string" && e.target.className.indexOf("dndh") != -1)
+						dragged = e.target.parentNode;
+					break;
+				case "dragstart":
+					if (!dragged)
+					{
+						return;
+					}
+
+					e.dataTransfer.effectAllowed = 'move';
+					dragged = this;
+					dragged.classList.add("dragging");
+					this.parentNode.classList.add("dragging");
+					setTimeout(function()
+					{
+						dragged.classList.add("hide");
+					});
+					e.dataTransfer.setData('application/x-moz-node', dragged);
+					break;
+				case "dragenter":
+					if (!dragged)
+					{
+						if (e.stopPropagation)
+							e.stopPropagation();
+
+						if (e.preventDefault)
+								e.preventDefault(); // Necessary. Allows us to drop.
+						return;
+					}
+
+					let node = this,
+							up = (node.nextSibling == dragged),
+							moveold = up ? node : node.nextSibling,
+							movenew = dragged;
+
+					node.parentNode.insertBefore(movenew, moveold);
+					break;
+				case "dragover":
+					if (!dragged)
+					{
+						if (e.stopPropagation)
+							e.stopPropagation();
+
+						if (e.preventDefault)
+								e.preventDefault(); // Necessary. Allows us to drop.
+						return;
+					}
+
+					e.dataTransfer.dropEffect = 'move';
+					if (e.stopPropagation)
+						e.stopPropagation();
+
+					if (e.preventDefault)
+							e.preventDefault(); // Necessary. Allows us to drop.
+
+					r = false;
+					break;
+				case "dragleave":
+					break;
+				case "dragend":
+					if (!dragged)
+						return;
+
+					dragged.classList.remove("dragging");
+					dragged.classList.remove("hide");
+					let div = document.querySelectorAll('#manage-links-popup-content .content [draggable]'),
+							list = [];
+					[].forEach.call(div, function (col)
+					{
+						list[list.length] = col._engine.host;
+					});
+					dragged.parentNode.classList.remove("dragging");
+					enginesSort(list, true);
+					ls("enginesSort", list);
+					if (enginesSort.changed())
+						popup.attr("changed", true);
+					else
+						popup.removeAttr("changed");
+
+					updateDetails();
+					dragged = false;
+					break;
+				case "drop":
+					if (!dragged)
+						return;
+
+					if (e.stopPropagation)
+						e.stopPropagation();
+					if (e.preventDefault)
+							e.preventDefault(); // Necessary. Allows us to drop.
+					break;
+			}
+			if (r !== null)
+				return r;
+		}
+		function create(engine, callback)
+		{
+			let div = document.createElement("div"),
+					id = "engine_" + cleanName(engine.host),
+					cb = createCheckbox(id, "", enginesHide.indexOf(engine.host) == -1, function(e, id, checked)
+					{
+						if (checked)
+							enginesHide.splice(enginesHide.indexOf(engine.host), 1);
+						else
+							enginesHide.push(engine.host);
+
+						ls("enginesHide", enginesHide);
+				}, ["Visible", "Hidden"]),
+					dndHandle = document.createElement("span");
+			div._engine = engine;
+			div.id = id;
+
+			content[0].setAttribute("draggable", true);
+			div.setAttribute("draggable", true);
+			div.addEventListener('dragstart', dndEvent, false);
+			div.addEventListener('dragenter', dndEvent, false)
+			div.addEventListener('dragover', dndEvent, false);
+			div.addEventListener('dragleave', dndEvent, false);
+			div.addEventListener('drop', dndEvent, false);
+			div.addEventListener('dragend', dndEvent, false);
+			div.addEventListener("mousedown", dndEvent, false);
+
+			dndHandle.innerText = "☰";
+			dndHandle.className = "dndh";
+			div.appendChild(dndHandle);
+			div.appendChild(cb);
+			let clone = engResHidden.clone();
+			$("body").append(clone);
+			clone.find(".details").remove();
+			entryOpen({target: $(clone).find(".title")[0]}, [engine]);
+
+			let n = 100;
+			setTimeout(function loop()
+			{
+	//			let list = clone.find(".engines").children().filter(".engine_" + cleanName(engine.host)),
+				let list = clone.find(".engines").children();
+				if (!list.length && n--)
+				{
+					setTimeout(loop);
+					return;
+				}
+				let	a = list.filter("a"),
+						img = a.find("img")[0],
+						def = false;
+
+				for (let i = 0; i < enginesDefault.length; i++)
+				{
+					if (enginesDefault[i].host == engine.host)
+					{
+						def = true;
+						break;
+					}
+				}
+
+				$(div).append(img);
+				$(div).append($("<div></div>").attr("title", a[0].textContent + "\n" + a[0].href).append(a).append('<span title="New">*</span>'));
+				if (def)
+					$(div).toggleClass("def", true);
+
+				clone.remove();
+				let editBox = $('<span class="editBox"></span>').appendTo(div);
+				$('<span class="edit" title="Edit"><svg viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path></svg></span>').appendTo(editBox).click(function(e)
+				{
+					engId.val((getHost(engine.href) == engine.host) ? "" : engine.host);
+					engName.val(engine.name);
+					engUrl.val(engine.href.replace(/http:\/\//i, ""));
+					engId.trigger("input");
+				});
+				if (customLinks._list[engine.host])
+				{
+					$('<span class="del" title="' + (def ? "Clear" : "Delete") + '">' + '<svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"></path></svg>' + '</span>')
+						.appendTo(editBox)
+						.click(function(e)
+					{
+						e.stopPropagation();
+						e.preventDefault();
+						flash($("#" + id), e.isTrigger ? null : "#FF9090");
+						let scroll = $(customLinks.div).find(".content")[0].scrollTop;
+						setTimeout(function()
+						{
+							let host = engId.val(),
+									name = engName.val(),
+									href = engUrl.val();
+
+							delete customLinks._list[engine.host];
+							let update = false;
+							for(let i = 0; i < window.engines.length; i++)
+							{
+								if (window.engines[i].host == engine.host)
+								{
+									for(let d = 0; d < enginesDefault.length; d++)
+									{
+										if (enginesDefault[d].host == engine.host)
+										{
+											update = d;
+											break;
+										}
+									}
+									if (update !== false)
+										window.engines[i] = enginesDefault[update];
+									else
+									{
+										let index = enginesSort._list.indexOf(engine.host);
+
+										if (index != -1)
+										{
+											enginesSort._list.splice(i, 1);
+											ls("enginesSort", enginesSort._list);
+										}
+										window.engines.splice(i, 1);
+									}
+									break;
+								}
+							}
+							ls("customLinks", customLinks._list);
+							if (update === false)
+							{
+								$("#" + id).remove();
+								$(".engines").find("." + id).remove();
+								$("." + id).toggleClass(id, false);
+								$("#css_" + id).remove();
+								let index = enginesHide.indexOf(engine.host);
+								if (index != -1)
+								{
+									enginesHide.splice(index, 1);
+									ls("enginesHide", enginesHide);
+								}
+							}
+							$(customLinks.div).remove();
+							customLinks.div = null;
+							customLinks.manager(function()
+							{
+								if (update !== false)
+								{
+									let aNew = $("#manage-links-popup").find("#" + id).find("a.link"),
+											a = $('.details[style="display: block;"]').find(".engines").find("a." + id);
+
+									a.html(aNew.html());
+									a.attr("href", aNew.attr("href"));
+								}
+								if (host || name || href)
+								{
+									$("#engine-id").val(host);
+									$("#engine-name").val(name);
+									let url = $("#engine-url");
+									url.val(href);
+									url.trigger("input");
+								}
+								if (scroll)
+									$(customLinks.div).find(".content")[0].scrollTop = scroll;
+							});
+							customLinks.show();
+						}, 300);
+					});
+				}
+				if (callback)
+					callback(div);
+			});
+			return div;
+		}//create();
+	//	enginesBackup();
+
+		let eng = window.engines,
+				n = eng.length;
+		function finished()
+		{
+			if (!--n)
+				callback();
+		}
+		for(let i = 0; i < eng.length; i++)
+		{
+			if (eng[i].host == "airdates.tv" && eng[i].name == "edit")
+				continue;
+
+			content.append(create(eng[i], callback ? finished : null));
+		};
+	//	setTimeout(enginesRestore,100);
+	}//customLinks.manager()
+
+	function customLinksAdd()
 	{
-		_enginesList.splice(_enginesList.indexOf(del[i]), 1);
-	}
-	let l = _enginesList.length;
-	try
+		let listNew = [],
+				remove = [],
+				list = [];
+		for(let l in customLinks._list)
+		{
+			listNew.push(customLinks._list[l]);
+		}
+		let hosts = [];
+		for(let n = 0; n < window.engines.length; n++)
+		{
+			hosts[hosts.length] = window.engines[n].host;
+			enginesDefault[enginesDefault.length] = window.engines[n];
+		}
+		for(let i = 0; i < listNew.length; i++)
+		{
+			let n = hosts.indexOf(listNew[i].host);
+			if (n != -1)
+				window.engines[n] = listNew[i];
+			else
+				list.push(listNew[i]);
+
+			customLinks._list[listNew[i].host] = listNew[i];
+		}
+		ls("customLinks", customLinks._list);
+		window.engines = window.engines.concat(list);
+
+		enginesSort();
+		let css = [],
+				css2 = [];
+
+		for (let i = 0; i < window.engines.length; i++)
+		{
+			let id = "engine_" + cleanName(window.engines[i].host);
+			customLinksAddCss(id);
+		}
+		customLinks.manager();
+		$(customLinks.div).remove();
+		customLinks.div = null;
+
+
+	/* middle click on day's title opens selected engines for user's shows */
+		_enginesList = Settings.pref("middleClick") || [];
+		let engines = enginesBackup.backup ? enginesBackup.backup : window.engines,
+				del = [],
+				add = [];
+
+		for(let i = 0; i < _enginesList.length; i++)
+		{
+			let found = false;
+			for (let n = 0; n < engines.length; n++)
+			{
+				if (engines[n].name == _enginesList[i])
+					_enginesList[i] = engines[n].host
+
+				if (engines[n].host == _enginesList[i])
+				{
+					_engines.push(engines[n]);
+
+	/*
+					if (!i && engines[n].host == "thepiratebay.org")
+					{
+	// sort by date instead of seeds
+						engines[n].href = engines[n].href.replace(/\.se\//, ".org").replace(/\/0\/7\/0$/, "/0/3/0");
+					}
+	*/
+					found = true;
+					break
+				}
+			}
+			if (!found)
+				del.push(_enginesList[i]);
+		}
+		for(let i = 0; i < del.length; i++)
+		{
+			_enginesList.splice(_enginesList.indexOf(del[i]), 1);
+		}
+		let l = _enginesList.length;
+		try
+		{
+			_enginesList = Array.from(new Set(_enginesList));
+		}catch(e){}
+		if (l != _enginesList)
+			Settings.pref("middleClick", _enginesList);
+
+	}//customLinksAdd()
+
+	function customLinksAddCss(id)
 	{
-		_enginesList = Array.from(new Set(_enginesList));
-	}catch(e){}
-	if (l != _enginesList)
-		Settings.pref("middleClick", _enginesList);
+		let css = 'body:not(.' + id + ') .engines .' + id + "{display:none;}",
+				css2 = 'body:not(.' + id + ') #' + id + " img";
 
-}//customLinksAdd()
+		css2 += ',body:not(.' + id + ') #' + id + " a.link";
+		css2 += "{font-style: italic; opacity: 0.5;}";
+		$('<style id="css_' + id + '"></style>').html(css+css2).appendTo("head");
+	}
 
-function customLinksAddCss(id)
-{
-	let css = 'body:not(.' + id + ') .engines .' + id + "{display:none;}",
-			css2 = 'body:not(.' + id + ') #' + id + " img";
-
-	css2 += ',body:not(.' + id + ') #' + id + " a.link";
-	css2 += "{font-style: italic; opacity: 0.5;}";
-	$('<style id="css_' + id + '"></style>').html(css+css2).appendTo("head");
-}
-
-/* colors manager */
-function colorsManager()
-{
-	let html = multiline(function(){/*
-<div id="colorsmanager">
-	<div id="colorsmanager-popup-content">
-		<div class="header">
-			<div class="back" title="Back">
-				<svg viewBox="0 0 24 24">
-					<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
-				</svg>
+	/* colors manager */
+	function colorsManager()
+	{
+		let html = multiline(function(){/*
+	<div id="colorsmanager">
+		<div id="colorsmanager-popup-content">
+			<div class="header">
+				<div class="back" title="Back">
+					<svg viewBox="0 0 24 24">
+						<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
+					</svg>
+				</div>
+				<h4>Colors Manager</h4>
+				<div class="close" title="Close">
+					<svg viewBox="0 0 24 24">
+						<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
+					</svg>
+					<svg viewBox="0 0 24 24">
+						<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
+					</svg>
+				</div>
 			</div>
-			<h4>Colors Manager</h4>
-			<div class="close" title="Close">
-				<svg viewBox="0 0 24 24">
-					<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
-				</svg>
-				<svg viewBox="0 0 24 24">
-					<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
-				</svg>
-			</div>
+			<div class="content"></div>
 		</div>
-		<div class="content"></div>
 	</div>
-</div>
-		*/});//html
+			*/});//html
 
-	let popup = $(html).appendTo("body");
-	clolorsManager.div = popup[0];
-}//colorsManager()
+		let popup = $(html).appendTo("body");
+		clolorsManager.div = popup[0];
+	}//colorsManager()
 
-colorsManager.show = function(noBack)
-{
-	let div = $(colorsManager.div);
-	if (noBack)
-		div.attr("noback", "");
-	else
-		div.attr("noback");
-
-	div.show();
-	setPopup(true);
-}
-
-colorsManager.hide = function()
-{
-	$(colorsManager.div).hide();
-	setPopup(false);
-}
-
-
-function createCheckbox(id, label, cookie, callback, title, className)
-{
-	let span = document.createElement("span"),
-			checkon = document.createElement("span"),
-			checkoff = document.createElement("span"),
-			a = document.createElement("a"),
-			check = typeof(cookie) == "boolean" ? cookie : cs(cookie) ? true : false;
-	if (title)
+	colorsManager.show = function(noBack)
 	{
-		checkon.title = title[0];
-		checkoff.title = title[1] || title[0];
-		a.title = title[2] || title[0];
-	}
-	a.className = (typeof(className) == "undefined" ? "filter " : className + " ") + id;
-	checkon.className = "checkon nu";
-	checkoff.className = "checkoff nu";
-	checkon.innerHTML = "☑";
-//	checkon.innerHTML = '<svg style="width:1em;height:1em;" viewBox="0 0 24 24"><path d="M19,19H5V5H15V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V11H19M7.91,10.08L6.5,11.5L11,16L21,6L19.59,4.58L11,13.17L7.91,10.08Z" /></svg>';
-	checkoff.innerHTML = "☐";
-//	checkoff.innerHTML = '<svg style="width:1em;height:1em;" viewBox="0 0 24 24"><path d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z" /></svg>';
-//	a.href = "#";
-	span.appendChild(checkon);
-	span.appendChild(checkoff);
-	span.appendChild(document.createTextNode(label));
-	a.appendChild(span);
-	$(a).insertBefore("#nu-showing");
-	let func = function(e, val)
-	{
-		e.preventDefault();
-//		e.stopPropagation();
-		let check = span.hasAttribute("checked");
-		if (val !== undefined)
-			check = !val;
-
-		if (check)
-			span.removeAttribute("checked");
+		let div = $(colorsManager.div);
+		if (noBack)
+			div.attr("noback", "");
 		else
+			div.attr("noback");
+
+		div.show();
+		setPopup(true);
+	}
+
+	colorsManager.hide = function()
+	{
+		$(colorsManager.div).hide();
+		setPopup(false);
+	}
+
+
+	function createCheckbox(id, label, cookie, callback, title, className)
+	{
+		let span = document.createElement("span"),
+				checkon = document.createElement("span"),
+				checkoff = document.createElement("span"),
+				a = document.createElement("a"),
+				check = typeof(cookie) == "boolean" ? cookie : cs(cookie) ? true : false;
+		if (title)
+		{
+			checkon.title = title[0];
+			checkoff.title = title[1] || title[0];
+			a.title = title[2] || title[0];
+		}
+		a.className = (typeof(className) == "undefined" ? "filter " : className + " ") + id;
+		checkon.className = "checkon nu";
+		checkoff.className = "checkoff nu";
+		checkon.innerHTML = "☑";
+	//	checkon.innerHTML = '<svg style="width:1em;height:1em;" viewBox="0 0 24 24"><path d="M19,19H5V5H15V3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V11H19M7.91,10.08L6.5,11.5L11,16L21,6L19.59,4.58L11,13.17L7.91,10.08Z" /></svg>';
+		checkoff.innerHTML = "☐";
+	//	checkoff.innerHTML = '<svg style="width:1em;height:1em;" viewBox="0 0 24 24"><path d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19Z" /></svg>';
+	//	a.href = "#";
+		span.appendChild(checkon);
+		span.appendChild(checkoff);
+		span.appendChild(document.createTextNode(label));
+		a.appendChild(span);
+		$(a).insertBefore("#nu-showing");
+		let func = function(e, val)
+		{
+			e.preventDefault();
+	//		e.stopPropagation();
+			let check = span.hasAttribute("checked");
+			if (val !== undefined)
+				check = !val;
+
+			if (check)
+				span.removeAttribute("checked");
+			else
+				span.setAttribute("checked", "checked");
+
+			$(".calendar").toggleClass(id, !check);
+			$("body").toggleClass(id, !check);
+			if (typeof(cookie) != "boolean")
+				cs(cookie, check ? 0 : 1);
+
+			return (typeof(callback) == "function") ? callback(e, id, !check) : e;
+		};
+		command.add(cookie, id, func);
+		a.addEventListener("click", func, false);
+		if (check)
 			span.setAttribute("checked", "checked");
 
-		$(".calendar").toggleClass(id, !check);
-		$("body").toggleClass(id, !check);
-		if (typeof(cookie) != "boolean")
-			cs(cookie, check ? 0 : 1);
+	/*
+	//real checkboxes
+		let box = document.createElement("span"),
+				labelNode = document.createElement("label"),
+				checkbox = document.createElement("input"),
+				checkboxId = "cb_" + id,
+				suf = "",
+				i = 1;
+		checkbox.type = "checkbox";
+		box.className = (typeof(className) == "undefined" ? "filter " : className + " ") + id;
+		if (title)
+			box.title = title[0];
 
-		return (typeof(callback) == "function") ? callback(e, id, !check) : e;
-	};
-	command.add(cookie, id, func);
-	a.addEventListener("click", func, false);
-	if (check)
-		span.setAttribute("checked", "checked");
+		labelNode.textContent = label;
+		box.appendChild(checkbox);
+		box.appendChild(labelNode);
 
-/*
-//real checkboxes
-	let box = document.createElement("span"),
-			labelNode = document.createElement("label"),
-			checkbox = document.createElement("input"),
-			checkboxId = "cb_" + id,
-			suf = "",
-			i = 1;
-	checkbox.type = "checkbox";
-	box.className = (typeof(className) == "undefined" ? "filter " : className + " ") + id;
-	if (title)
-		box.title = title[0];
+		while($("#" + checkboxId + suf).length)
+		{
+			suf = "_" + i++;
+		}
+		checkbox.addEventListener("change", func, false);
+		checkbox.id = checkboxId + suf;
+		checkbox.checked = check;
+		labelNode.setAttribute("for", checkbox.id);
+		$(box).insertBefore("#nu-showing");
+	*/
+		$(".calendar").toggleClass(id, check);
+		$("body").toggleClass(id, check);
 
-	labelNode.textContent = label;
-	box.appendChild(checkbox);
-	box.appendChild(labelNode);
-
-	while($("#" + checkboxId + suf).length)
-	{
-		suf = "_" + i++;
+		return a;
 	}
-	checkbox.addEventListener("change", func, false);
-	checkbox.id = checkboxId + suf;
-	checkbox.checked = check;
-	labelNode.setAttribute("for", checkbox.id);
-	$(box).insertBefore("#nu-showing");
-*/
-	$(".calendar").toggleClass(id, check);
-	$("body").toggleClass(id, check);
 
-	return a;
-}
+	function rand(min, max)
+	{
+		return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
 
-function rand(min, max)
-{
-	return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+	(function loop()
+	{
+		if ((typeof(engines) == "undefined" || !engines.length) && --loo)
+			return setTimeout(loop, 0);
 
-(function loop()
-{
-	if ((typeof(engines) == "undefined" || !engines.length) && --loo)
-		return setTimeout(loop, 0);
+		if (!loo)
+			return;
 
-	if (!loo)
-		return;
-
-	Settings.init();
-	customLinksAdd();
-})();
+		Settings.init();
+		customLinksAdd();
+	})();
 
 
 	Settings.init();
@@ -2701,7 +2680,7 @@ div.entry,
 	width: 18px;
   height: 16px;
 }
-div.details > span.engines > div.tools
+div.details > span.engines > br + div.tools
 {
 	margin-top: 0.3em;
 	border-top: 1px dashed #eee;
@@ -2831,12 +2810,41 @@ body.collapseMulti div.day:not(.expand):not(.opened) div.entry.multif div.title:
 	display: inline-block;
 	vertical-align: bottom;
 }
+#manage-links-popup-content .content > div > div
+{
+	min-width: 15em;
+	max-width: 15em;
+	overflow: hidden;
+	vertical-align: bottom;
+}
 #manage-links-popup-content .content a.link
 {
-	max-width: 15em;
+	display: inline-block;
+	max-width: 14.5em;
 	text-overflow: ellipsis;
 	overflow: hidden;
 }
+
+#manage-links-popup .content > div.def > div > span
+{
+	display: none;
+}
+/*
+#manage-links-popup .content > div.def > div > a
+{
+	font-weight: bold;
+}
+*//*
+#manage-links-popup .content > div:not(.def) > div > span
+{
+	text-decoration: none;
+	display: inline-block;
+	color: red;
+	padding: 0.2em;
+	vertical-align: super;
+	cursor: default;
+}
+
 #settings-popup,
 #manage-links-popup
 {
@@ -2922,11 +2930,14 @@ div:not(#account-popup-content) > .header
 }
 #manage-links-popup .content > div > img
 {
-	vertical-align: bottom;
-	display: list-item;
-	margin: 0 4px 2px 0;
+	vertical-align: sub;
+	display: inline-block;
+	margin: 0 4px 1px 0;
 }
-
+body.edge #manage-links-popup .content > div > img
+{
+	margin-bottom: -2px !important;
+}
 .editBox > .edit,
 .editBox > .del
 {
@@ -2968,14 +2979,6 @@ div:not(#account-popup-content) > .header
 {
 	outline: 1px dashed grey;
 }
-#manage-links-popup .content > div:not(.def) > a.link:after
-{
-	content: "*";
-	text-decoration: none;
-	display: inline-block;
-	color: red;
-	margin-left: 0.2em;
-}
 #engine-edit > div > label
 {
 	text-align: right;
@@ -2991,9 +2994,21 @@ div:not(#account-popup-content) > .header
 	padding: 0.1em 0.5em;
 	max-width: 15em;
 }
+#engine-edit > div > div.engine-url
+{
+	padding: 0.1em 2.2em 0.1em 0.5em;
+}
+body.ff #engine-edit > div > div.engine-url
+{
+	padding-right: 2.0em;
+}
 #engine-edit > div > div > input
 {
 	width: 100%;
+}
+input#engine-url
+{
+	padding-right: 1.5em;
 }
 
 #engine-edit > div > div > select
@@ -3003,7 +3018,17 @@ div:not(#account-popup-content) > .header
 	left: -1.5em;
 	margin: 0;
 	padding: 0;
+	height: 1.58em;
 }
+body.ff #engine-edit > div > div > select
+{
+	height: 1.55em;
+}
+body.edge #engine-edit > div > div > select
+{
+	height: 1.6em;
+}
+
 #engine-res
 {
 	overflow: hidden;
@@ -3086,14 +3111,18 @@ div.reset > span
 [draggable] .dndh
 {
 	cursor: move;
-	margin: 0 0.5em 0 0 !important;
 	font-size: 1.2em;
-	float: left;
-	position: relative;
-	padding-left: 3px;
-	padding-right: 3px;
+	vertical-align: bottom !important;
+	display: inline-block !important;
+	padding-left: 0.2em !important;
+	padding-right: 0.2em !important;
 }
-
+body.ff [draggable] .dndh
+{
+	font-size: 1em;
+	margin-top: 0.2em !important;
+	vertical-align: super !important;
+}
 #settings-popup-content > .content > *
 {
 	margin: 3px 0 3px 0;
@@ -3308,6 +3337,10 @@ body:not(.popup) .cp-color-picker
 	-webkit-box-shadow: 0px 0px 40px 0px black;
 	-moz-box-shadow:    0px 0px 40px 0px black;
 	box-shadow:         0px 0px 40px 0px black;
+}
+#changesLogBox,
+div[id*="-popup"]
+{
 	z-index: 1;
 }
 body:not(.popup) div.entry[opened]
@@ -3967,7 +4000,11 @@ body.prompt.scrollbar
 						.text( engine.name );
 					a[0].insertBefore(img[0], a[0].firstChild);
 					eng.css( "display", "" ); 
-					if(engine.host == "airdates.tv") a.attr("target",""); 
+					if(engine.host == "airdates.tv")
+					{
+						a.attr("target","");
+						domain = "airdates.tv";
+					}
 
 					img.attr("src", "http://www.google.com/s2/favicons?domain=" + (domain || null));
 
@@ -4039,7 +4076,7 @@ body.prompt.scrollbar
 				showHide(parseInt(showId), 2);
 			}, false);
 			showHideBox.appendChild(showHideObj);
-			$entry.find(".engines > .tools").append(showHideBox);
+			$entry.find(".engines > .tools").last().append(showHideBox);
 		}
 		if (_engs)
 			return;
@@ -4144,29 +4181,38 @@ body.prompt.scrollbar
 			alert( "Done!" );
 			return false;
 		});
-			$("body").off("click", ".exportColors");
-			$("body").on( "click", ".exportColors", function(e)
-			{
-				e.stopImmediatePropagation();
-				let str = exportGetColors();
-				if (str)
-						_prompt( function(){}, "This is the crazy text. \nYou can save it in a normal textfile and/or import it to another computer/browser.", str );
-				else
-						alert("Nothing to export");
-				return false;
-			});
-			$("body").off("click", ".importColors");
-			$("body").on( "click", ".importColors", function(e)
-			{
-				e.stopImmediatePropagation();
-				_prompt( function(str){
+		$("body").off("click", ".exportColors");
+		$("body").on( "click", ".exportColors", function(e)
+		{
+			e.stopImmediatePropagation();
+			let str = exportGetColors();
+			if (str)
+					_prompt({
+						callback: function(){},
+						text: "This is the crazy text. \nYou can save it in a normal textfile and/or import it to another computer/browser.",
+						value: str,
+						file: "Airdates.tv_colors_" + (DB.username ? DB.username.replace(/[\/\\?%*:|"<>]/g, "_") + "_" : "") + dateTimestamp() + ".txt",
+						ext: ".txt",
+					});
+			else
+					alert("Nothing to export");
+			return false;
+		});
+		$("body").off("click", ".importColors");
+		$("body").on( "click", ".importColors", function(e)
+		{
+			e.stopImmediatePropagation();
+			_prompt({
+				callback: function(str)
+				{
 					if( str )
 					{
 						let num = 0;
 						$.each( str.split( ";" ), function( i, e ){
 							let arg = e.split("=").concat([true] );
-							if (arg.length == 3 && String(Number(arg[0])) === arg[0] && arg[1].match(/^#[a-zA-Z0-9]{6}/))
+							if (arg.length == 3 && String(Number(arg[0])) === arg[0] && arg[1].match(/^#[a-fA-F0-9]{6}/))
 							{
+								arg[1] = arg[1].trim();
 								assignColor.apply( null, arg );
 								num++;
 							}
@@ -4176,9 +4222,12 @@ body.prompt.scrollbar
 							alert( "kk, imported " + num + " colors" );
 						});
 					}
-				}, "Please enter the crazy text!" ); 
-				return false; 
-			});
+				},
+				text: "Please enter the crazy text!",
+				ext: ".txt"
+			}); 
+			return false; 
+		});
 	} //showHideLoad()
 	DB.viewing = DB.username != DB.loggedInUsername;
 	let ul = $("#menu").find("ul");
@@ -4204,11 +4253,11 @@ body.prompt.scrollbar
 </li>
 */})).appendTo(ul);
 
-		li.find("span.nu").text(DB.username);
+	li.find("span.nu").text(DB.username);
 //fix auto wrap on small screen
-		let width = li.prop("clientWidth");
-		width = Math.round(width * 2 + 760 + width / 6);
-		$("head").append("<style>@media screen and (max-width: " + width + multiline(function(){/*
+	let width = li.prop("clientWidth");
+	width = Math.round(width * 2 + 760 + width / 6);
+	$("head").append("<style>@media screen and (max-width: " + width + multiline(function(){/*
 px)
 {
 	body.userViewer #menu li:not(:nth-last-child(2)):not(:last-child){ display: block; }
@@ -4238,13 +4287,13 @@ px)
 	{ top: 80px; }
 }
 </style>*/}));
-});
+		});
 	}
-if (!DB.loggedInUsername)
-{
+	if (!DB.loggedInUsername)
+	{
 	//monkey
-	$("#account-overview").find("span.nu")[0].innerHTML = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve" style="height: 1.2em; width: 1.2em; vertical-align: middle;"><circle style="fill:#5d433f;" cx="66.06" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="66.06" cy="222.97" r="41.29"/><circle style="fill:#5d433f;" cx="445.94" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="445.94" cy="222.97" r="41.29"/><path style="fill:#543e3b;" d="M442.589,262.049c-8.366-14.436-13.169-30.655-13.169-47.34v-0.001c0-72.373-44.364-134.33-107.355-160.318V24.774l-41.29,16.516l-8.258-33.032c-21.781,7.261-40.361,22.498-54.356,37.298c-77.557,17.283-135.58,86.39-135.58,169.154c0,16.685-4.803,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,93.496,92.431,169.29,206.452,169.29s206.452-75.794,206.452-169.29C462.452,308.532,455.308,283.997,442.589,262.049z"/><path style="fill:#543e3b;" d="M140.387,364.043c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-84.035,43.969-155.956,106.493-186.502l-7.396-29.584c-21.781,7.261-40.361,22.498-54.357,37.298C140.604,62.839,82.581,131.946,82.581,214.71c0,16.685-4.802,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,75.465,60.232,139.37,143.415,161.223C160.282,460.734,140.387,414.619,140.387,364.043z"/><path style="fill:#f7b189;" d="M256,470.71c68.412,0,123.871-44.367,123.871-99.097c0-11.354-2.414-22.245-6.835-32.386c-6.41-14.707-4.228-31.587,6.07-43.889c13.134-15.691,19.908-36.877,16.333-59.635c-4.91-31.259-30.182-56.486-61.448-61.353c-23.892-3.719-46.037,3.968-61.903,18.439c-4.51,4.113-10.3,6.17-16.087,6.17c-5.79,0-11.581-2.056-16.091-6.17c-15.866-14.471-38.011-22.158-61.903-18.439c-31.266,4.866-56.537,30.094-61.448,61.353c-3.575,22.757,3.199,43.943,16.333,59.635c10.298,12.303,12.48,29.182,6.07,43.889c-4.42,10.142-6.835,21.033-6.835,32.386C132.129,426.342,187.588,470.71,256,470.71z"/><path style="fill:#f7b189;" d="M132.129,371.612c0,18.522,6.468,35.795,17.524,50.625c-5.938-18.411-9.266-37.916-9.266-58.195c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-17.307,1.96-34.056,5.468-50.08c-0.295,0.042-0.583,0.04-0.879,0.086c-31.266,4.866-56.536,30.094-61.448,61.352c-3.575,22.758,3.2,43.944,16.333,59.635c10.298,12.302,12.481,29.181,6.071,43.889C134.543,349.368,132.129,360.259,132.129,371.612z"/><g><path style="fill:#5D5360;" d="M239.476,330.323c-1.242,0-2.5-0.278-3.685-0.871l-16.516-8.258c-4.081-2.04-5.734-7-3.694-11.081c2.048-4.081,7-5.734,11.081-3.694l16.516,8.258c4.081,2.04,5.734,7,3.694,11.081C245.419,328.653,242.508,330.323,239.476,330.323z"/><path style="fill:#5D5360;" d="M272.524,330.323c-3.032,0-5.944-1.669-7.395-4.565c-2.04-4.081-0.387-9.04,3.694-11.081l16.516-8.258c4.073-2.04,9.032-0.387,11.081,3.694c2.04,4.081,0.387,9.04-3.694,11.081l-16.516,8.258C275.024,330.044,273.766,330.323,272.524,330.323z"/></g><path style="fill:#4B3F4E;" d="M182.319,363.355c-5.001,0-8.941,4.431-8.248,9.384c5.126,36.617,39.853,64.938,81.929,64.938c42.077,0,76.803-28.321,81.929-64.938c0.693-4.953-3.247-9.384-8.248-9.384H182.319z"/><path style="fill:#E6646E;" d="M208.417,424.038c13.457,8.563,29.849,13.639,47.583,13.639s34.126-5.076,47.583-13.639c-5.966-20.666-25.063-35.909-47.583-35.909S214.383,403.371,208.417,424.038z"/><path style="fill:#4B3F4E;" d="M181.677,272.516L181.677,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C206.452,261.424,195.36,272.516,181.677,272.516z"/><path style="fill:#5D5360;" d="M181.677,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C206.452,225.801,195.36,214.71,181.677,214.71z"/><circle style="fill:#FFFFFF;" cx="181.68" cy="231.23" r="8.258"/><path style="fill:#4B3F4E;" d="M330.323,272.516L330.323,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C355.097,261.424,344.005,272.516,330.323,272.516z"/><path style="fill:#5D5360;" d="M330.323,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C355.097,225.801,344.005,214.71,330.323,214.71z"/><circle style="fill:#FFFFFF;" cx="330.32" cy="231.23" r="8.258"/><path style="fill:#FF8087;" d="M256,437.677c2.792,0,5.538-0.169,8.258-0.415v-16.101c0-4.56-3.694-8.258-8.258-8.258s-8.258,3.698-8.258,8.258v16.101C250.462,437.508,253.208,437.677,256,437.677z"/></svg>';
-}
+		$("#account-overview").find("span.nu")[0].innerHTML = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve" style="height: 1.2em; width: 1.2em; vertical-align: middle;"><circle style="fill:#5d433f;" cx="66.06" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="66.06" cy="222.97" r="41.29"/><circle style="fill:#5d433f;" cx="445.94" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="445.94" cy="222.97" r="41.29"/><path style="fill:#543e3b;" d="M442.589,262.049c-8.366-14.436-13.169-30.655-13.169-47.34v-0.001c0-72.373-44.364-134.33-107.355-160.318V24.774l-41.29,16.516l-8.258-33.032c-21.781,7.261-40.361,22.498-54.356,37.298c-77.557,17.283-135.58,86.39-135.58,169.154c0,16.685-4.803,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,93.496,92.431,169.29,206.452,169.29s206.452-75.794,206.452-169.29C462.452,308.532,455.308,283.997,442.589,262.049z"/><path style="fill:#543e3b;" d="M140.387,364.043c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-84.035,43.969-155.956,106.493-186.502l-7.396-29.584c-21.781,7.261-40.361,22.498-54.357,37.298C140.604,62.839,82.581,131.946,82.581,214.71c0,16.685-4.802,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,75.465,60.232,139.37,143.415,161.223C160.282,460.734,140.387,414.619,140.387,364.043z"/><path style="fill:#f7b189;" d="M256,470.71c68.412,0,123.871-44.367,123.871-99.097c0-11.354-2.414-22.245-6.835-32.386c-6.41-14.707-4.228-31.587,6.07-43.889c13.134-15.691,19.908-36.877,16.333-59.635c-4.91-31.259-30.182-56.486-61.448-61.353c-23.892-3.719-46.037,3.968-61.903,18.439c-4.51,4.113-10.3,6.17-16.087,6.17c-5.79,0-11.581-2.056-16.091-6.17c-15.866-14.471-38.011-22.158-61.903-18.439c-31.266,4.866-56.537,30.094-61.448,61.353c-3.575,22.757,3.199,43.943,16.333,59.635c10.298,12.303,12.48,29.182,6.07,43.889c-4.42,10.142-6.835,21.033-6.835,32.386C132.129,426.342,187.588,470.71,256,470.71z"/><path style="fill:#f7b189;" d="M132.129,371.612c0,18.522,6.468,35.795,17.524,50.625c-5.938-18.411-9.266-37.916-9.266-58.195c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-17.307,1.96-34.056,5.468-50.08c-0.295,0.042-0.583,0.04-0.879,0.086c-31.266,4.866-56.536,30.094-61.448,61.352c-3.575,22.758,3.2,43.944,16.333,59.635c10.298,12.302,12.481,29.181,6.071,43.889C134.543,349.368,132.129,360.259,132.129,371.612z"/><g><path style="fill:#5D5360;" d="M239.476,330.323c-1.242,0-2.5-0.278-3.685-0.871l-16.516-8.258c-4.081-2.04-5.734-7-3.694-11.081c2.048-4.081,7-5.734,11.081-3.694l16.516,8.258c4.081,2.04,5.734,7,3.694,11.081C245.419,328.653,242.508,330.323,239.476,330.323z"/><path style="fill:#5D5360;" d="M272.524,330.323c-3.032,0-5.944-1.669-7.395-4.565c-2.04-4.081-0.387-9.04,3.694-11.081l16.516-8.258c4.073-2.04,9.032-0.387,11.081,3.694c2.04,4.081,0.387,9.04-3.694,11.081l-16.516,8.258C275.024,330.044,273.766,330.323,272.524,330.323z"/></g><path style="fill:#4B3F4E;" d="M182.319,363.355c-5.001,0-8.941,4.431-8.248,9.384c5.126,36.617,39.853,64.938,81.929,64.938c42.077,0,76.803-28.321,81.929-64.938c0.693-4.953-3.247-9.384-8.248-9.384H182.319z"/><path style="fill:#E6646E;" d="M208.417,424.038c13.457,8.563,29.849,13.639,47.583,13.639s34.126-5.076,47.583-13.639c-5.966-20.666-25.063-35.909-47.583-35.909S214.383,403.371,208.417,424.038z"/><path style="fill:#4B3F4E;" d="M181.677,272.516L181.677,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C206.452,261.424,195.36,272.516,181.677,272.516z"/><path style="fill:#5D5360;" d="M181.677,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C206.452,225.801,195.36,214.71,181.677,214.71z"/><circle style="fill:#FFFFFF;" cx="181.68" cy="231.23" r="8.258"/><path style="fill:#4B3F4E;" d="M330.323,272.516L330.323,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C355.097,261.424,344.005,272.516,330.323,272.516z"/><path style="fill:#5D5360;" d="M330.323,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C355.097,225.801,344.005,214.71,330.323,214.71z"/><circle style="fill:#FFFFFF;" cx="330.32" cy="231.23" r="8.258"/><path style="fill:#FF8087;" d="M256,437.677c2.792,0,5.538-0.169,8.258-0.415v-16.101c0-4.56-3.694-8.258-8.258-8.258s-8.258,3.698-8.258,8.258v16.101C250.462,437.508,253.208,437.677,256,437.677z"/></svg>';
+	}
 
 	//fix when removing color it still saves it in database as #FFFFFF
 	window.DB._setColor = window.DB.setColor;
@@ -4311,7 +4360,7 @@ if (!DB.loggedInUsername)
 			$("div.day").each(collapseMulti);
 		});
 */
-		showHideLoad();
+	showHideLoad();
 
 	//list of user's shows
 	DB.infoNameClean = function(entry)
@@ -4638,63 +4687,6 @@ if (!DB.loggedInUsername)
 
 			$("#account-overview").unbind("click", loop);
 			content.find("div:first-of-type > span").html('<svg viewBox="0 0 24 24"><path d="M10.59,13.41C11,13.8 11,14.44 10.59,14.83C10.2,15.22 9.56,15.22 9.17,14.83C7.22,12.88 7.22,9.71 9.17,7.76V7.76L12.71,4.22C14.66,2.27 17.83,2.27 19.78,4.22C21.73,6.17 21.73,9.34 19.78,11.29L18.29,12.78C18.3,11.96 18.17,11.14 17.89,10.36L18.36,9.88C19.54,8.71 19.54,6.81 18.36,5.64C17.19,4.46 15.29,4.46 14.12,5.64L10.59,9.17C9.41,10.34 9.41,12.24 10.59,13.41M13.41,9.17C13.8,8.78 14.44,8.78 14.83,9.17C16.78,11.12 16.78,14.29 14.83,16.24V16.24L11.29,19.78C9.34,21.73 6.17,21.73 4.22,19.78C2.27,17.83 2.27,14.66 4.22,12.71L5.71,11.22C5.7,12.04 5.83,12.86 6.11,13.65L5.64,14.12C4.46,15.29 4.46,17.19 5.64,18.36C6.81,19.54 8.71,19.54 9.88,18.36L13.41,14.83C14.59,13.66 14.59,11.76 13.41,10.59C13,10.2 13,9.56 13.41,9.17Z"></path></svg>');
-			let d = document.createElement("a");
-			d.addEventListener("click", function(e)
-			{
-				if (e.isTrigger)
-					return;
-
-				e.preventDefault();
-				e.stopPropagation();
-				e.stopImmediatePropagation();
-
-				let data = exportGetColors(),
-						d = new Date(),
-						date = d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
-				if (data)
-					fileSave("Airdates.tv_colors_" + (DB.username ? DB.username.replace(/[\/\\?%*:|"<>]/g, "_") + "_" : "") + date + ".txt", data);
-				else
-					alert("Nothing to export");
-			}, false);
-			d.textContent = "save to file";
-			d.className = "file";
-			content.find(".exportColors").append(d);
-			d = d.cloneNode(true);
-			d.addEventListener("click", function(e)
-			{
-				if (e.isTrigger)
-					return;
-
-				e.preventDefault();
-				e.stopPropagation();
-
-				fileLoad(function(str)
-				{
-					if (str)
-					{
-						let num = 0;
-						$.each( str.split( ";" ), function( i, e ){
-							let arg = e.split("=").concat([true] );
-							if (arg.length == 3 && String(Number(arg[0])) === arg[0] && arg[1].match(/^#[a-zA-Z0-9]{6}/))
-							{
-								assignColor.apply( null, arg );
-								num++;
-							}
-						} );
-						setTimeout(function()
-						{
-							alert( "kk, imported " + num + " colors" );
-						});
-					}
-					else
-					{
-						alert( "Error importing" );
-					}
-				}, ".txt");
-
-			}, false);
-			d.textContent = "load from file";
-			content.find(".importColors").append(d);
 
 			hideNode("importColors");
 			let a = document.createElement("a"),
@@ -4950,12 +4942,20 @@ if (!DB.loggedInUsername)
 
 		p = target.parents("#settings-popup").get().length;
 		if (e.target.id != "settings-open" && (p == 0 || (p && close)))
+		{
 			hide[hide.length] = Settings.hide;
+			if (window.hashChanged.hashSearch && ["#settings", "#options"].indexOf(location.hash) != -1)
+				removeHash();
+		}
 		else if (p)
 			return;
 		p = target.parents("#manage-links-popup").get().length;
 		if (e.target.id != "manage-links-open" && (p == 0 || (p && close)))
+		{
 			hide[hide.length] = customLinks.hide;
+			if (window.hashChanged.hashSearch && location.hash == "#linksmanager")
+				removeHash();
+		}
 		else if (p)
 			return;
 
@@ -4970,7 +4970,6 @@ if (!DB.loggedInUsername)
 		else if (p)
 			return;
 
-log(hide);
 		for(let i = 0; i < hide.length; i++)
 			hide[i]();
 
@@ -5115,8 +5114,6 @@ log(hide);
 	}
 /* changes log end */
 
-	$(window).on("hashchange", hashChanged).trigger("hashchange");
-
 	$("body").on("click", ".back", function()
 	{
 		customLinks.hide();
@@ -5161,6 +5158,7 @@ log(hide);
 					<input class="input"></input>
 				</span>
 				<div class="control">
+					<input type="button" value="File" class="file">
 					<input type="button" value="Copy" class="copy">
 					<input type="button" value="OK" class="ok">
 					<input type="button" value="Cancel" class="cancel">
@@ -5174,7 +5172,8 @@ log(hide);
 				ok = html.find(".ok"),
 				copy = html.find(".copy"),
 				cancel = html.find(".cancel"),
-				form= html.find("form"),
+				form = html.find("form"),
+				file = html.find(".file"),
 				that = this,
 				padding = 0
 				rightOld = $("body")[0].style.right;
@@ -5286,23 +5285,48 @@ log(hide);
 			}
 		});
 
-		function _prompt(callback, txt, val)
+		file.on("click", function()
 		{
-			that.callback = callback;
+			if (input.attr("readonly"))
+			{
+				fileSave(that.file, input.val(), that.ext);
+			}
+			else
+			{
+				fileLoad(function(text)
+				{
+					input.val(text);
+				}, that.ext);
+			}
+		});
+		function _prompt(opt)
+		{
+
+			if (!opt.file)
+				opt.file = "Airdates.tv_enhancer_v" + adeVersion + "_settings_" + dateTimestamp() + ".json";
+
+			if (!opt.ext)
+				opt.ext = ".json";
+
+			that.ext = opt.ext;
+			that.file = opt.file;
+			that.callback = opt.callback;
 			//faking this id so account popup in the background wouldn't close when clicked on our prompt
 			html.attr("id", "account-popup");
-			msg.text(txt);
-			input.val(val);
-			if (typeof(val) != "undefined")
+			msg.text(opt.text);
+			input.val(opt.value);
+			if (typeof(opt.value) != "undefined")
 			{
 				input.attr("readonly", true);
 				input.select();
 				copy.show();
+				file.val("Save as");
 			}
 			else
 			{
 				input.removeAttr("readonly");
 				copy.hide();
+				file.val("Load file");
 			}
 			let body = document.body,
 					w = body.scrollWidth;
@@ -5320,6 +5344,62 @@ log(hide);
 		return _prompt;
 	})();//_prompt
 
+
+	window.hashChanged = function hashChanged(e, hash)
+	{
+		let match,
+				remove = false,
+				hashSearch = false;
+		hash = typeof(hash) == "undefined" ? location.hash : hash;
+
+		if (hash == "#myshows")
+		{
+			search("info:myshows");
+			hashSearch = true;
+		}
+		else if (hash == "#hidden")
+		{
+			search("info:hidden");
+			hashSearch = true;
+		}
+		else if (match = hash.match(/^#([sfq]|search|find):(.*)/))
+		{
+			search(match[2]);
+	//		remove = true;
+			hashSearch = true;
+		}
+		else if (match = hash.match(/^#(info:.+)/))
+		{
+			search(match[1]);
+	//		remove = true;
+			hashSearch = true;
+		}
+		else if (hash == "#changes")
+		{
+			hashSearch = true;
+			changesLog.show(true);
+		}
+		else if (hash == "#settings" || hash == "#options")
+		{
+			hashSearch = true;
+			Settings.show(true);
+		}
+		else if (hash == "#linksmanager")
+		{
+			hashSearch = true;
+			customLinks.manager(function()
+			{
+				customLinks.show(true);
+			});
+		}
+		if (remove && hash == location.hash)
+		{
+			removeHash();
+			hashSearch = false;
+		}
+		hashChanged.hashSearch = hashSearch;
+	}
+	$(window).on("hashchange", hashChanged).trigger("hashchange");
 };//func()
 
 //disqus
@@ -5759,6 +5839,19 @@ span[class="author"] + span.troll
 
 
 var changesLogText = multiline(function(){/*
+1.31 (2018-02-25)
+	+ button in prompt popup to save/load file
+	+ hashtags #options and #linksmanager
+	+ tooltips on links in links manager
+	! color validation during import colors didn't work properly
+	! the end of text in url field in links manager was covered up by the dropdown menu button
+	! color picker in search result displayed behind the search results and was inaccessible
+	! asterisk on new links in links manager is now always visible even if link's title is truncated
+	* export colors filters out invalid colors
+	* links manager is now consistent width
+	- save/load from file links, they are now integrated into prompt itself
+1.30.2 (2018-02-18)
+	! incorrect favicon for internal airdates.tv links
 1.30.1 (2018-02-18)
 	! error opening show from "My shows" list
 1.30 (2018-02-18)
