@@ -8,13 +8,93 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.31
+// @version     1.32
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
 
 //tab = 2 spaces
 
+
+var changesLogText = multiline(function(){/*
+1.32 (2018-03-04)
+	+ add/reset buttons in Links Manager are now disabled when fields are empty
+	+ clear colors/hidden/watched lists in options
+	+ ability undo after clear colors/hidden/watched
+	! reset button in Links Manager would not remove icon in result when clicked first time
+	! broken restore settings
+	! when a popup once opened via a hashtag (#options, #linksmanager, #changes), opening that popup via click would not show back button
+	* alert popup after clear colors/hidden/watched replaced with a notification message with ability to undo
+1.31 (2018-02-25)
+	+ button in prompt popup to save/load file
+	+ hashtags #options and #linksmanager
+	+ tooltips on links in links manager
+	! color validation during import colors didn't work properly
+	! the end of text in url field in links manager was covered up by the dropdown menu button
+	! color picker in search result displayed behind the search results and was inaccessible
+	! asterisk on new links in links manager is now always visible even if link's title is truncated
+	* export colors filters out invalid colors
+	* links manager is now consistent width
+	- save/load from file links, they are now integrated into prompt itself
+1.30.2 (2018-02-18)
+	! incorrect favicon for internal airdates.tv links
+1.30.1 (2018-02-18)
+	! error opening show from "My shows" list
+1.30 (2018-02-18)
+	+ animation speed setting
+	+ links manager automatically scrolls to new (or edited) link after submit
+	+ custom prompt popup for import/export colors/settings
+	! exporting ~160 colors via text string would corrupt some colors due to Chrome limitations
+	! errors in console when attempting restore settings or import colors with invalid data
+	* importing colors now validates input before saving to the account
+1.29 (2018-02-12)
+	+ ESC key closes popups
+	+ show/hide this show icon
+	* links with long names are longer "wrap"
+	* significally improved performance of Links manager
+	* faster opening/closing show animation
+	* selectable links in show details are now separate from other links
+	* links manager popup now has limited max size
+	! when number of visible links different from default, opening a show would make the animation jump
+	! long text wrapped in popup windows
+	! clicking on edit link icon in Links Manager, would not display correct lin in the "Result" row
+	! "reset sort" link in Links Manager would take whole row
+	! MS Edge would not initialize properly
+1.28.4 (2018-02-07)
+	+ random series as example in links manager
+	! editing/adding a link while a show opened would produce incorrect links in the opened show until page refresh
+1.28.3 (2018-02-07)
+	! Firefox decided render shadow much bigger then supposed to
+1.28.2 (2018-02-07)
+	! in Firefox shadow would show on opened show when popup was opened
+1.28.1 (2018-02-07)
+	+ shadow on "popups", making them more pronounced
+1.28 (2018-02-04)
+	+ search by adding #s:keyword in the address
+	+ changes log
+	+ ability use hash tags as links in comments (<a href="#s:test">#s:<i>search-keyword</i></a>, <a href="#info:1234">#info:<i>NN</i></a>, <a href="#myshows">#myshows</a>, <a href="#hidden">#hidden</a>, <a href="#changes">#changes</a>). Without ADE it will open a blank page.
+	+ option for small logo
+	! disqus troll would not work at all in some browsers
+	! disqus troll would not work on additionally loaded comments
+	! "watched" checkboxes shown through search field
+	! close button on popups would not work if cursor not in the middle of it
+	* removed disq.us from links in comments
+	* links in comments open in new tab
+	* when searching via hash tag, clearing search field with X icon would also remove the hash tag from address bar
+1.27.5 (2018-01-22)
+	! broken fix for paste via right click in search bar
+1.27.4 (2018-01-22)
+	+ cloud icon next to member name
+1.27.3 (2018-01-22)
+	! fails initialize with some invalid colors in cookies
+	* replaced some icons with SVG, should now be more browser independent and consistent
+1.27.2 (2018-01-21)
+	! sorting by color with fallback to sorting by name was in reverse
+1.27 (2018-01-21)
+	+ link to support website
+	! middle click on title would attempt open 2 tabs for each selected link
+	! significantly improved initialization speed for guests and members with no colors (very noticeable with #showhidden in the address)
+*/}, true).trim();
 
 let log = console.log,
 		self = this;
@@ -115,7 +195,6 @@ receiveMessage._self = this;
 window.addEventListener("message", receiveMessage, false);
 let func = function(event)
 {
-log(navigator.userAgent);
 	let browser = "";
 	if((navigator.userAgent.indexOf("Opera") || navigator.userAgent.indexOf('OPR')) != -1 )
 	{
@@ -235,7 +314,7 @@ log(navigator.userAgent);
 		{
 			if (this.inited)
 				return;
-
+//cloneObject
 			this.prefs = ls("settings") || Object.assign({}, this.prefsDef);
 			if (typeof(this.prefs) != "object")
 				this.prefs = Object.assign({}, this.prefsDef);
@@ -482,9 +561,9 @@ log(navigator.userAgent);
 			content.append(span);
 
 			span = span.cloneNode(true);
-			span.title = "Note, your watched and hidden shows list will stay intact, new shows will be added to it. Custom links will only overwrite existing with matched ID. Everything else will be overwritten";
 			i = span.firstChild;
 			a = i.nextSibling;
+			span.title = "Note, your watched and hidden shows list will stay intact, new shows will be added to it. Custom links will only overwrite existing with matched ID. Everything else will be overwritten";
 			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3M12,8V13L16.28,15.54L17,14.33L13.5,12.25V8H12Z" /></svg>';
 			a.textContent = "Restore settings";
 			function restore(str)
@@ -642,19 +721,34 @@ log(navigator.userAgent);
 			a.addEventListener("click", function(e)
 			{
 				e.preventDefault();
-				_prompt( function(data)
-				{
-					setTimeout(function()
+
+				_prompt({
+					callback: function(data)
 					{
-						restore(data);
-					});
-				},
-				"Please enter the " + adeName + " settings text" );
+						setTimeout(function()
+						{
+							restore(data);
+						});
+					},
+					text: "Please enter the " + adeName + " settings text"
+				});
 			}, false);
 
 			content.append(span);
 
-
+			content.append('<div class="spacer"/><div class="moreOpt"><h4>More...</h4><div></div></div>');
+			span = span.cloneNode(true);
+			i = span.firstChild;
+			a = $(".clearColors")[0].cloneNode(true);
+			i.parentNode.replaceChild(a, i.nextSibling);
+			span.title = "Did you make a backup?";
+			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8.46,11.88L9.87,10.47L12,12.59L14.12,10.47L15.53,11.88L13.41,14L15.53,16.12L14.12,17.53L12,15.41L9.88,17.53L8.47,16.12L10.59,14L8.46,11.88M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z"></path></svg>';
+			let moreOpt = $("div.moreOpt");
+			moreOpt.find("div").append(span);
+			moreOpt.on("click", function()
+			{
+				moreOpt.attr("opened", true);
+			});
 		},//Settings.create()
 
 		callback: function(e, id, check)
@@ -673,7 +767,7 @@ log(navigator.userAgent);
 			if (noBack)
 				Settings.box.attr("noback", "");
 			else
-				Settings.box.attr("noback");
+				Settings.box.removeAttr("noback");
 
 			Settings.box.show();
 			setPopup(true);
@@ -683,6 +777,7 @@ log(navigator.userAgent);
 		{
 			Settings.box.hide();
 			setPopup(false);
+			Settings.box.find("div.moreOpt").removeAttr("opened");
 		},
 	}//Settings
 
@@ -1282,7 +1377,14 @@ log(navigator.userAgent);
 				engRes.append(a);
 				return;
 			}, 300);
+			buttonsUpdate();
 		}//change()
+		function buttonsUpdate()
+		{
+			let disabled = engName.val() + engId.val().trim() + engUrl.val().trim() ? false: true;
+			engSubmit.prop("disabled", disabled);
+			engReset.prop("disabled", disabled);
+		}
 		engId.on("input change", change);
 		engUrl.on("input change", change);
 		engName.on("input change", change);
@@ -1301,12 +1403,15 @@ log(navigator.userAgent);
 			engUrl.trigger("input");
 			e.target.value = "";
 		});
+
 		engReset.click(function(e)
 		{
+			clearTimeout(change.timer);
 			engRes.html("");
 			prevVal = null;
+			setTimeout(buttonsUpdate);
 		});
-
+		buttonsUpdate();
 		function flash(obj, color, scroll)
 		{
 			if (!obj[0].parentElement)
@@ -2796,6 +2901,20 @@ body.collapseMulti div.day:not(.expand):not(.opened) div.entry.multif div.title:
 {
 	margin: 0.2em 0 0 0;
 }
+#settings-popup .content div.moreOpt:not([opened]) > h4
+{
+	cursor: pointer;
+	margin-bottom: 0.2em;
+}
+#settings-popup .content div.moreOpt > h4
+{
+	cursor: default;
+	margin: 0.2em 0 1em 0;
+}
+div.moreOpt:not([opened]) > div
+{
+	display: none;
+}
 #settings-popup .content,
 #manage-links-popup .content,
 #account-popup-content .content
@@ -3674,7 +3793,40 @@ body.prompt.scrollbar
 	position: absolute;
 }
 
-
+div.undo
+{
+	position: absolute;
+	top: 0 !important;
+	left: 0 !important;
+	right: 0 !important;
+	text-align: center;
+	display: none;
+	z-index: 999999;
+	height: 0;
+	width: 100% !important;
+}
+div.undo > div
+{
+	background: #fde073;
+	line-height: 2.5;
+	overflow: hidden; 
+	-webkit-box-shadow: 0 0 5px black;
+	-moz-box-shadow:    0 0 5px black;
+	box-shadow:         0 0 5px black;
+	display: inline-block;
+	padding: 0 0 0 1em;
+}
+div.undo > div a
+{
+	cursor: pointer;
+	text-decoration: underline;
+}
+div.undo > div > .close
+{
+	cursor: pointer;
+	margin-left: 1em;
+	padding: 0.5em;
+}
 /*
 	https://kazzkiq.github.io/balloon.css/
 *//*
@@ -4143,44 +4295,19 @@ body.prompt.scrollbar
 
 
 		let clearColors = $(".clearColors"),
-				clearHidden = clearColors.clone(false),
-				clearWatched = clearColors.clone(false);
+				clearHidden = clearColors.first().clone(false),
+				clearWatched = clearHidden.clone(false);
 
 		clearHidden.removeClass();
 		clearHidden.addClass("clearHidden");
 		clearHidden.html("Clear hidden");
-		clearHidden.insertAfter(clearColors);
 		clearWatched.removeClass();
 		clearWatched.addClass("clearWatched");
 		clearWatched.html("Clear watched");
-		clearWatched.insertAfter(clearHidden);
-		clearColors.after(" | ");
-		clearHidden.after(" | ");
-		clearHidden.on( "click", function()
-		{
-			let array = [];
-			for(let i = 0; i < _hidden.length; i++)
-				array.push(_hidden[i]);
-
-			for(let i = 0; i < array.length; i++)
-				showHide(array[i], 0);
-
-			alert( "Done!" );
-			return false;
-		});
-		clearWatched.on( "click", function()
-		{
-			watched._list = {};
-			watched.save();
-			$("div.entry").each(function(i, entry)
-			{
-				if (entry._input)
-					watched.update(entry, false);
-			});
-
-			alert( "Done!" );
-			return false;
-		});
+		clearWatched.insertAfter(clearColors);
+		clearHidden.insertAfter(clearColors);
+		$(".clearColors").after(" | ");
+		$(".clearHidden").after(" | ");
 		$("body").off("click", ".exportColors");
 		$("body").on( "click", ".exportColors", function(e)
 		{
@@ -4880,6 +5007,162 @@ px)
 			if (e.type == "input")
 				$(this).trigger("change");
 		}).trigger("change");
+
+		let Backup = function Backup(id, val)
+		{
+			clearTimeout(this.timer[id]);
+			if (this[id] && typeof(this[id]) == "function")
+				return this[id](val);
+			else
+				return this[id];
+
+		}.bind(
+		{
+			data: {},
+			last: [],
+			timer: {},
+			clone: function(obj)
+			{
+				return Object.assign(Array.isArray(obj) ? [] : {}, obj);
+			},
+			colors: function(restore)
+			{
+				if (restore)
+				{
+					if (!this.data.colors)
+						return;
+
+					$.each(this.data.colors, function(i, c)
+					{
+						assignColor( i, c, true );
+					});
+					this.undoHide("colors");
+				}
+				else
+				{
+					if (!this.data.colors)
+						this.data.colors = this.clone(DB.savedColors);
+
+					this.undoShow("colors");
+				}
+			},
+			hidden: function(restore)
+			{
+				if (restore)
+				{
+					if (!this.data.hidden)
+						return;
+
+					let data = this.data.hidden;
+					for(let i = 0; i < data.length; i++)
+						showHide(data[i], 1);
+
+					this.undoHide("hidden");
+				}
+				else
+				{
+					if (!this.data.hidden)
+						this.data.hidden = this.clone(_hidden);
+
+					this.undoShow("hidden");
+				}
+			},
+			watched: function(restore)
+			{
+				if (restore)
+				{
+					if (!this.data.watched)
+						return;
+
+					let data = this.data.watched;
+					for(let id in data)
+					{
+						for(let i = 0; i < data[id].length; i++)
+						{
+							let ep = data[id][i];
+							watched.add(id, ep);
+							$('div.entry[data-series-id="' + id + '"]').each(function(n, entry)
+							{
+								if (watched.title(entry) == ep)
+									watched.update(entry, true);
+							});
+						}
+					}
+					watched.save(true);
+					this.undoHide("watched");
+				}
+				else
+				{
+					if (!this.data.watched)
+						this.data.watched = this.clone(watched._list);
+
+					this.undoShow("watched");
+
+				}
+			},
+			undoObj: {},
+			undoHide: function(id)
+			{
+				let obj = this.undoObj[id];
+				obj.fadeOut(100);
+				setTimeout(function()
+				{
+					obj.removeAttr("id");
+				});
+				delete this.data[id];
+				let i = this.last.indexOf(id);
+				if (i != -1)
+					this.last.splice(i, 1);
+			},
+			undoShow: function(id)
+			{
+				let that = this;
+				if (!this.undoObj[id])
+				{
+					this.undoObj[id] = $('<div class="undo"><div><span class="msg"></span> <a class="undo">Undo</a><span class="undo close">X</span><div></div>').appendTo("body");
+					this.undoObj[id].find("a").on("click", function()
+					{
+						let id = that.last.pop();
+						if (typeof(that[id]) == "function")
+							that[id](true);
+					})
+						.on("mousedown", function(e)
+						{
+							if (e.target === this)
+							{
+								e.stopPropagation();
+								e.preventDefault();
+							}
+						});
+					this.undoObj[id].find(".close").on("click", function()
+					{
+						that.undoHide(id);
+					});
+				}
+				let i = this.last.indexOf(id);
+				if (i != -1)
+					this.last.splice(i, 1);
+
+				let text = id.charAt(0).toUpperCase() + id.slice(1) + " list successfully cleared.";
+				this.last.push(id);
+				this.undoObj[id].find(".msg").text(text);
+				this.undoObj[id].fadeIn(200);
+				this.undoObj[id].attr("id", "account-popup");
+
+				this.timer[id] = setTimeout(function()
+				{
+//					that.undoHide(id);
+				}, 10000);
+			},
+			get hasBackup ()
+			{
+				for(let i in this.data)
+					return true;
+
+				return false;
+			}
+		});
+
 		//fix clear colors for members
 		$(document.body).off( "click", ".clearColors");
 		$(document.body).on( "click", ".clearColors", function(e)
@@ -4888,11 +5171,11 @@ px)
 			e.preventDefault();
 			if (!DB.viewing)
 			{
+				Backup("colors");
 				$.each( DB.savedColors, function( i, c )
 				{
 					assignColor( i, null, true );
 				} );
-				alert( "Done!" );
 			}
 			else
 				alert( "You don't have permission!" );
@@ -4900,6 +5183,31 @@ px)
 			return false;
 		});
 
+		$(document.body).on( "click", ".clearHidden", function()
+		{
+			Backup("hidden");
+			let array = [];
+			for(let i = 0; i < _hidden.length; i++)
+				array.push(_hidden[i]);
+
+			for(let i = 0; i < array.length; i++)
+				showHide(array[i], 0);
+
+			return false;
+		});
+		$(document.body).on( "click", ".clearWatched", function()
+		{
+			Backup("watched");
+			watched._list = {};
+			watched.save();
+			$("div.entry").each(function(i, entry)
+			{
+				if (entry._input)
+					watched.update(entry, false);
+			});
+
+			return false;
+		});
 
 	});//document.ready()
 
@@ -4929,7 +5237,7 @@ px)
 		if (e.isTrigger || e.target.isTrigger)
 			return;
 
-		if (!$("body").hasClass("popup") || $("body").hasClass("prompt"))
+		if (!$("body").hasClass("popup") || $("body").hasClass("prompt") || (e.target.className.indexOf && e.target.className.indexOf("undo") != -1))
 			return;
 
 		let target = $(e.target),
@@ -5158,10 +5466,10 @@ px)
 					<input class="input"></input>
 				</span>
 				<div class="control">
-					<input type="button" value="File" class="file">
-					<input type="button" value="Copy" class="copy">
 					<input type="button" value="OK" class="ok">
 					<input type="button" value="Cancel" class="cancel">
+					<input type="button" value="Copy" class="copy">
+					<input type="button" value="File" class="file">
 				</div>
 			</form>
 		</div>
@@ -5175,9 +5483,19 @@ px)
 				form = html.find("form"),
 				file = html.find(".file"),
 				that = this,
-				padding = 0
+				padding = 0,
 				rightOld = $("body")[0].style.right;
+
 		that.callback = function(){};
+//prevent from focus, act like chrome window
+		form.on("mousedown", function(e)
+		{
+			if (e.target === this)
+			{
+				e.stopPropagation();
+				e.preventDefault();
+			}
+		});
 		function close(e)
 		{
 			if (e)
@@ -5321,12 +5639,14 @@ px)
 				input.select();
 				copy.show();
 				file.val("Save as");
+				cancel.hide();
 			}
 			else
 			{
 				input.removeAttr("readonly");
 				copy.hide();
 				file.val("Load file");
+				cancel.show();
 			}
 			let body = document.body,
 					w = body.scrollWidth;
@@ -5837,78 +6157,6 @@ span[class="author"] + span.troll
 	}
 }//disqus
 
-
-var changesLogText = multiline(function(){/*
-1.31 (2018-02-25)
-	+ button in prompt popup to save/load file
-	+ hashtags #options and #linksmanager
-	+ tooltips on links in links manager
-	! color validation during import colors didn't work properly
-	! the end of text in url field in links manager was covered up by the dropdown menu button
-	! color picker in search result displayed behind the search results and was inaccessible
-	! asterisk on new links in links manager is now always visible even if link's title is truncated
-	* export colors filters out invalid colors
-	* links manager is now consistent width
-	- save/load from file links, they are now integrated into prompt itself
-1.30.2 (2018-02-18)
-	! incorrect favicon for internal airdates.tv links
-1.30.1 (2018-02-18)
-	! error opening show from "My shows" list
-1.30 (2018-02-18)
-	+ animation speed setting
-	+ links manager automatically scrolls to new (or edited) link after submit
-	+ custom prompt popup for import/export colors/settings
-	! exporting ~160 colors via text string would corrupt some colors due to Chrome limitations
-	! errors in console when attempting restore settings or import colors with invalid data
-	* importing colors now validates input before saving to the account
-1.29 (2018-02-12)
-	+ ESC key closes popups
-	+ show/hide this show icon
-	* links with long names are longer "wrap"
-	* significally improved performance of Links manager
-	* faster opening/closing show animation
-	* selectable links in show details are now separate from other links
-	* links manager popup now has limited max size
-	! when number of visible links different from default, opening a show would make the animation jump
-	! long text wrapped in popup windows
-	! clicking on edit link icon in Links Manager, would not display correct lin in the "Result" row
-	! "reset sort" link in Links Manager would take whole row
-	! MS Edge would not initialize properly
-1.28.4 (2018-02-07)
-	+ random series as example in links manager
-	! editing/adding a link while a show opened would produce incorrect links in the opened show until page refresh
-1.28.3 (2018-02-07)
-	! Firefox decided render shadow much bigger then supposed to
-1.28.2 (2018-02-07)
-	! in Firefox shadow would show on opened show when popup was opened
-1.28.1 (2018-02-07)
-	+ shadow on "popups", making them more pronounced
-1.28 (2018-02-04)
-	+ search by adding #s:keyword in the address
-	+ changes log
-	+ ability use hash tags as links in comments (<a href="#s:test">#s:<i>search-keyword</i></a>, <a href="#info:1234">#info:<i>NN</i></a>, <a href="#myshows">#myshows</a>, <a href="#hidden">#hidden</a>, <a href="#changes">#changes</a>). Without ADE it will open a blank page.
-	+ option for small logo
-	! disqus troll would not work at all in some browsers
-	! disqus troll would not work on additionally loaded comments
-	! "watched" checkboxes shown through search field
-	! close button on popups would not work if cursor not in the middle of it
-	* removed disq.us from links in comments
-	* links in comments open in new tab
-	* when searching via hash tag, clearing search field with X icon would also remove the hash tag from address bar
-1.27.5 (2018-01-22)
-	! broken fix for paste via right click in search bar
-1.27.4 (2018-01-22)
-	+ cloud icon next to member name
-1.27.3 (2018-01-22)
-	! fails initialize with some invalid colors in cookies
-	* replaced some icons with SVG, should now be more browser independent and consistent
-1.27.2 (2018-01-21)
-	! sorting by color with fallback to sorting by name was in reverse
-1.27 (2018-01-21)
-	+ link to support website
-	! middle click on title would attempt open 2 tabs for each selected link
-	! significantly improved initialization speed for guests and members with no colors (very noticeable with #showhidden in the address)
-*/}, true).trim();
 if (document.readyState != "loading")
 	func();
 else
