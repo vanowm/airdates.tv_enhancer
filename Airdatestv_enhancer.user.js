@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.32
+// @version     1.33
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,9 @@
 
 
 var changesLogText = multiline(function(){/*
+1.33 (2018-03-12)
+	+ missing color input field in color picker
+	* improved color input field in color picker: no need for # and it automatically filters out non-valid values, custom undo/redo that works between shows
 1.32 (2018-03-04)
 	+ add/reset buttons in Links Manager are now disabled when fields are empty
 	+ clear colors/hidden/watched lists in options
@@ -550,7 +553,7 @@ let func = function(event)
 				if (str)
 						_prompt({
 							callback: function(){},
-							text: adeName + " Settings \nYou can save it in a normal textfile and/or restore it to another computer/browser.",
+							text: adeName + " Settings \nYou can save it in a normal textfile and restore it to another computer/browser.",
 							value: str
 						});
 				else
@@ -2720,6 +2723,9 @@ div.calendar.searching > #past-weeks
 div.today
 {
 	border-color: #FFC800;
+	-webkit-box-shadow: 0px 0px 10px 0px #FFC800D0;
+	-moz-box-shadow:    0px 0px 10px 0px #FFC800D0;
+	box-shadow:         0px 0px 10px 0px #FFC800D0;
 }
 
 
@@ -3827,6 +3833,29 @@ div.undo > div > .close
 	margin-left: 1em;
 	padding: 0.5em;
 }
+
+
+.cp-disp
+{
+	padding-bottom: 5px; 
+	clear: both;
+	text-align: center;
+	display: flex;
+}
+.cp-disp > input
+{
+	margin-right: 3px;
+}
+#colorpicker-hex
+{
+	margin-right: 0;
+	width: 4.3em;
+	font-size: 1em;
+	font-family: 'courier new', Monaco,"DejaVu Sans Mono",'times new roman', fixed, monospace;
+	padding-left: 3px;
+	padding-right: 2px;
+	
+}
 /*
 	https://kazzkiq.github.io/balloon.css/
 *//*
@@ -3943,36 +3972,181 @@ div.undo > div > .close
 		{
 			let cp = this;
 			$elm
-				.append('<div class="cp-disp"><input type="button" value="save"> <input type="button" value="cancel"></div>')
+				.append('<div class="cp-disp"><input type="button" value="Save"> <input type="button" value="Cancel"><input type="text" spellcheck="false" id="colorpicker-hex"></div>')
 				.on( "click", "input", function()
 				{
-					if (!this.value)
-						return;
+					if (!this.value || this.id == 'colorpicker-hex')
+						return; 
 
-					if (this.value == 'save')
+					if (this.value == 'Save')
 					{
 						assignColor( editingSeriesId, "#" + cp.color.colors.HEX, true );
 						editingSeriesId = -1;
 					}
 					cp.toggle();
-				});
+				})
+				.on( "input keydown keyup click", '#colorpicker-hex', function(e)
+				{
+					if (e.key == "Enter" || e.which == 13) //ENTER(13)
+					{
+						$elm.find('input[value="save"]').click();
+						return;
+					}
+					let start = this.selectionStart,
+							end = this.selectionEnd;
+
+					if (e.type == "keydown")
+					{
+						if (!e.shiftKey && 
+								((start == 1 && end == 1 && (e.key == "ArrowLeft" || e.which == 37))
+									|| (e.key == "ArrowUp" || e.which == 38)
+									|| (e.key == "Home" || e.which == 36)))
+						{
+							e.preventDefault();
+							start = end = 0;
+						}
+						if ((e.ctrlKey || e.metaKey))
+						{
+							let k = 0;
+							if (e.key == "z" || e.which == 90)
+								k = -1;
+							else if (e.key == "y" || e.which == 89)
+								k = 1;
+
+							if (k)
+							{
+								let u = cp.undo(k);
+								if (u)
+								{
+									this.value = u.v;
+									this.selectionStart = u.s || start-1;
+									this.selectionEnd = u.e || end-1;
+								}
+								e.preventDefault();
+								$(this).trigger("input");
+							}
+						}
+					}
+					if (!start && !end)
+					{
+						this.selectionStart = ++start;
+						this.selectionEnd = ++end;
+					}
+					if (e.type != "input")
+						return;
+
+					let rs = 0,
+							re = 0,
+							r = "#",
+							val = this.value.toUpperCase();
+
+					if (val.charAt(i) != "#")
+					{
+						val = "#" + val;
+						start++;
+						end++;
+					}
+
+					for(let i = 1; i < val.length && r.length < 7; i++)
+					{
+						if (val.charAt(i).match(/[A-F0-9]/))
+						{
+							r += val[i];
+						}
+						else
+						{
+							if (i < start)
+								rs++
+
+							if (i < end)
+								re++
+						}
+					}
+					if (r != this.value)
+					{
+						this.value = r;
+						this.selectionStart = start - rs;
+						this.selectionEnd = end - re;
+					}
+
+					if (!e.isTrigger)
+						cp.undo({v: this.value, s: this.selectionStart, e: this.selectionEnd});
+
+					try
+					{
+						var col = "#" + new Colors().setColor(this.value).HEX;
+						if(col.length == 7)
+						{
+							assignColor(editingSeriesId, col, false);
+							cp.color.setColor(col); 
+							cp.render(undefined); 
+						}
+					}
+					catch(err)
+					{
+log(err);
+					}
+				}); 
+
 			$("body").on("keydown", function(e)
 			{
+
 	//ESC(27) = cancel
-				if (e.which == 27 && $elm.is(":visible"))
+				if ((e.key == "Esc" || e.which == 27) && $elm.is(":visible"))
 					cp.toggle();
 			});
+//for some reason Chrome has issues with undo/redo after value was changed by the filter
+			this.undo = function (val, init)
+			{
+				if (!this.store || init)
+				{
+					this.store = [];
+					this.index = -1;
+				}
+
+				if (typeof(val) == "object")
+				{
+					let p = this.store[this.index];
+					if (p)
+					{
+						if (val.v == p.v)
+						{
+							this.store[this.index] = val;
+							return;
+						}
+					}
+					this.store[++this.index] = val;
+					if (this.store.length > this.index + 1)
+						this.store.splice(this.index + 1);
+				}
+				else
+				{
+					let i = this.index + val;
+					if (i > -1 && i < this.store.length)
+						this.index = i;
+					
+					return this.store[i];
+				}
+
+				return this;
+			}
 		},
-		cssAddon: ".cp-disp{ padding-bottom: 2px; clear:both; }",
 		renderCallback: function($elm, toggled) {
 			var colors = this.color.colors;
+			let cpHex = $("#colorpicker-hex");
 			// on show
 			if( toggled === true ){
+				var col = coalesce(DB.getColor(editingSeriesId), "#FFFFFF");
+				let val = colFix(col);
+				cpHex.val(val);
+				this.undo({v: val, s: 0, e: 0});
 			}
 			// on change
 			else if( toggled === undefined ){
 	//preview new color
 				assignColor( editingSeriesId, "#" + colors.HEX, false );
+				if (colors.HEX != new Colors().setColor(cpHex.val()).HEX)
+					cpHex.val("#" + colors.HEX);
 			}
 			// on hide
 			else if( toggled === false ){
@@ -3987,6 +4161,11 @@ div.undo > div > .close
 		}
 	}).attr("id", "colorPickerHolderNew"); //replace ID so it won't initialize in main.js
 
+	function colFix(c)
+	{
+		return "#" + String(c).toUpperCase().replace(/[^A-F0-9]/g, "");
+	}
+
 	$("body").off("click", ".picker");
 
 	// now hook up the picker to the picker icons
@@ -3995,7 +4174,7 @@ div.undo > div > .close
 
 		editingSeriesId = $(this).parents("[data-series-id]").data("series-id");
 	//set initial color in colorpicker based on current entry or default to white
-		picker.val(coalesce(DB.savedColors[editingSeriesId], "#ffffff"));
+		picker.val(coalesce(DB.savedColors[editingSeriesId], "#FFFFFF"));
 		picker.detach().appendTo(this).click();
 	});
 
@@ -4316,7 +4495,7 @@ div.undo > div > .close
 			if (str)
 					_prompt({
 						callback: function(){},
-						text: "This is the crazy text. \nYou can save it in a normal textfile and/or import it to another computer/browser.",
+						text: "This is the crazy text. \nYou can save it in a normal textfile and import it to another computer/browser.",
 						value: str,
 						file: "Airdates.tv_colors_" + (DB.username ? DB.username.replace(/[\/\\?%*:|"<>]/g, "_") + "_" : "") + dateTimestamp() + ".txt",
 						ext: ".txt",
@@ -5228,7 +5407,7 @@ px)
 	}
 	$(document.body).on("keydown", function(e)
 	{
-		if (e.which == 27)
+		if (e.key == "Esc" || e.which == 27)
 			hidePopups();
 
 	});
