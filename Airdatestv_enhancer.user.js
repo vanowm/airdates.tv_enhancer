@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.33.1
+// @version     1.34
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,9 @@
 
 
 var changesLogText = multiline(function(){/*
+1.34 (2018-03-15)
+	+ time offset option
+	+ option to disable scroll when using search field
 1.33.1 (2018-03-12)
 	! color input field undo now records when color picked via palette
 1.33 (2018-03-12)
@@ -102,7 +105,23 @@ var changesLogText = multiline(function(){/*
 */}, true).trim();
 
 let log = console.log,
-		self = this;
+		self = this,
+		timeOffset = 0;
+
+try
+{
+	timeOffset = Number(ls("settings").timeOffset);
+	if (!(timeOffset instanceof Number))
+		timeOffset = 0;
+}
+catch(e){}
+let _Date = Date;
+
+Date = function(t)
+{
+	let n = new _Date(t||_Date.now()).getTime() + 3600000 * timeOffset;
+	return new _Date(n);
+}
 
 function ls(id, data, callback)
 {
@@ -284,6 +303,8 @@ let func = function(event)
 			noChangesLog: 0,
 			smallLogo: 0,
 			animSpeed: 2,
+			searchScroll: 1,
+			timeOffset: 0,
 			colorsCustom: {
 				"807fff": {name: ""},
 				"ff7fff": {name: ""},
@@ -456,6 +477,44 @@ let func = function(event)
 	//		content.append(createCheckbox("animateExpand", "Animate during expanding", this.prefs.animateExpand ? true : false, this.callback, null, "pointer"));
 			opt = createCheckbox("smallLogo", "Small logo", this.prefs.smallLogo ? true : false, this.callback, null, "pointer");
 			content.append(opt);
+			opt = createCheckbox("searchScroll", "Scroll on search", this.prefs.searchScroll ? true : false, this.callback, null, "pointer");
+			content.append(opt);
+			opt = $(multiline(function(){/*
+<span id="timeOffsetBox">
+	Time offset <input id="timeOffset" type="number" min="-24" max="24"> hours
+</span>
+*/}));
+			opt.appendTo(content)
+				.find("#timeOffset")
+				.val(Settings.pref("timeOffset"))
+				.on("input", function()
+				{
+					let s = this.selectionStart,
+							e = this.selectionEnd;
+
+					timeOffset = Math.min(24, Math.max(-24, Number(this.value.replace(/[^0-9\-]/g, ""))));
+					this.value = timeOffset;
+
+					if (e !== null)
+						this.selectionEnd = e;
+					if (s !== null)
+						this.selectionStart = s;
+
+					Settings.pref("timeOffset", timeOffset);
+					today = new Date(); 
+					ymToday = ((today.getYear()+1900)*12 + today.getMonth());
+					let todayOld = $("#today"),
+							dataDate = today.getFullYear() + pad2( today.getMonth() + 1 ) + pad2( today.getDate() );
+
+					if (dataDate != todayOld.attr("data-date"))
+					{
+						todayOld.removeClass("today").removeAttr("id").removeAttr("today");
+						todayOld.parent().find('.day[data-date="' + dataDate + '"]').addClass("today").attr("id", "today").attr("today", true);
+					}
+					
+				})
+				.trigger("input");
+
 			if (!device.tablet() && !device.mobile())
 			{
 				opt = $(multiline(function(){/*
@@ -1340,7 +1399,7 @@ let func = function(event)
 
 		if (entry.length)
 		{
-			entry = $(entry[Math.floor(Math.random() * entry.length)]);
+			entry = $(entry[rand(0, entry.length)]);
 			engResHidden.attr("data-series-id", entry.attr("data-series-id"));
 			engResHidden.attr("data-series-source", entry.attr("data-series-source"));
 			engResHidden.attr("data-date", entry.attr("data-date"));
@@ -2206,12 +2265,15 @@ let func = function(event)
 				for( var i = 0; i < 8; i++ ) $hl.animate( {"opacity":i%2}, 1 ).delay( 100 );
 
 				// scroll to
-				var val = function(){return $hl.offset().top-Math.max(document.documentElement.clientHeight, window.innerHeight || 0)/2;};
-				$('html, body').animate({
-							scrollTop: val()
-					},{duration:500, step:function(top,info){
-						info.end = val();
-					}});
+				if (!Settings.pref("searchScroll"))
+				{
+					var val = function(){return $hl.offset().top-Math.max(document.documentElement.clientHeight, window.innerHeight || 0)/2;};
+					$('html, body').animate({
+								scrollTop: val()
+						},{duration:500, step:function(top,info){
+							info.end = val();
+						}});
+				}
 			}
 	//injecting userscript function execution
 			showPast(function()
@@ -3583,15 +3645,12 @@ body:not(.popup) div.entry[opened]
 }
 #animSpeedBox
 {
-	margin-top: 0.5em;
+	margin-top: 0.8em !important;
 }
 #animSpeedBox > div
 {
 	position: relative;
 	margin: 0 0.5em;
-}
-#animSpeedBox > div
-{
 	width: 10em !important;
 }
 /* The slider itself *//*
@@ -3643,7 +3702,7 @@ body:not(.popup) div.entry[opened]
 .ticks > span
 {
 	position: absolute;
-	top: -10px;
+	top: -1.2em;
 	font-size: 0.7em;
 }
 .ticks > span:after
@@ -3857,6 +3916,15 @@ div.undo > div > .close
 	padding-left: 3px;
 	padding-right: 2px;
 	
+}
+
+#timeOffsetBox
+{
+	display: block;
+}
+#timeOffsetBox > #timeOffset
+{
+	width: 2.8em;
 }
 /*
 	https://kazzkiq.github.io/balloon.css/
@@ -4650,6 +4718,8 @@ px)
 		$(document).off("click", ".onX, .x").on('touchstart click', '.onX', function( ev )
 		{
 			ev.preventDefault();
+			ev.stopPropagation();
+			ev.stopImmediatePropagation();
 			$(this).removeClass('x onX').val('').change();
 
 			if (window.hashChanged.hashSearch && location.href.match("#"))
@@ -4722,8 +4792,14 @@ px)
 	DB.infoLoad = function(id)
 	{
 		let obj = document.createElement("div");
-		$(obj).load("/s?"+$.param({q:"info:" + id}), function(e)
+		$(obj).load("/s?"+$.param({q:"info:" + id}), function(e, t, r)
 		{
+			if (t == "error")
+			{
+log("Show with ID: " + id + " not found");
+				assignColor(id, "#FFFFFF", true);
+				return;
+			}
 			let title = $(obj).find("b").first().text();
 			title = title.substring(0, title.lastIndexOf("(") - 1);
 			if (title)
@@ -5105,23 +5181,29 @@ px)
 
 		});
 
-		let repeat = 100,
-				list = ls("info") || {},
+		let list = ls("info") || {},
 				userCookie = readCookieRaw("adsc_SESSION"),
-				isUser = userCookie && userCookie.indexOf("username=") > 0,
-				blank = {};
+				isUser = userCookie && userCookie.indexOf("username=") > 0;
 		DB.info = {};
 		DB.infoLoaded = false;
-		//to avoid hit a ceiling of max data allowed store in local storage, we only save names of user's current shows, nothing else.
-		//unfortunately we don't know when saved colors are done loading for registered users, so we must wait in a loop
-		(function loop()
-		{
-			let added = false;
 
+		// load colors right away.  
+		DB.getColors().done( function(data){
+			for (var i = 0; i < data.length; i++)
+			{
+				var series = data[i];
+				assignColor(series.id, series.color, false );
+			}
+			updateSelectedOnly(); 
+		}).fail(function(){
+			alert("Not allowed? No internet? It's hard to tell, but what's important is that the colors were not loaded.");
+		}).always(function()
+		{
+			//to avoid hit a ceiling of max data allowed store in local storage, we only save names of user's current shows, nothing else.
+			let added = false;
 			for(let id in DB.savedColors)
 			{
 				DB.loaded = true;
-				repeat = 0;
 				let col = new Colors().setColor(DB.savedColors[id] || "FFFFFF");
 
 				//there is a bug in original ADT that store show's color as "FFFFFF" (which is "delete" show color)
@@ -5136,12 +5218,6 @@ px)
 				added = true;
 				DB.infoAdd(id);
 			}
-			//we know DB.savedColors is empty, we can set it to empty again within our namespace so we can see if it was changed
-			if (repeat == 100 && !Object.keys(DB.savedColors).length)
-				DB.savedColors = blank;
-
-			if (isUser && repeat-- && DB.savedColors === blank)
-				return setTimeout(loop, 100);
 
 			for(let i = 0; i < _hidden.length; i++)
 			{
@@ -5158,8 +5234,8 @@ px)
 			DB.infoLoaded = true;
 			if (added)
 				DB.infoSave();
+		});
 
-		})();
 		if (DB.loggedInUsername)
 		{
 			$("#account-overview").find("span.nu")[0].innerHTML = '<svg viewBox="0 0 24 24"><path d="M12,4C15.64,4 18.67,6.59 19.35,10.04C21.95,10.22 24,12.36 24,15A5,5 0 0,1 19,20H6A6,6 0 0,1 0,14C0,10.91 2.34,8.36 5.35,8.04C6.6,5.64 9.11,4 12,4M7.5,9.69C6.06,11.5 6.2,14.06 7.82,15.68C8.66,16.5 9.81,17 11,17V18.86L13.83,16.04L11,13.21V15C10.34,15 9.7,14.74 9.23,14.27C8.39,13.43 8.26,12.11 8.92,11.12L7.5,9.69M9.17,8.97L10.62,10.42L12,11.79V10C12.66,10 13.3,10.26 13.77,10.73C14.61,11.57 14.74,12.89 14.08,13.88L15.5,15.31C16.94,13.5 16.8,10.94 15.18,9.32C14.34,8.5 13.19,8 12,8V6.14L9.17,8.97Z"></path></svg>' + $("#account-overview").find("span.nu")[0].innerHTML;
@@ -5189,9 +5265,23 @@ px)
 			}
 //fix paste via right click
 			if (e.type == "input")
+			{
+				if (!Settings.pref("searchScroll"))
+				{
+					//an ugly hack without recreating entire search handling function.
+					let i = new Date(+new Date()+3000);
+					(function loop()
+					{
+						if (new Date() > i)
+							return;
+						
+						$('html, body').stop(true);
+						setTimeout(loop);
+					})();
+				}
 				$(this).trigger("change");
+			}
 		}).trigger("change");
-
 		let Backup = function Backup(id, val)
 		{
 			clearTimeout(this.timer[id]);
@@ -5346,6 +5436,8 @@ px)
 				return false;
 			}
 		});
+//log(jQuery._data($( "#searchBecauseNoOneChecks" )[0]));
+
 
 		//fix clear colors for members
 		$(document.body).off( "click", ".clearColors");
@@ -5904,6 +5996,7 @@ px)
 		hashChanged.hashSearch = hashSearch;
 	}
 	$(window).on("hashchange", hashChanged).trigger("hashchange");
+
 };//func()
 
 //disqus
@@ -6340,6 +6433,9 @@ span[class="author"] + span.troll
 		}, false);
 	}
 }//disqus
+else
+{
+}
 
 if (document.readyState != "loading")
 	func();
