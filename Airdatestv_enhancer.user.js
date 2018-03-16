@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.34
+// @version     1.34.1
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,10 @@
 
 
 var changesLogText = multiline(function(){/*
+1.34.1 (2018-03-15)
+	! search result had too much empty space on top
+	! link under search bar covers Sundays date when small logo enabled
+	* different approach stopping page from scrolling on search
 1.34 (2018-03-15)
 	+ time offset option
 	+ option to disable scroll when using search field
@@ -553,7 +557,7 @@ let func = function(event)
 			a.href = "#";
 			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12,3A9,9 0 0,0 3,12H0L4,16L8,12H5A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19C10.5,19 9.09,18.5 7.94,17.7L6.5,19.14C8.04,20.3 9.94,21 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M14,12A2,2 0 0,0 12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12Z" /></svg>';
 			a.textContent = "Backup settings";
-			span.title = "Backup all settings that also include links settings, watched and hidden shows lists, middle click selection.";
+			span.title = "Backup all settings, including links manager data, watched and hidden shows lists, middle click selection.";
 			let backup = function()
 			{
 				let cookies = {},
@@ -627,7 +631,7 @@ let func = function(event)
 			span = span.cloneNode(true);
 			i = span.firstChild;
 			a = i.nextSibling;
-			span.title = "Note, your watched and hidden shows list will stay intact, new shows will be added to it. Custom links will only overwrite existing with matched ID. Everything else will be overwritten";
+			span.title = "Note, your current watched and hidden shows list will stay intact, new shows will be added to it.\nCustom links will only overwrite existing with matched ID.\nAll other settings will be overwritten";
 			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3M12,8V13L16.28,15.54L17,14.33L13.5,12.25V8H12Z" /></svg>';
 			a.textContent = "Restore settings";
 			function restore(str)
@@ -3926,6 +3930,11 @@ div.undo > div > .close
 {
 	width: 2.8em;
 }
+
+#resultsBecauseNoOneChecks
+{
+	margin-top: 0;
+}
 /*
 	https://kazzkiq.github.io/balloon.css/
 *//*
@@ -5240,6 +5249,23 @@ log("Show with ID: " + id + " not found");
 		{
 			$("#account-overview").find("span.nu")[0].innerHTML = '<svg viewBox="0 0 24 24"><path d="M12,4C15.64,4 18.67,6.59 19.35,10.04C21.95,10.22 24,12.36 24,15A5,5 0 0,1 19,20H6A6,6 0 0,1 0,14C0,10.91 2.34,8.36 5.35,8.04C6.6,5.64 9.11,4 12,4M7.5,9.69C6.06,11.5 6.2,14.06 7.82,15.68C8.66,16.5 9.81,17 11,17V18.86L13.83,16.04L11,13.21V15C10.34,15 9.7,14.74 9.23,14.27C8.39,13.43 8.26,12.11 8.92,11.12L7.5,9.69M9.17,8.97L10.62,10.42L12,11.79V10C12.66,10 13.3,10.26 13.77,10.73C14.61,11.57 14.74,12.89 14.08,13.88L15.5,15.31C16.94,13.5 16.8,10.94 15.18,9.32C14.34,8.5 13.19,8 12,8V6.14L9.17,8.97Z"></path></svg>' + $("#account-overview").find("span.nu")[0].innerHTML;
 		}
+		let lastQ = "",
+				searchTimer = null,
+				events = ["change", "search", "keyup"],
+				origFunc = jQuery._data($( "#searchBecauseNoOneChecks" )[0]).events.change[0].handler,
+				string = origFunc.toString(),
+				line = "$('html, body').animate({ scrollTop: 0 }, 500);",
+				index = string.indexOf(line);
+
+		if (index != -1)
+		{
+			let newFuncString = string.substr(0, index) + 'if (Settings.pref("searchScroll")){' + string.substr(index, line.length) + ' log(Settings.pref("searchScroll"))}' + string.substr(index + line.length);
+
+			eval("var newFunc = " + newFuncString);
+
+			for (let i = 0; i < events.length; i++)
+				jQuery._data($( "#searchBecauseNoOneChecks" )[0]).events[events[i]][0].handler = newFunc;
+		}
 //fix paste via right click: adding input event
 		$( "#searchBecauseNoOneChecks" ).on( "input keyup change search", function(e)
 		{
@@ -5264,6 +5290,7 @@ log("Show with ID: " + id + " not found");
 				showMyHidden.box = null;
 			}
 //fix paste via right click
+/*
 			if (e.type == "input")
 			{
 				if (!Settings.pref("searchScroll"))
@@ -5281,7 +5308,11 @@ log("Show with ID: " + id + " not found");
 				}
 				$(this).trigger("change");
 			}
+*/
 		}).trigger("change");
+
+
+
 		let Backup = function Backup(id, val)
 		{
 			clearTimeout(this.timer[id]);
@@ -5997,6 +6028,7 @@ log("Show with ID: " + id + " not found");
 	}
 	$(window).on("hashchange", hashChanged).trigger("hashchange");
 
+	$("#searchResults").parent().find("br:not(:last-of-type)").remove();
 };//func()
 
 //disqus
