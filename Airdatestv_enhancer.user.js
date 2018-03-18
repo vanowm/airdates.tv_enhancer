@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.34.1
+// @version     1.35
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,10 @@
 
 
 var changesLogText = multiline(function(){/*
+1.35 (2018-03-17)
+	+ today automatically changes at midnight without page refresh and updates listing of current month
+	! possible open multiple popups via hashtags
+	* back button now shows on popups opened via hashtag
 1.34.1 (2018-03-15)
 	! search result had too much empty space on top
 	! link under search bar covers Sundays date when small logo enabled
@@ -108,6 +112,7 @@ var changesLogText = multiline(function(){/*
 	! significantly improved initialization speed for guests and members with no colors (very noticeable with #showhidden in the address)
 */}, true).trim();
 
+
 let log = console.log,
 		self = this,
 		timeOffset = 0;
@@ -121,9 +126,12 @@ try
 catch(e){}
 let _Date = Date;
 
-Date = function(t)
+Date = function()
 {
-	let n = new _Date(t||_Date.now()).getTime() + 3600000 * timeOffset;
+	let args = Array.prototype.slice.call(arguments);
+	args.splice(0, 0, this);
+	let n = (new (Function.prototype.bind.apply(_Date, args))).getTime() + 3600000 * timeOffset;
+
 	return new _Date(n);
 }
 
@@ -436,28 +444,28 @@ let func = function(event)
 				return callback ? callback() : true;
 
 			let html = multiline(function(){/*
-	<div id="settings-popup">
-		<div id="settings-popup-content">
-			<div class="header">
-				<div class="back" title="Back">
-					<svg viewBox="0 0 24 24">
-						<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
-					</svg>
-				</div>
-				<h4>Options</h4>
-				<div class="close" title="Close" title="Close">
-					<svg viewBox="0 0 24 24">
-						<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
-					</svg>
-					<svg viewBox="0 0 24 24">
-						<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
-					</svg>
-				</div>
+<div id="settings-popup">
+	<div id="settings-popup-content">
+		<div class="header">
+			<div class="back" title="Back">
+				<svg viewBox="0 0 24 24">
+					<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
+				</svg>
 			</div>
-			<div class="content">
+			<h4>Options</h4>
+			<div class="close" title="Close" title="Close">
+				<svg viewBox="0 0 24 24">
+					<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
+				</svg>
+				<svg viewBox="0 0 24 24">
+					<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
+				</svg>
 			</div>
 		</div>
+		<div class="content">
+		</div>
 	</div>
+</div>
 			*/});//html
 
 			let popup = $(html).appendTo("body"),
@@ -487,15 +495,14 @@ let func = function(event)
 <span id="timeOffsetBox">
 	Time offset <input id="timeOffset" type="number" min="-24" max="24"> hours
 </span>
-*/}));
+			*/}));
 			opt.appendTo(content)
 				.find("#timeOffset")
 				.val(Settings.pref("timeOffset"))
-				.on("input", function()
+				.on("input", function(evt)
 				{
 					let s = this.selectionStart,
 							e = this.selectionEnd;
-
 					timeOffset = Math.min(24, Math.max(-24, Number(this.value.replace(/[^0-9\-]/g, ""))));
 					this.value = timeOffset;
 
@@ -505,43 +512,34 @@ let func = function(event)
 						this.selectionStart = s;
 
 					Settings.pref("timeOffset", timeOffset);
-					today = new Date(); 
-					ymToday = ((today.getYear()+1900)*12 + today.getMonth());
-					let todayOld = $("#today"),
-							dataDate = today.getFullYear() + pad2( today.getMonth() + 1 ) + pad2( today.getDate() );
-
-					if (dataDate != todayOld.attr("data-date"))
-					{
-						todayOld.removeClass("today").removeAttr("id").removeAttr("today");
-						todayOld.parent().find('.day[data-date="' + dataDate + '"]').addClass("today").attr("id", "today").attr("today", true);
-					}
-					
+					if (!evt.isTrigger)
+						todayChange(timeOffset);
 				})
 				.trigger("input");
 
 			if (!device.tablet() && !device.mobile())
 			{
 				opt = $(multiline(function(){/*
-	<div id="animSpeedBox" title="Speed for opening/closing a show">
-		Animation speed
-		<div>
-			<input id="animSpeed" type="range" min="1" max="10" class="slider" list="animSpeedTicks" >
-			<span class="ticks">
-				<span>1</span>
-				<span>2</span>
-				<span>3</span>
-				<span>4</span>
-				<span>5</span>
-				<span>6</span>
-				<span>7</span>
-				<span>8</span>
-				<span>9</span>
-				<span>10</span>
-			</span>
-		</div>
-		<span id="animSpeedVal"></span>
+<div id="animSpeedBox" title="Speed for opening/closing a show">
+	Animation speed
+	<div>
+		<input id="animSpeed" type="range" min="1" max="10" class="slider" list="animSpeedTicks" >
+		<span class="ticks">
+			<span>1</span>
+			<span>2</span>
+			<span>3</span>
+			<span>4</span>
+			<span>5</span>
+			<span>6</span>
+			<span>7</span>
+			<span>8</span>
+			<span>9</span>
+			<span>10</span>
+		</span>
 	</div>
-	*/}));
+	<span id="animSpeedVal"></span>
+</div>
+				*/}));
 				opt.appendTo(content)
 					.find("#animSpeed")
 					.val(10-Settings.pref("animSpeed"))
@@ -832,11 +830,13 @@ let func = function(event)
 
 		show: function(noBack)
 		{
+/*
 			if (noBack)
 				Settings.box.attr("noback", "");
 			else
 				Settings.box.removeAttr("noback");
-
+*/
+			hidePopups()
 			Settings.box.show();
 			setPopup(true);
 		},
@@ -1287,11 +1287,13 @@ let func = function(event)
 	customLinks.show = function(noBack)
 	{
 		let div = $(customLinks.div);
+/*
 		if (noBack)
 			div.attr("noback", "");
 		else
 			div.attr("noback");
-
+*/
+		hidePopups()
 		div.show();
 		setPopup(true);
 	}
@@ -2076,11 +2078,13 @@ let func = function(event)
 	colorsManager.show = function(noBack)
 	{
 		let div = $(colorsManager.div);
+/*
 		if (noBack)
 			div.attr("noback", "");
 		else
 			div.attr("noback");
-
+*/
+		hidePopups()
 		div.show();
 		setPopup(true);
 	}
@@ -2310,38 +2314,44 @@ let func = function(event)
 	*/
 
 	//collapse multiple entries of the same series in one day
-	let collapseMulti = function collapseMulti(i, day)
+	let collapseMulti = function collapseMulti(i, day, update)
 	{
-		if (!$(day).find("div.entry > .title > span").length)
+		let _day = $(day),
+				entries = _day.find("div.entry");
+
+		if (!update && !entries.find(".title > span").length)
 			return;
 
-		if (day.list)
-		{
-			collapseMulti.setTitle(day.list, Settings.prefs.collapseMulti && !$(day).hasClass("opened") ? "_titleCollapsed" : "_titleOrig");
-			return;
-		}
-		day.list = {};
+		if (!update && day.list)
+			return collapseMulti.setTitle(day.list, Settings.prefs.collapseMulti && !_day.hasClass("opened") ? "_titleCollapsed" : "_titleOrig");
+
+		if (!day.list)
+			day.list = {};
+
 		let list = {};
-		day.addEventListener("mouseenter", function(e)
+		if (!day.inited)
 		{
-			collapseMulti.mouseOver(e, day);
-		}, true);
-		day.addEventListener("mouseleave", function(e)
-		{
-			collapseMulti.mouseOut(e, day);
-		}, true);
+			day.addEventListener("mouseenter", function(e)
+			{
+				collapseMulti.mouseOver(e, day);
+			}, true);
+			day.addEventListener("mouseleave", function(e)
+			{
+				collapseMulti.mouseOut(e, day);
+			}, true);
+			day.inited = true;
+		}
 
-		$(day).find("div.entry").each(function(i, entry)
+		entries.each(function(i, entry)
 		{
 			let id = entry.getAttribute("data-series-id");
-			entry._title = $(entry).find(".title>span");
-			entry._title._titleOrig = entry._title.text();
+			entry._title = $(entry).find(".title > span")[0];
+			entry._title._titleOrig = entry._title.textContent;
+
 			if (list[id])
 				$(entry).toggleClass("multi", true);
 			else
-			{
 				list[id] = [];
-			}
 
 			list[id].push(entry);
 		});
@@ -2350,11 +2360,13 @@ let func = function(event)
 			if (list[i].length < 2)
 				continue;
 
-			list[i][0]._title._titleCollapsed = list[i][0]._title.text() + "-" + list[i][list[i].length - 1]._title.text().replace(/.* ([^ ]+)$/, "$1");
+			list[i][0]._title._titleCollapsed = list[i][0]._title._titleOrig + "-" + list[i][list[i].length - 1]._title._titleOrig.replace(/.* ([^ ]+)$/, "$1");
+
+
 			$(list[i][0]).toggleClass("multif", true);
 
 			day.list[i] = list[i][0]._title;
-			if (Settings.prefs.collapseMulti)
+			if (Settings.prefs.collapseMulti && !_day.hasClass("opened"))
 				$(day.list[i]).html(day.list[i]._titleCollapsed);
 		}
 	};
@@ -2379,7 +2391,7 @@ let func = function(event)
 			{
 				collapseMulti.animate(day, "expand", true, Settings.prefs.collapseMulti ? "_titleOrig" : "");
 			};
-			if (!$(day).hasClass("expand") && !$(day).hasClass("opened"))
+			if (!$(Day).hasClass("expand") && !$(day).hasClass("opened"))
 			{
 				func();
 			}
@@ -2689,7 +2701,8 @@ let func = function(event)
 		//add new class pastNN to each past day, where NN is a week number.
 		let func = function(i)
 		{
-			$(this).addClass("past" + (Math.ceil((daysPast.length - i) / 7 % (weeksMax + 1))));
+			this.className = this.className.replace(/ ?past[0-9]+/, '');
+			this.classList.toggle("past" + (Math.ceil((daysPast.length - i) / 7 % (weeksMax + 1))), true);
 		};
 		daysPast.each(func);
 
@@ -5605,11 +5618,13 @@ log("Show with ID: " + id + " not found");
 	changesLog.show = function(noBack)
 	{
 		changesLog();
+/*
 		if (noBack)
 			changesLog.div.setAttribute("noback", "");
 		else
 			changesLog.div.removeAttribute("noback");
-
+*/
+		hidePopups()
 		$("body").toggleClass("changesLog", true);
 		setPopup(true);
 	}
@@ -6029,6 +6044,68 @@ log("Show with ID: " + id + " not found");
 	$(window).on("hashchange", hashChanged).trigger("hashchange");
 
 	$("#searchResults").parent().find("br:not(:last-of-type)").remove();
+
+	function todayChange()
+	{
+		today = new Date();
+		let t = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+		if (todayChange.day == t)
+			return;
+
+		todayChange.day = t;
+		ymToday = (today.getYear()+1900)*12 + today.getMonth();
+		let todayOld = $("#today"),
+				dataDate = today.getFullYear() + pad2( today.getMonth() + 1 ) + pad2( today.getDate() );
+
+		if (dataDate != todayOld.attr("data-date"))
+		{
+			todayOld.removeClass("today").removeAttr("id").removeAttr("today");
+			todayOld.parent().find('.day[data-date="' + dataDate + '"]').addClass("today").attr("id", "today").attr("today", true);
+		}
+		let div = $("<div/>");
+		div.load("/_archive/" + ~~(ymToday/12) + "-" + ~~((ymToday%12)+1), function()
+		{
+			let days = $("div.days");
+			div.find("div.day").each(function(i)
+			{
+				let day = days.find('div.day[data-date="' + this.getAttribute("data-date") + '"]');
+				if (day.length)
+				{
+					let title = "",
+							details = null;
+
+					if (day.attr("opened") !== undefined)
+					{
+						let entry = day.find("div.entry[opened]");
+						title = entry.find(".title > span").html();
+						details = entry.find(".details");
+
+					}
+					day.html(this.innerHTML);
+					if (details)
+						day.find('div.entry > .title:contains("' + title + '")').parent().attr("opened", "").append(details);
+
+					day.find("div.entry").each(watched.attach);
+				}
+				else
+				{
+					days.append(this);
+				}
+			});
+			todayOld.removeClass("today").removeAttr("id").removeAttr("today");
+			days.find('div.day[data-date="' + dataDate + '"]').addClass("today").attr("id", "today").attr("today", true);
+			showPast(function()
+			{
+				$("div.day").each(function()
+				{
+					collapseMulti(i, this, true);
+				});
+			});
+		});
+	}
+	let today = new Date();
+	todayChange.day = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+	todayChange.timer = setInterval(todayChange, 5000);
 };//func()
 
 //disqus
