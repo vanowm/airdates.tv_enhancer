@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.35
+// @version     1.36
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,14 @@
 
 
 var changesLogText = multiline(function(){/*
+1.36 (2018-03-18)
+	+ links to Wikipedia in search result
+	+ information about shows stored in local storage, now included in settings backup
+	! 1.35 broke disqus
+	! links to airdates hashtags mistakenly opened in new tab if hashtag was was after domain name instead of /
+	! invalid colors would display show with white text
+	! searches that include info:A-Z no longer sent to server
+	! info:myshows didn't list shows without name
 1.35 (2018-03-17)
 	+ today automatically changes at midnight without page refresh and updates listing of current month
 	! possible open multiple popups via hashtags
@@ -117,24 +125,26 @@ let log = console.log,
 		self = this,
 		timeOffset = 0;
 
-try
+
+if (window.top === window.self)
 {
-	timeOffset = Number(ls("settings").timeOffset);
-	if (!(timeOffset instanceof Number))
-		timeOffset = 0;
+	try
+	{
+		timeOffset = Number(ls("settings").timeOffset);
+		if (!(timeOffset instanceof Number))
+			timeOffset = 0;
+	}
+	catch(e){}
+	let _Date = Date;
+	Date = function()
+	{
+		let args = Array.prototype.slice.call(arguments);
+		args.splice(0, 0, this);
+		let n = (new (Function.prototype.bind.apply(_Date, args))).getTime() + 3600000 * timeOffset;
+
+		return new _Date(n);
+	}
 }
-catch(e){}
-let _Date = Date;
-
-Date = function()
-{
-	let args = Array.prototype.slice.call(arguments);
-	args.splice(0, 0, this);
-	let n = (new (Function.prototype.bind.apply(_Date, args))).getTime() + 3600000 * timeOffset;
-
-	return new _Date(n);
-}
-
 function ls(id, data, callback)
 {
 	let r;
@@ -603,6 +613,11 @@ let func = function(event)
 					obj.enginesSort = enginesSort._list;
 					break;
 				}
+				for(let i in DB.info)
+				{
+					obj.info = DB.info;
+					break;
+				}
 				str = JSON.stringify(obj);
 
 				return str;
@@ -773,6 +788,20 @@ let func = function(event)
 						}
 						if (changed)
 							ls("enginesSort", enginesSort._list);
+					}
+					if ("info" in json)
+					{
+						let changed = false;
+						for(let i in json.info)
+						{
+							if (!(i in DB.info))
+							{
+								DB.info[i] = json.info[i];
+								changed = true;
+							}
+						}
+						if (changed)
+							DB.infoSave();
 					}
 					txt = settingsNum + " setting" + (settingsNum > 1 ? "s" : "") + " imported" + ((hiddenNum || watchedNum) ? " and marked " : "");
 					if (hiddenNum)
@@ -2219,6 +2248,7 @@ let func = function(event)
 	*/
 	window.assignColor = function assignColor ( seriesId, color, permanent )
 	{
+
 		let r = _assignColor(seriesId, color, permanent),
 				css = $("#css_"+seriesId),
 				html = css.html();
@@ -4356,6 +4386,36 @@ log(err);
 			$("div.day").each(collapseMulti);
 		});
 
+		let li = $("#searchResults").find("li[data-series-id]");
+		function wikiTitle(node, wiki)
+		{
+			let text = node.text();
+
+			node.html('<a href="https://www.wikipedia.org/wiki/' + encodeURIComponent(wiki) + '" target="_blank">' + text + '</a>');
+		}
+		li.each(function()
+		{
+			let id = this.getAttribute("data-series-id"),
+					wiki = DB.info[id] ? DB.info[id][1] : $('div.entry[data-series-id="' + id + '"]').attr("data-series-source"),
+					title = $(this).find(".description > b:first-child");
+			if (wiki)
+			{
+				wikiTitle(title, wiki)
+			}
+			else
+			{
+				let obj = $("<div/>");
+				obj.load("/s?"+$.param({q:"info:" + id}), function(e, t, r)
+				{
+					if (t == "error")
+						return;
+
+					let wiki = obj.find(".entry").attr("data-series-source");
+					if (wiki)
+						wikiTitle(title, wiki);
+				})
+			}
+		});
 		return _markSearchResults();
 	};
 
@@ -4811,15 +4871,18 @@ px)
 		return null;
 	};
 
-	DB.infoLoad = function(id)
+	DB.infoLoad = function(id, deleteOnError)
 	{
 		let obj = document.createElement("div");
 		$(obj).load("/s?"+$.param({q:"info:" + id}), function(e, t, r)
 		{
 			if (t == "error")
 			{
+log([e,t,r]);
 log("Show with ID: " + id + " not found");
-				assignColor(id, "#FFFFFF", true);
+				if (deleteOnError)
+					assignColor(id, "#FFFFFF", true);
+
 				return;
 			}
 			let title = $(obj).find("b").first().text();
@@ -4832,18 +4895,19 @@ log("Show with ID: " + id + " not found");
 	function showMyShows(e)
 	{
 		if (!DB.infoLoaded)
-		{
-			setTimeout(showMyShows, 100);
-			return;
-		}
+			return setTimeout(showMyShows, 100);
 		$(".entry").removeClass("searchResult");
 		$("#searchStatus").css("visibility","hidden");
-		let list = [];
+		let list = [],
+				info = {};
 
 		for (let i in DB.savedColors)
 		{
+/*
 			if (!DB.info[i])
 				continue;
+*/
+			info[i] = DB.info[i] || ["ZZZZZZZZZZZZZ",""];
 
 //http://runtime-era.blogspot.com/2011/11/grouping-html-hex-colors-by-hue-in.html
 			/* Get the hex value without hash symbol. */
@@ -4907,7 +4971,7 @@ log("Show with ID: " + id + " not found");
 					if (!r)
 						r = b.sat - a.sat;
 					if (!r)
-						r = DB.info[a.id][0].toLowerCase().localeCompare(DB.info[b.id][0].toLowerCase());
+						r = info[a.id][0].toLowerCase().localeCompare(info[b.id][0].toLowerCase());
 					return r;
 				});
 			}
@@ -4915,7 +4979,7 @@ log("Show with ID: " + id + " not found");
 			{
 				list = list.sort(function(a, b)
 				{
-					return DB.info[a.id][0].toLowerCase().localeCompare(DB.info[b.id][0].toLowerCase());
+					return info[a.id][0].toLowerCase().localeCompare(info[b.id][0].toLowerCase());
 				});
 			}
 			$(showMyShows.box).find("span.button").off("click");
@@ -4935,8 +4999,13 @@ log("Show with ID: " + id + " not found");
 				entry = entry.cloneNode(true);
 				title = entry.firstChild;
 				entry.setAttribute("data-series-id", id);
-				entry.setAttribute("data-series-source", DB.info[id][1]);
-				title.textContent = DB.info[id][0];
+				entry.setAttribute("data-series-source", info[id][1]);
+				title.textContent = info[id][0];
+				if (title.textContent === "ZZZZZZZZZZZZZ")
+				{
+					title.classList.toggle("unknown", true);
+					title.textContent = "n/a";
+				}
 				showMyShows.box.appendChild(entry);
 			}
 			let text = "You don't have any shows";
@@ -5229,8 +5298,11 @@ log("Show with ID: " + id + " not found");
 				let col = new Colors().setColor(DB.savedColors[id] || "FFFFFF");
 
 				//there is a bug in original ADT that store show's color as "FFFFFF" (which is "delete" show color)
-				if (col.HEX == "FFFFFF")
+				if (col.HEX == "FFFFFF" || col.HEX.match(/[^0-9a-fA-F]/))
+				{
+log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id]);
 					assignColor(id, DB.savedColors[id], true);
+				}
 
 				if (id in list)
 				{
@@ -5262,69 +5334,100 @@ log("Show with ID: " + id + " not found");
 		{
 			$("#account-overview").find("span.nu")[0].innerHTML = '<svg viewBox="0 0 24 24"><path d="M12,4C15.64,4 18.67,6.59 19.35,10.04C21.95,10.22 24,12.36 24,15A5,5 0 0,1 19,20H6A6,6 0 0,1 0,14C0,10.91 2.34,8.36 5.35,8.04C6.6,5.64 9.11,4 12,4M7.5,9.69C6.06,11.5 6.2,14.06 7.82,15.68C8.66,16.5 9.81,17 11,17V18.86L13.83,16.04L11,13.21V15C10.34,15 9.7,14.74 9.23,14.27C8.39,13.43 8.26,12.11 8.92,11.12L7.5,9.69M9.17,8.97L10.62,10.42L12,11.79V10C12.66,10 13.3,10.26 13.77,10.73C14.61,11.57 14.74,12.89 14.08,13.88L15.5,15.31C16.94,13.5 16.8,10.94 15.18,9.32C14.34,8.5 13.19,8 12,8V6.14L9.17,8.97Z"></path></svg>' + $("#account-overview").find("span.nu")[0].innerHTML;
 		}
+//fix paste via right click: adding input event
+		$( "#searchBecauseNoOneChecks" ).on( "input", function(e)
+		{
+		})//.trigger("change");
 		let lastQ = "",
 				searchTimer = null,
-				events = ["change", "search", "keyup"],
+				events = ["change", "search", "keyup", "input"],
 				origFunc = jQuery._data($( "#searchBecauseNoOneChecks" )[0]).events.change[0].handler,
 				string = origFunc.toString(),
 				line = "$('html, body').animate({ scrollTop: 0 }, 500);",
-				index = string.indexOf(line);
+				index = string.indexOf(line),
+				newFuncString = "",
+				isCustomSearch = function(e, val)
+				{
+					let q = val.trim(),
+							r = false;
+
+					if (q == "info:myshows" || q.match(/^info:([a-zA-Z]+|$)/))
+					{
+						lastQ = q;
+						e.preventDefault();
+						e.stopPropagation();
+						if (q == "info:hidden")
+						{
+							showMyHidden(e);
+							lastQ = null;
+						}
+						else if (q == "info:myshows")
+						{
+							showMyShows(e);
+							lastQ = null;
+						}
+						else
+						{
+							showMyShows.box = showMyHidden.box = document.createElement("div");
+							$("#searchResults").html('<ul id="resultsBecauseNoOneChecks"><li>No results :(</li></ul><small>Search took 0.000 seconds</small>');
+						}
+						r = true;
+						$(".calendar").addClass("searching");
+					}
+					else
+					{
+						showMyShows.box = null;
+						showMyHidden.box = null;
+					}
+//fix paste via right click
+/*
+					if (e.type == "input")
+					{
+						if (!Settings.pref("searchScroll"))
+						{
+							//an ugly hack without recreating entire search handling function.
+							let i = new Date(+new Date()+3000);
+							(function loop()
+							{
+								if (new Date() > i)
+									return;
+								
+								$('html, body').stop(true);
+								setTimeout(loop);
+							})();
+						}
+						$(this).trigger("change");
+					}
+*/
+					if (r)
+					{
+						$(" #searchStatus").css("visibility","hidden");
+					}
+					return r;
+				};
+
 
 		if (index != -1)
 		{
-			let newFuncString = string.substr(0, index) + 'if (Settings.pref("searchScroll")){' + string.substr(index, line.length) + ' log(Settings.pref("searchScroll"))}' + string.substr(index + line.length);
-
-			eval("var newFunc = " + newFuncString);
-
-			for (let i = 0; i < events.length; i++)
-				jQuery._data($( "#searchBecauseNoOneChecks" )[0]).events[events[i]][0].handler = newFunc;
+			newFuncString = string.substr(0, index) + 'if (Settings.pref("searchScroll")){' + string.substr(index, line.length) + '}' + string.substr(index + line.length);
+			string = newFuncString;
 		}
-//fix paste via right click: adding input event
-		$( "#searchBecauseNoOneChecks" ).on( "input keyup change search", function(e)
+		line = '$("#searchResults").load';
+		index = string.indexOf(line);
+		if (index != -1)
 		{
-			let q = this.value.trim();
-			if (q == "info:myshows" || q.match(/^info:([a-zA-Z]+|$)/))
-			{
-				e.preventDefault();
-				e.stopPropagation();
-				if (q == "info:hidden")
-					showMyHidden(e);
-				else if (q == "info:myshows")
-					showMyShows(e);
-				else
-				{
-					showMyShows.box = showMyHidden.box = document.createElement("div");
-					$("#searchResults").html('<ul id="resultsBecauseNoOneChecks"><li>No results :(</li></ul><small>Search took 0.000 seconds</small>');
-				}
-			}
-			else
-			{
-				showMyShows.box = null;
-				showMyHidden.box = null;
-			}
-//fix paste via right click
-/*
-			if (e.type == "input")
-			{
-				if (!Settings.pref("searchScroll"))
-				{
-					//an ugly hack without recreating entire search handling function.
-					let i = new Date(+new Date()+3000);
-					(function loop()
-					{
-						if (new Date() > i)
-							return;
-						
-						$('html, body').stop(true);
-						setTimeout(loop);
-					})();
-				}
-				$(this).trigger("change");
-			}
-*/
-		}).trigger("change");
-
-
+			newFuncString = (string.substr(0, index) + 'if (isCustomSearch(e,q)) return;\n' + string.substr(index)).replace(/^function \(\)\{/, "function(e){");
+		}
+		if (newFuncString)
+		{
+			let newFunc;
+			eval("newFunc = " + newFuncString);
+//			for (let i = 0; i < events.length; i++)
+//				jQuery._data($( "#searchBecauseNoOneChecks" )[0]).events[events[i]][0].handler = newFunc;
+			$( "#searchBecauseNoOneChecks" ).off("keyup change search input");
+			$( "#searchBecauseNoOneChecks" ).on("keyup change search input", newFunc);
+		}
+//log(jQuery._data($( "#searchBecauseNoOneChecks" )[0]).events.input[0].handler.toString());
 
 		let Backup = function Backup(id, val)
 		{
@@ -5779,24 +5882,24 @@ log("Show with ID: " + id + " not found");
 	let _prompt = (function()
 	{
 		let html = $(multiline(function(){/*
-	<div class="promptbox">
-		<div class="fade"></div>
-		<div class="prompt-content">
-			<form class="prompt-form">
-				<div class="msg"></div>
-				<span msg="Copied to clipboard!">
-					<input class="input"></input>
-				</span>
-				<div class="control">
-					<input type="button" value="OK" class="ok">
-					<input type="button" value="Cancel" class="cancel">
-					<input type="button" value="Copy" class="copy">
-					<input type="button" value="File" class="file">
-				</div>
-			</form>
-		</div>
+<div class="promptbox">
+	<div class="fade"></div>
+	<div class="prompt-content">
+		<form class="prompt-form">
+			<div class="msg"></div>
+			<span msg="Copied to clipboard!">
+				<input class="input"></input>
+			</span>
+			<div class="control">
+				<input type="button" value="OK" class="ok">
+				<input type="button" value="Cancel" class="cancel">
+				<input type="button" value="Copy" class="copy">
+				<input type="button" value="File" class="file">
+			</div>
+		</form>
 	</div>
-	*/})).appendTo("body"),
+</div>
+				*/})).appendTo("body"),
 				msg = html.find(".msg"),
 				input = html.find(".input"),
 				ok = html.find(".ok"),
@@ -5987,64 +6090,6 @@ log("Show with ID: " + id + " not found");
 	})();//_prompt
 
 
-	window.hashChanged = function hashChanged(e, hash)
-	{
-		let match,
-				remove = false,
-				hashSearch = false;
-		hash = typeof(hash) == "undefined" ? location.hash : hash;
-
-		if (hash == "#myshows")
-		{
-			search("info:myshows");
-			hashSearch = true;
-		}
-		else if (hash == "#hidden")
-		{
-			search("info:hidden");
-			hashSearch = true;
-		}
-		else if (match = hash.match(/^#([sfq]|search|find):(.*)/))
-		{
-			search(match[2]);
-	//		remove = true;
-			hashSearch = true;
-		}
-		else if (match = hash.match(/^#(info:.+)/))
-		{
-			search(match[1]);
-	//		remove = true;
-			hashSearch = true;
-		}
-		else if (hash == "#changes")
-		{
-			hashSearch = true;
-			changesLog.show(true);
-		}
-		else if (hash == "#settings" || hash == "#options")
-		{
-			hashSearch = true;
-			Settings.show(true);
-		}
-		else if (hash == "#linksmanager")
-		{
-			hashSearch = true;
-			customLinks.manager(function()
-			{
-				customLinks.show(true);
-			});
-		}
-		if (remove && hash == location.hash)
-		{
-			removeHash();
-			hashSearch = false;
-		}
-		hashChanged.hashSearch = hashSearch;
-	}
-	$(window).on("hashchange", hashChanged).trigger("hashchange");
-
-	$("#searchResults").parent().find("br:not(:last-of-type)").remove();
-
 	function todayChange()
 	{
 		today = new Date();
@@ -6106,6 +6151,69 @@ log("Show with ID: " + id + " not found");
 	let today = new Date();
 	todayChange.day = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
 	todayChange.timer = setInterval(todayChange, 5000);
+
+	window.hashChanged = function hashChanged(e, hash)
+	{
+		let match,
+				remove = false,
+				hashSearch = false;
+		hash = typeof(hash) == "undefined" ? location.hash : hash;
+
+		if (hash == "#myshows")
+		{
+			search("info:myshows");
+			hashSearch = true;
+		}
+		else if (hash == "#hidden")
+		{
+			search("info:hidden");
+			hashSearch = true;
+		}
+		else if (match = hash.match(/^#([sfq]|search|find):(.*)/))
+		{
+			search(match[2]);
+	//		remove = true;
+			hashSearch = true;
+		}
+		else if (match = hash.match(/^#(info:.+)/))
+		{
+			search(match[1]);
+	//		remove = true;
+			hashSearch = true;
+		}
+		else if (hash == "#changes")
+		{
+			hashSearch = true;
+			changesLog.show(true);
+		}
+		else if (hash == "#settings" || hash == "#options")
+		{
+			hashSearch = true;
+			Settings.show(true);
+		}
+		else if (hash == "#linksmanager")
+		{
+			hashSearch = true;
+			customLinks.manager(function()
+			{
+				customLinks.show(true);
+			});
+		}
+		if (remove && hash == location.hash)
+		{
+			removeHash();
+			hashSearch = false;
+		}
+		hashChanged.hashSearch = hashSearch;
+	}
+	$(window).on("hashchange", hashChanged);
+	setTimeout(function()
+	{
+		$(window).trigger("hashchange")
+	});
+
+	$("#searchResults").parent().find("br:not(:last-of-type)").remove();
+
 };//func()
 
 //disqus
@@ -6283,7 +6391,7 @@ if (window.top !== window.self)
 					return;
 				}
 
-				if ($(".btn.load-more__button.busy").length)
+				if (typeof($) != "undefined" && $(".btn.load-more__button.busy").length)
 				{
 					wasBusy = true
 					return setTimeout(loop);
@@ -6293,7 +6401,7 @@ if (window.top !== window.self)
 					if (wasBusy)
 					{
 						wasBusy = false;
-						setTimeout(loop, 1000);
+						return setTimeout(loop, 1000);
 					}
 					else
 					{
@@ -6386,8 +6494,10 @@ if (window.top !== window.self)
 											url = "http://airdates.tv/" + url;
 
 										a.href = url;
-										if (!url.match(/https?:\/\/(www\.)?airdates\.tv(\/.*|$)/i))
+										if (!url.match(/https?:\/\/(www\.)?airdates\.tv(\/.*|#|$)/i))
+										{
 											a.target = "_blank";
+										}
 										else
 										{
 											a.addEventListener("click", function(e)
