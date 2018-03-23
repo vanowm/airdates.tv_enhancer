@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.36.3
+// @version     1.37
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,9 @@
 
 
 var changesLogText = multiline(function(){/*
+1.37 (2018-03-23)
+	+ reload disqus button
+	! clicking on engine's checkboxes would open the engine link
 1.36.3 (2018-03-18)
 	! errors in console in MS Edge
 1.36.2 (2018-03-18)
@@ -131,10 +134,16 @@ var changesLogText = multiline(function(){/*
 
 let log = console.log,
 		self = this,
-		timeOffset = 0;
+		timeOffset = 0,
+		isFrame = window.top !== window.self,
+		blankFunc = function(){};
 
 
-if (window.top === window.self)
+function createCookie(name,value){ document.cookie = name+"="+encodeURIComponent(value)+"; path=/; expires="+new Date( $.now()+(999*24*60*60*1000)).toGMTString()+";"; }
+function readCookie(name) {	var n = name + "="; return $.merge( $.map( document.cookie.split(';'), function(e,i){ e=e.trim(); return e.indexOf( n ) == 0? decodeURIComponent(e.substring(n.length).replace(/\+/,' ')):null;} ), [null] )[0];}
+function eraseCookie( name ){ document.cookie = name+"=; path=/; expires="+new Date( $.now()+(-1)).toGMTString()+";"; }
+
+if (!isFrame)
 {
 	try
 	{
@@ -153,6 +162,7 @@ if (window.top === window.self)
 		return new _Date(n);
 	}
 }
+
 function ls(id, data, callback)
 {
 	let r;
@@ -194,9 +204,9 @@ function cs(id, data)
 	let r;
 	if (typeof(data) == "undefined")
 	{
-		r = readCookie(id);
 		try
 		{
+			r = readCookie(id);
 			r = JSON.parse(r);
 		}catch(e){}
 	}
@@ -222,6 +232,12 @@ function removeHash()
 {
 	history.replaceState({}, "", location.href.replace(/#.*/, ''));
 }
+
+this._scrollTo = function(y)
+{
+	$("html, body").animate({scrollTop: $("#disqus_thread").find("iframe")[0].offsetTop + y }, 300);
+//	$("html, body").prop("scrollTop", $("#disqus_thread").find("iframe")[0].offsetTop + y);
+}
 function receiveMessage(event)
 {
 	if (["https://disqus.com", "http://www.airdates.tv"].indexOf(event.origin) == -1 || typeof(event.data) != "object" || event.data.id != "ade")
@@ -245,7 +261,6 @@ function receiveMessage(event)
 		self[event.data.return](event.data.val);
 	}
 }
-receiveMessage._self = this;
 window.addEventListener("message", receiveMessage, false);
 let func = function(event)
 {
@@ -2027,6 +2042,8 @@ let func = function(event)
 
 	/* middle click on day's title opens selected engines for user's shows */
 		_enginesList = Settings.pref("middleClick") || [];
+		if (!(_enginesList instanceof Array))
+			_enginesList = [];
 		let engines = enginesBackup.backup ? enginesBackup.backup : window.engines,
 				del = [],
 				add = [];
@@ -2235,7 +2252,6 @@ let func = function(event)
 	})();
 
 	Settings.init();
-
 	// fix highlighting today would remove /u/user ..
 	$( "#linkToday" ).click(function click(e)
 	{
@@ -4315,11 +4331,14 @@ log(err);
 
 	function middleClick(e, search)
 	{
-		if (e.button != 1 && !(!e.button && e.ctrlKey) )
+		if (e.button != 1 && !(!e.button && e.ctrlKey))
 			return;
 
 		e.stopPropagation();
 		e.preventDefault();
+		if (e.target.tagName == "INPUT")
+			return;
+
 		let parent,
 				entry = true;
 		if (search)
@@ -4535,14 +4554,20 @@ log(err);
 					checkbox.title = "Open with middle click on title";
 					checkbox.checked = enginesCheck(engine.host) != -1;
 					img[0].parentNode.insertBefore(checkbox, img[0]);
-					$(checkbox).on("click", "", function(e)
+					a.on("click", function(e)
 					{
-						if (checkbox.checked)
+						let c = checkbox.checked;
+						e.preventDefault();
+						if (c)
 							enginesAdd(checkbox.engine);
 						else
 							enginesRemove(checkbox.engine);
 
-						$("input." + id).prop("checked", checkbox.checked);
+						$("input." + id).prop("checked", c);
+						setTimeout(function()
+						{
+							checkbox.checked = c;
+						});
 					});
 				} );
 			}
@@ -6232,435 +6257,490 @@ function trollListCallback(v)
 {
 	trollList = v;
 }
-if (window.top !== window.self)
+//if (isFrame && window.location.href.indexOf("disqus.com") != -1)
+if (isFrame)
 {
 	func = function(){};
 
-
 //disqus troll filter
-	if (window.location.href.indexOf("disqus.com") != -1)
+	let trollHide = false,
+			trollTimer,
+			comments = {};
+
+	trollList = ls("trolls", undefined, "trollListCallback");
+
+	let isTroll = function (name)
 	{
-		let trollHide = false,
-				trollTimer,
-				comments = {};
+		return trollList.indexOf(name);
+	};
 
-		trollList = ls("trolls", undefined, "trollListCallback");
-
-		let isTroll = function (name)
+	let trollSave = function ()
+	{
+		clearTimeout(trollTimer);
+		trollTimer = setTimeout(function()
 		{
-			return trollList.indexOf(name);
-		};
+			ls("trolls", trollList);
+		}, 1000);
+	};
 
-		let trollSave = function ()
+	let trollAdd = function (name)
+	{
+		if (isTroll(name) == -1)
+			trollList.push(name);
+
+		trollSave();
+	};
+
+	let trollRemove = function (name)
+	{
+		let n = isTroll(name);
+		if (n != -1)
+			trollList.splice(n, 1);
+
+		trollSave();
+	};
+
+	let isMatch = function (needle, array)
+	{
+		let r = -1;
+		for(let i = 0; i < array.length; i++)
 		{
-			clearTimeout(trollTimer);
-			trollTimer = setTimeout(function()
+			r = needle.indexOf(array[i]);
+			if (r != -1)
+				break;
+		}
+		return r;
+	};
+	let findParent = function (obj, c)
+	{
+		if (typeof(c) != "object")
+			c = [c];
+
+		if (obj && obj.className && isMatch(obj.className, c) != -1)
+			return obj;
+
+		if (obj)
+			return findParent(obj.parentNode, c);
+
+		return null;
+	};
+	let censor = function (a, b, c, d, e)
+	{
+		let p = "blah",
+				r = "",
+				caps = true,
+				t,
+				i,
+				isStr = isNaN(a.replace(/['`].*/, ''));
+
+		if ((a.length < 2 && isStr) || (a.length < 7 && a.match(/['`]/) && isStr) || a.match(/^\$?[0-9]+k?/i))
+			return a;
+
+		for(i = 0; i < a.length; i++)
+			if (a[i] == a[i].toLowerCase())
 			{
-				ls("trolls", trollList);
-			}, 1000);
-		};
-
-		let trollAdd = function (name)
-		{
-			if (isTroll(name) == -1)
-				trollList.push(name);
-
-			trollSave();
-		};
-
-		let trollRemove = function (name)
-		{
-			let n = isTroll(name);
-			if (n != -1)
-				trollList.splice(n, 1);
-
-			trollSave();
-		};
-
-		let isMatch = function (needle, array)
-		{
-			let r = -1;
-			for(let i = 0; i < array.length; i++)
-			{
-				r = needle.indexOf(array[i]);
-				if (r != -1)
-					break;
+				caps = false;
+				break;
 			}
-			return r;
-		};
-		let findParent = function (obj, c)
+
+		for(i = 0; i < p.length; i++)
 		{
-			if (typeof(c) != "object")
-				c = [c];
+			t = p[i];
 
-			if (obj && obj.className && isMatch(obj.className, c) != -1)
-				return obj;
+			if (a.length < i + 1)
+				continue;
 
-			if (obj)
-				return findParent(obj.parentNode, c);
+			if (caps || (a.length > i && a[i] != a[i].toLowerCase()))
+				t = t.toUpperCase();
 
-			return null;
-		};
-		let censor = function (a, b, c, d, e)
+			r += t;
+		}
+		return r;
+	};
+
+	let toggleTroll = function (comment, f)
+	{
+		//f = 0: orig
+		//f = 1: troll
+		//f = 2: toggle
+		f = typeof(f) == "undefined" ? 2 : f;
+		let parent = comment._parent,
+				t = true;
+		if (f == 1 || (f == 2 && parent.getAttribute("troll") != "true"))
 		{
-			let p = "blah",
-					r = "",
-					caps = true,
-					t,
-					i,
-					isStr = isNaN(a.replace(/['`].*/, ''));
+			if (trollHide)
+				comment.innerHTML = '<img src="' + trollSrc + '" class="trollComment">';
+			else
+				censorText(comment);
+		}
+		else
+		{
+			censorText(comment, true);
+			t = false;
+		}
+		parent.setAttribute("troll", t);
+		return t;
+	};
 
-			if ((a.length < 2 && isStr) || (a.length < 7 && a.match(/['`]/) && isStr) || a.match(/^\$?[0-9]+k?/i))
-				return a;
+	let censorText = function (obj, orig)
+	{
+		let c = obj.childNodes;
+		for(let i = 0; i < c.length; i++)
+		{
+			if (c[i].nodeName == "#text")
+			{
+				if (!("nodeValueOrig" in c[i]))
+					c[i].nodeValueOrig = c[i].nodeValue;
 
-			for(i = 0; i < a.length; i++)
-				if (a[i] == a[i].toLowerCase())
+				let t;
+				if (orig)
+					t = c[i].nodeValueOrig;
+				else
 				{
-					caps = false;
-					break;
+					if (!("nodeValueTroll" in c[i]))
+						c[i].nodeValueTroll = c[i].nodeValue.replace(/(\w+(['`]\w+)?)/g, censor);
+
+					t = c[i].nodeValueTroll;
 				}
 
-			for(i = 0; i < p.length; i++)
-			{
-				t = p[i];
-
-				if (a.length < i + 1)
-					continue;
-
-				if (caps || (a.length > i && a[i] != a[i].toLowerCase()))
-					t = t.toUpperCase();
-
-				r += t;
+				c[i].nodeValue = t;
 			}
-			return r;
-		};
+			else if (c[i].childNodes.length && c[i].className != "see-more")
+				censorText(c[i], orig);
+		}
+		return obj.innerHTML;
+	};
 
-		let toggleTroll = function (comment, f)
+	function reloadLoop()
+	{
+
+		let nav = document.getElementById("main-nav");
+		if (!nav && reloadLoop.i--)
+			return setTimeout(reloadLoop);
+
+		if (!nav)
+			return;
+
+		if (readCookie("scroll") && !--reloadLoop.s)
 		{
-			//f = 0: orig
-			//f = 1: troll
-			//f = 2: toggle
-			f = typeof(f) == "undefined" ? 2 : f;
-			let parent = comment._parent,
-					t = true;
-			if (f == 1 || (f == 2 && parent.getAttribute("troll") != "true"))
+			window.top.postMessage({id: "ade", func: "_scrollTo", args: [nav.offsetTop], return: null}, "http://www.airdates.tv");
+			eraseCookie("scroll");
+			reloadLoop.s = 2;
+		}
+		if (reloadLoop.inited)
+			return;
+
+		$("<li/>")
+			.attr("class", "nav-tab nav-tab--secondary reload")
+			.attr("title", "Reload comments")
+			.append('<a><svg viewBox="0 0 24 24"><path d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"></path></svg><span>Reload</span></a>')
+			.insertAfter($("#thread-share-menu"))
+			.click(function()
 			{
-				if (trollHide)
-					comment.innerHTML = '<img src="' + trollSrc + '" class="trollComment">';
-				else
-					censorText(comment);
+//							window.top.postMessage({id: "ade", func: "_reloadDisqus", args: [], return: null}, "http://www.airdates.tv");
+				createCookie("scroll", "1");
+				window.self.location.reload();
+			});
+		reloadLoop.inited = true;
+	}
+	reloadLoop.s = 2;
+	window.addEventListener("load", function(e)
+	{
+		let dis = 1000,
+				wasBusy = false;
+
+		(function loop()
+		{
+			if (typeof(trollList) == "undefined")
+			{
+				if (dis--)
+					setTimeout(loop);
+
+				return;
+			}
+
+			if (typeof($) != "undefined" && $ !== blankFunc &&  $(".btn.load-more__button.busy").length)
+			{
+				wasBusy = true
+				return setTimeout(loop);
 			}
 			else
 			{
-				censorText(comment, true);
-				t = false;
-			}
-			parent.setAttribute("troll", t);
-			return t;
-		};
-
-		let censorText = function (obj, orig)
-		{
-			let c = obj.childNodes;
-			for(let i = 0; i < c.length; i++)
-			{
-				if (c[i].nodeName == "#text")
+				if (wasBusy)
 				{
-					if (!("nodeValueOrig" in c[i]))
-						c[i].nodeValueOrig = c[i].nodeValue;
-
-					let t;
-					if (orig)
-						t = c[i].nodeValueOrig;
-					else
-					{
-						if (!("nodeValueTroll" in c[i]))
-							c[i].nodeValueTroll = c[i].nodeValue.replace(/(\w+(['`]\w+)?)/g, censor);
-
-						t = c[i].nodeValueTroll;
-					}
-
-					c[i].nodeValue = t;
-				}
-				else if (c[i].childNodes.length && c[i].className != "see-more")
-					censorText(c[i], orig);
-			}
-			return obj.innerHTML;
-		};
-		window.addEventListener("load", function(e)
-		{
-			let dis = 1000,
 					wasBusy = false;
-			(function loop()
-			{
-				if (typeof(trollList) == "undefined")
-				{
-					if (dis--)
-						setTimeout(loop);
-
-					return;
-				}
-
-				if (typeof($) != "undefined" && $(".btn.load-more__button.busy").length)
-				{
-					wasBusy = true
-					return setTimeout(loop);
+					return setTimeout(loop, 1000);
 				}
 				else
 				{
-					if (wasBusy)
-					{
-						wasBusy = false;
-						return setTimeout(loop, 1000);
-					}
-					else
-					{
-					}
 				}
+			}
 
-				if (!trollList || typeof(trollList) != "object")
-					trollList = ["Tubasing"];
+			if (!trollList || typeof(trollList) != "object")
+				trollList = ["Tubasing"];
 
-				(function loop2()
+			(function loop2()
+			{
+				let postsList = document.getElementsByClassName("post-list"),
+						loopStop = false;
+
+				if (postsList.length < 3)
+					return setTimeout(loop2, 100);
+
+				for(let i = 0; i < postsList.length; i++)
 				{
-					let postsList = document.getElementsByClassName("post-list"),
-							loopStop = false;
+					let posts = postsList[i];
+					if (!posts.innerHTML && !posts.id)
+						continue;
 
-					if (postsList.length < 3)
-						return setTimeout(loop2, 100);
-
-					for(let i = 0; i < postsList.length; i++)
+					(function loop3()
 					{
-						let posts = postsList[i];
-						if (!posts.innerHTML && !posts.id)
-							continue;
+						let names = posts.getElementsByClassName("author");
+						if (!names.length)
+							return setTimeout(loop2, 100);
 
-						(function loop3()
+						if (!posts.__inited)
 						{
-							let names = posts.getElementsByClassName("author");
-							if (!names.length)
-								return setTimeout(loop2, 100);
-
-							if (!posts.__inited)
+							$(".btn.load-more__button").click(function()
 							{
-								$(".btn.load-more__button").click(function()
-								{
-									setTimeout(loop);
-								});
-								posts.__inited = true;
-							}
-							function initPosts(names)
+								setTimeout(loop);
+							});
+							posts.__inited = true;
+							reloadLoop.i = 1000;
+							reloadLoop();
+						}
+						function initPosts(names)
+						{
+							for(let i = 0; i < names.length; i++)
 							{
-								for(let i = 0; i < names.length; i++)
+
+								let body = findParent(names[i], "post-content");
+								if (!body)
 								{
+									continue;
+								}
 
-									let body = findParent(names[i], "post-content");
-									if (!body)
-									{
-										continue;
-									}
+								let parent = findParent(names[i], "post-byline"),
+										img = document.createElement("span"),
+										name = names[i].innerText,
+										troll = (isTroll(name) != -1),
+										post = body.getElementsByClassName("post-message")[0];
 
-									let parent = findParent(names[i], "post-byline"),
-											img = document.createElement("span"),
-											name = names[i].innerText,
-											troll = (isTroll(name) != -1),
-											post = body.getElementsByClassName("post-message")[0];
+								post._parent = parent;
+								if (post.__inited)
+									continue;
 
-									post._parent = parent;
-									if (post.__inited)
-										continue;
-
-									img.className = "troll";
-										names[i].parentNode.insertBefore(img, names[i].nextSibling);
+								img.className = "troll";
+									names[i].parentNode.insertBefore(img, names[i].nextSibling);
 /*
-									if (names[i].parentNode.querySelectorAll('span:not([class])').length)
-										names[i].parentNode.insertBefore(img, names[i].nextSibling);
-									else
-										names[i].parentNode.appendChild(img);
+								if (names[i].parentNode.querySelectorAll('span:not([class])').length)
+									names[i].parentNode.insertBefore(img, names[i].nextSibling);
+								else
+									names[i].parentNode.appendChild(img);
 */
 
-									parent.setAttribute("troll", troll);
+								parent.setAttribute("troll", troll);
 
-									names[i].innerHTML = names[i].innerHTML.replace("Tubasing", "Tubashit");
+								names[i].innerHTML = names[i].innerHTML.replace("Tubasing", "Tubashit");
 
-									if (typeof(comments[name]) == "undefined")
-										comments[name] = [];
+								if (typeof(comments[name]) == "undefined")
+									comments[name] = [];
 
 /* replace disqus links with actual links */
-									let as = post.getElementsByTagName("a");
-									for(let i = 0; i < as.length; i++)
+								let as = post.getElementsByTagName("a");
+								for(let i = 0; i < as.length; i++)
+								{
+									let a = as[i],
+											url = decodeURIComponent(a.href).match(/\/\/disq\.us\/url\?url=(.+)/);
+
+									if (url)
 									{
-										let a = as[i],
-												url = decodeURIComponent(a.href).match(/\/\/disq\.us\/url\?url=(.+)/);
-
-										if (url)
-										{
-											url = url[1].substring(0, url[1].indexOf(a.title) + a.title.length);
-										}
-										if (!url)
-											url = a.href;
-
-										if (url.match(/^#/))
-											url = "http://airdates.tv/" + url;
-
-										a.href = url;
-										if (!url.match(/https?:\/\/(www\.)?airdates\.tv(\/.*|#|$)/i))
-										{
-											a.target = "_blank";
-										}
-										else
-										{
-											a.addEventListener("click", function(e)
-											{
-												e.preventDefault();
-												window.top.postMessage({id: "ade", func: "hashChanged", args: [0, a.hash], return:null}, "http://www.airdates.tv");
-											}, false);
-										}
+										url = url[1].substring(0, url[1].indexOf(a.title) + a.title.length);
 									}
+									if (!url)
+										url = a.href;
 
-									comments[name].push({
-										parent: parent,
-										post: post
-									});
+									if (url.match(/^#/))
+										url = "http://airdates.tv/" + url;
 
-									img.addEventListener("click", function(e)
+									a.href = url;
+									if (!url.match(/https?:\/\/(www\.)?airdates\.tv(\/.*|#|$)/i))
 									{
-										e.stopPropagation();
-										e.preventDefault();
-
-										let troll = toggleTroll(post);
-										if (troll)
-											trollAdd(name);
-										else
-											trollRemove(name);
-
-										for(let i = 0; i < comments[name].length; i++)
-										{
-											if (post === comments[name][i].post)
-												continue;
-
-											toggleTroll(comments[name][i].post);
-										}
-									}, true);
-									post.__inited = true;
-
-									if (!body.__inited)
-									{
-										let eventHandler = function(e)
-												{
-													if (parent.getAttribute("troll") != "true")
-														return;
-
-													if (this.prev == e.type)
-														return;
-
-													let type = e.type == "mouseenter";
-													this.prev = e.type;
-													clearTimeout(this.timer);
-													this.timer = setTimeout(function()
-													{
-														censorText(post, type);
-													}, type ? 200 : 1000);
-												};
-										body.addEventListener("mouseenter", eventHandler, false);
-										body.addEventListener("mouseleave", eventHandler, false);
-										body.__inited = true;
+										a.target = "_blank";
 									}
-									if (!troll)
-										continue;
-
-									censorText(post);
+									else
+									{
+										a.addEventListener("click", function(e)
+										{
+											e.preventDefault();
+											window.top.postMessage({id: "ade", func: "hashChanged", args: [0, a.hash], return:null}, "http://www.airdates.tv");
+										}, false);
+									}
 								}
+
+								comments[name].push({
+									parent: parent,
+									post: post
+								});
+
+								img.addEventListener("click", function(e)
+								{
+									e.stopPropagation();
+									e.preventDefault();
+
+									let troll = toggleTroll(post);
+									if (troll)
+										trollAdd(name);
+									else
+										trollRemove(name);
+
+									for(let i = 0; i < comments[name].length; i++)
+									{
+										if (post === comments[name][i].post)
+											continue;
+
+										toggleTroll(comments[name][i].post);
+									}
+								}, true);
+								post.__inited = true;
+
+								if (!body.__inited)
+								{
+									let eventHandler = function(e)
+											{
+												if (parent.getAttribute("troll") != "true")
+													return;
+
+												if (this.prev == e.type)
+													return;
+
+												let type = e.type == "mouseenter";
+												this.prev = e.type;
+												clearTimeout(this.timer);
+												this.timer = setTimeout(function()
+												{
+													censorText(post, type);
+												}, type ? 200 : 1000);
+											};
+									body.addEventListener("mouseenter", eventHandler, false);
+									body.addEventListener("mouseleave", eventHandler, false);
+									body.__inited = true;
+								}
+								if (!troll)
+									continue;
+
+								censorText(post);
 							}
-							initPosts(names);
-						})();//loop3()
-					}
-				})();//loop2()
-			})();//loop()
-			let style = document.createElement("style");
-			style.innerHTML = multiline(function(){/*
+						}
+						initPosts(names);
+					})();//loop3()
+				}
+			})();//loop2()
+		})();//loop()
+		let style = document.createElement("style");
+		style.innerHTML = multiline(function(){/*
 .trollComment
 {
-	cursor: pointer;
-	opacity: 0.4;
-	transform: scaleX(-1);
+cursor: pointer;
+opacity: 0.4;
+transform: scaleX(-1);
 }
 .post-byline:not([troll="true"]) span.troll
 {
-	opacity: 0.1;
-	transform: scaleX(-1);
+opacity: 0.1;
+transform: scaleX(-1);
 }
 span.troll
 {
-	background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAA3NCSVQICAjb4U/gAAAACXBIWXMAAAsSAAALEgHS3X78AAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1M1cbXjNgAAABZ0RVh0Q3JlYXRpb24gVGltZQAxMi8yOC8xMZSAjI8AAAA/UExURf///wAAAAEBAQICAgMDAwQEBAUFBQYGBgcHBwgICAkJCQoKCgsLCw0NDQ8PDxAQEBISEhMTExYWFvr6+v////L9RbYAAAABdFJOUwBA5thmAAAAZklEQVQYGY3BWw6CMABFwXtQKLZafJz9r1WaaPgycSb5wwys8KT1DFcPZIeHlgQBZ5jcbUnTByq4oDXpopMDd88JWlCZEEtSKUsHRCUJr1W8iVqTIBeWAirZ4Rdk6A6cWPMBHfLbGzqjB8v8i7F/AAAAAElFTkSuQmCC");
-	background-repeat: no-repeat;
-	background-position: center;
-	width: 16px;
-	height: 16px;
-	cursor: pointer;
-	vertical-align: top;
-	display: inline-block;
-	padding: 0.7em 1em;
-	margin: 0 -0.3em 0 2px;
+background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAA3NCSVQICAjb4U/gAAAACXBIWXMAAAsSAAALEgHS3X78AAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1M1cbXjNgAAABZ0RVh0Q3JlYXRpb24gVGltZQAxMi8yOC8xMZSAjI8AAAA/UExURf///wAAAAEBAQICAgMDAwQEBAUFBQYGBgcHBwgICAkJCQoKCgsLCw0NDQ8PDxAQEBISEhMTExYWFvr6+v////L9RbYAAAABdFJOUwBA5thmAAAAZklEQVQYGY3BWw6CMABFwXtQKLZafJz9r1WaaPgycSb5wwys8KT1DFcPZIeHlgQBZ5jcbUnTByq4oDXpopMDd88JWlCZEEtSKUsHRCUJr1W8iVqTIBeWAirZ4Rdk6A6cWPMBHfLbGzqjB8v8i7F/AAAAAElFTkSuQmCC");
+background-repeat: no-repeat;
+background-position: center;
+width: 16px;
+height: 16px;
+cursor: pointer;
+vertical-align: top;
+display: inline-block;
+padding: 0.7em 1em;
+margin: 0 -0.3em 0 2px;
 }
 .post-byline:not([troll="true"]) span.troll:hover
 {
-	opacity: 1;
-	-webkit-animation: move2 0.5s ease-in-out infinite alternate;
-	animation: move2 1s ease-in-out infinite;
+opacity: 1;
+-webkit-animation: move2 0.5s ease-in-out infinite alternate;
+animation: move2 1s ease-in-out infinite;
 }
 span.troll:hover
 {
-	-webkit-animation: move 0.5s ease-in-out infinite alternate;
-	animation: move 1s ease-in-out infinite;
+-webkit-animation: move 0.5s ease-in-out infinite alternate;
+animation: move 1s ease-in-out infinite;
 }
 @keyframes move {
-	25%
-	{
-		transform: rotate(-20deg);
-	}
-	75%
-	{
-		transform: rotate(20deg);
-	}
+25%
+{
+	transform: rotate(-20deg);
+}
+75%
+{
+	transform: rotate(20deg);
+}
 }
 @keyframes move2 {
-	25%
-	{
-		transform: scaleX(-1) rotate(20deg);
-	}
-	75%
-	{
-		transform: scaleX(-1) rotate(-20deg);
-	}
+25%
+{
+	transform: scaleX(-1) rotate(20deg);
+}
+75%
+{
+	transform: scaleX(-1) rotate(-20deg);
+}
 }
 span.troll:nth-child(3)
 {
-	margin-left: 0.4em;
+margin-left: 0.4em;
 }
 span[class="author"] + span.troll
 {
-	margin-left: 0.3em;
+margin-left: 0.3em;
 }
 .trollMenuImg
 {
-	vertical-align: top;
+vertical-align: top;
 }
 .trollBox
 {
-	height: auto;
-	line-height: 1.3em;
+height: auto;
+line-height: 1.3em;
 }
 /* comment links *//*
 .post-message a:not(.mention)
 {
-	text-decoration: underline !important;
+text-decoration: underline !important;
+}
+
+li.reload:hover > a > svg
+{
+	fill: black;
+}
+li.reload > a > svg
+{
+	width: 19px;
+	fill: #656c7a;
+	vertical-align: middle
+}
+li.reload > a > span
+{
+	vertical-align: middle
+}
+li.reload
+{
+	cursor: pointer;
+	float: left;
+	margin-left: 15px;
 }
 */
-			});//disqus css
-			document.getElementsByTagName("head")[0].appendChild(style);
-		}, false);
-	}
+		});//disqus css
+		document.getElementsByTagName("head")[0].appendChild(style);
+	}, false); //window load()
 }//disqus
 else
 {
