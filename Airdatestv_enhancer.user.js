@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.37.1
+// @version     1.37.2
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,13 @@
 
 
 var changesLogText = multiline(function(){/*
+1.37.2 (2018-03-27)
+	+ enter key now submits form in links manager
+	! left click on links didn't work
+	! links with empty URL field no longer accepted
+	* undo message after clear colors/hidde or watched list now visible even when page scrolled down
+	* when viewing as different user, links to clear colors/hidden and watched lists are no longer visible
+	* Add and Reset buttons in links manager renamed to Submit and Clear
 1.37.1 (2018-03-25)
 	! broken my shows list in Firefox
 	* renamed "Show hidden" checkbox to "Hidden shows"
@@ -1401,7 +1408,7 @@ let func = function(event)
 			<a id="sort-reset" href="#">reset sort</a>
 		</span>
 	</div>
-	<form>
+	<form id="engine-form">
 		<div id="engine-edit">
 			<div>
 				<label>Name:</label>
@@ -1432,8 +1439,8 @@ let func = function(event)
 			<div>
 				<label></label>
 				<div>
-					<input id="engine-submit" type="button" value="Add">
-					<input id="engine-reset" type="reset" value="Reset">
+					<input id="engine-submit" type="submit" value="Submit">
+					<input id="engine-reset" type="reset" value="Clear">
 				</div>
 			</div>
 			<div>
@@ -1448,6 +1455,7 @@ let func = function(event)
 		let engId = $("#engine-id"),
 				engUrl = $("#engine-url"),
 				engName = $("#engine-name"),
+				engForm = $("#engine-form"),
 				engSubmit = $("#engine-submit"),
 				engTags = $("#engine-tags"),
 				engRes = $("#engine-res"),
@@ -1504,16 +1512,18 @@ let func = function(event)
 			}, 300);
 			buttonsUpdate();
 		}//change()
+
 		function buttonsUpdate()
 		{
 			let disabled = engName.val() + engId.val().trim() + engUrl.val().trim() ? false: true;
 			engSubmit.prop("disabled", disabled);
 			engReset.prop("disabled", disabled);
 		}
+
+
 		engId.on("input change", change);
 		engUrl.on("input change", change);
 		engName.on("input change", change);
-
 		engTags.on("change", function(e)
 		{
 			let start = engUrl[0].selectionStart,
@@ -1567,8 +1577,9 @@ let func = function(event)
 				obj.removeAttr("style");
 			}, 100);
 		}
-		engSubmit.click(function(e)
+		engForm.on("submit", function(e)
 		{
+			e.preventDefault();
 			let engine = {
 						name: engName.val().trim(),
 						href: engUrl.val().trim(),
@@ -1577,13 +1588,13 @@ let func = function(event)
 			if (!engine.href.match(/[a-z]+:\/\//i))
 				engine.href = "http://" + engine.href;
 
-	//		engUrl.val(engine.href);
+//			engUrl.val(engine.href);
 			engineFixHost(engine);
 			let id = "engine_" + cleanName(engine.host),
 					update = $("#" + id),
 					exists = customLinks._list[engine.host];
 
-			if (!engine.name || !engine.href)
+			if (!engine.name || !engine.href || engine.href == "http://")
 				return false;
 
 			let equal = false,
@@ -1660,7 +1671,7 @@ let func = function(event)
 			engName.val("");
 			engId.val("");
 			engUrl.val("");
-		});//engSubmit.click()
+		});//engForm.submit()
 
 		function updateDetails()
 		{
@@ -2816,6 +2827,13 @@ svg
 	height: 1em;
 	vertical-align: top;
 }
+body.userViewer .settings > div.spacer,
+body.userViewer .myHidden,
+body.userViewer .moreOpt,
+body.userViewer .clearHidden,
+body.userViewer .clearHiddenIcon,
+body.userViewer .clearWatched,
+body.userViewer .clearWatchedIcon,
 body.userViewer .importColors,
 body.userViewer .importColorsIcon,
 body.userViewer .clearColorsIcon,
@@ -3938,7 +3956,7 @@ body.prompt.scrollbar
 
 div.undo
 {
-	position: absolute;
+	position: fixed !important;
 	top: 0 !important;
 	left: 0 !important;
 	right: 0 !important;
@@ -4559,6 +4577,9 @@ log(err);
 					img[0].parentNode.insertBefore(checkbox, img[0]);
 					a.on("click", function(e)
 					{
+						if (e.target === this)
+							return;
+
 						let c = checkbox.checked;
 						e.preventDefault();
 						if (c)
@@ -5135,12 +5156,6 @@ log("Show with ID: " + id + " not found");
 				$(prev).toggleClass(id + "Icon", true)
 			});
 		}
-		if (DB.viewing)
-		{
-			$("body").toggleClass("userViewer", true);
-			hideNode("clearColors");
-			hideNode("importColors");
-		}
 		let accountLoop = 50;
 		$("#account-popup").attr("hidden", "");
 		$("#account-overview").click(function(e)
@@ -5221,9 +5236,11 @@ log("Show with ID: " + id + " not found");
 			a = span.lastChild;
 			i = span.firstChild;
 			a.className = "";
+			a.id = "";
+			delete a.className;
+			delete a.id;
 			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>';
 			a.href = '#myshows';
-			a.id = "";
 			a.addEventListener("click", function(e)
 			{
 				e.preventDefault();
@@ -5239,7 +5256,7 @@ log("Show with ID: " + id + " not found");
 			i = span.firstChild;
 			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>';
 			a.href = '#hidden';
-			a.id = "";
+			span.className = "myHidden";
 			a.addEventListener("click", function(e)
 			{
 				e.preventDefault();
@@ -5251,6 +5268,8 @@ log("Show with ID: " + id + " not found");
 			parent.appendChild(span);
 
 			span = span.cloneNode(true);
+			span.className = "";
+			delete span.className;
 			a = span.lastChild;
 			i = span.firstChild;
 			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3,5H9V11H3V5M5,7V9H7V7H5M11,7H21V9H11V7M11,15H21V17H11V15M5,20L1.5,16.5L2.91,15.09L5,17.17L9.59,12.59L11,14L5,20Z" /></svg>';
@@ -5308,7 +5327,7 @@ log("Show with ID: " + id + " not found");
 			span.appendChild(a);
 			parent.insertBefore(span, h.nextSibling);
 
-		});
+		});//account-overview:click()
 
 		let list = ls("info") || {},
 				userCookie = readCookieRaw("adsc_SESSION"),
@@ -5366,17 +5385,18 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			DB.infoLoaded = true;
 			if (added)
 				DB.infoSave();
-		});
+		});//DB.getColors
 
 		if (DB.loggedInUsername)
 		{
 			$("#account-overview").find("span.nu")[0].innerHTML = '<svg viewBox="0 0 24 24"><path d="M12,4C15.64,4 18.67,6.59 19.35,10.04C21.95,10.22 24,12.36 24,15A5,5 0 0,1 19,20H6A6,6 0 0,1 0,14C0,10.91 2.34,8.36 5.35,8.04C6.6,5.64 9.11,4 12,4M7.5,9.69C6.06,11.5 6.2,14.06 7.82,15.68C8.66,16.5 9.81,17 11,17V18.86L13.83,16.04L11,13.21V15C10.34,15 9.7,14.74 9.23,14.27C8.39,13.43 8.26,12.11 8.92,11.12L7.5,9.69M9.17,8.97L10.62,10.42L12,11.79V10C12.66,10 13.3,10.26 13.77,10.73C14.61,11.57 14.74,12.89 14.08,13.88L15.5,15.31C16.94,13.5 16.8,10.94 15.18,9.32C14.34,8.5 13.19,8 12,8V6.14L9.17,8.97Z"></path></svg>' + $("#account-overview").find("span.nu")[0].innerHTML;
 		}
 //fix paste via right click: adding input event
+/*
 		$( "#searchBecauseNoOneChecks" ).on( "input", function(e)
 		{
-		})//.trigger("change");
-		let lastQ = "",
+		}).trigger("change");
+*/		let lastQ = "",
 				searchTimer = null,
 				events = ["change", "search", "keyup", "input"],
 				origFunc = jQuery._data($( "#searchBecauseNoOneChecks" )[0]).events.change[0].handler,
@@ -5711,6 +5731,14 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			return false;
 		});
 
+		if (DB.viewing)
+		{
+			$("body").toggleClass("userViewer", true);
+			hideNode("clearColors");
+			hideNode("importColors");
+			hideNode("clearHidden");
+			hideNode("clearWatched");
+		}
 	});//document.ready()
 
 //ESC(27) = close popups
