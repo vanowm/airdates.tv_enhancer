@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.37.2
+// @version     1.37.3
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,10 @@
 
 
 var changesLogText = multiline(function(){/*
+1.37.3 (2018-04-13)
+	! if episode is in the past and hidden via "show past weeks" setting, clicking on "Show in calendar" from search result would not reveal the episode.
+	* if getting name of same show failed, next attempt will be possible only after 1 hour
+	* if getting name of a show failed during period of 4 weeks, the show will be removed from the account.
 1.37.2 (2018-03-27)
 	+ enter key now submits form in links manager
 	! left click on links didn't work
@@ -148,8 +152,7 @@ let log = console.log,
 		isFrame = window.top !== window.self,
 		blankFunc = function(){};
 
-
-function createCookie(name,value){ document.cookie = name+"="+encodeURIComponent(value)+"; path=/; expires="+new Date( $.now()+(999*24*60*60*1000)).toGMTString()+";"; }
+function createCookie(name,value){ document.cookie = name+"="+encodeURIComponent(value)+"; path=/; expires="+new Date( $.now()+(863913600000)).toGMTString()+";"; }
 function readCookie(name) {	var n = name + "="; return $.merge( $.map( document.cookie.split(';'), function(e,i){ e=e.trim(); return e.indexOf( n ) == 0? decodeURIComponent(e.substring(n.length).replace(/\+/,' ')):null;} ), [null] )[0];}
 function eraseCookie( name ){ document.cookie = name+"=; path=/; expires="+new Date( $.now()+(-1)).toGMTString()+";"; }
 
@@ -171,8 +174,15 @@ if (!isFrame)
 
 		return new _Date(n);
 	}
+	Date.now = function()
+	{
+		return (new Date()).getTime();
+	}
+	Date._now = function()
+	{
+		return Math.floor((Date.now() - 1523246400000) / 1000); //2018-04-09 00:00:00
+	}
 }
-
 function ls(id, data, callback)
 {
 	let r;
@@ -1304,7 +1314,7 @@ let func = function(event)
 			text = "Not watched";
 			entry.removeAttribute("watched");
 		}
-		entry.title = $(entry).find(".title > span")[0].lastChild.textContent + " (" + text + ")";
+		entry.title = $(entry).find(".title > span")[0].lastChild.textContent;// + " (" + text + ")";
 		$(entry).find(".title > input").prop("title", text);
 		entry._input.checked = enable;
 
@@ -2390,7 +2400,9 @@ let func = function(event)
 			return;
 
 		if (!update && day.list)
+		{
 			return collapseMulti.setTitle(day.list, Settings.prefs.collapseMulti && !_day.hasClass("opened") ? "_titleCollapsed" : "_titleOrig");
+		}
 
 		if (!day.list)
 			day.list = {};
@@ -2963,7 +2975,7 @@ div.details > span.engines > div.tools > *
 {
 	margin: 0.2em;
 }
-.past,
+body:not(.archive) .past,
 .showhide0,
 span[checked] > .checkoff,
 span:not([checked]) > .checkon,
@@ -3027,7 +3039,7 @@ div.title > input[type="checkbox"]
 	margin-bottom: 1em;
 }
 /*Past related*//*
-.past
+body:not(.archive) .past
 {
 	opacity: 0.5;
 }
@@ -4894,6 +4906,7 @@ px)
 	DB.infoSave = function()
 	{
 		ls("info", DB.info);
+		ls("infoChecked", DB.infoChecked);
 	};
 
 	DB.infoAdd = function(id, name, nosave)
@@ -4911,6 +4924,7 @@ px)
 			return;
 		}
 		DB.info[id] = name;
+		delete DB.infoChecked[id];
 		if (!nosave)
 			DB.infoSave();
 	};
@@ -4933,15 +4947,48 @@ px)
 	DB.infoLoad = function(id, deleteOnError)
 	{
 		let obj = document.createElement("div");
+		if (DB.infoChecked[id] && Date.now() - 3600000 < DB.infoChecked[id][0]) //1 hour
+			return
+
 		$(obj).load("/s?"+$.param({q:"info:" + id}), function(e, t, r)
 		{
-			if (t == "error")
+			if (t == "error" || r.responseText === "")
 			{
-log([e,t,r]);
-log("Show with ID: " + id + " not found");
-				if (deleteOnError)
-					assignColor(id, "#FFFFFF", true);
+//log([e,t,r]);
+log("Show with ID: " + id + " not found (" + r.status + " " + r.statusText + ")");
+				let now = Date.now(),
+						save = false;
 
+				if (!DB.infoChecked[id])
+					DB.infoChecked[id] = [now, now, 4]; //4 weeks
+
+				if (now - 604800000 > DB.infoChecked[id][1]) //7 days
+				{
+					DB.infoChecked[id][2]--;
+					DB.infoChecked[id][1] = now;
+				}
+
+				if (r.status == 500 || r.responseText === "")
+				{
+					DB.infoChecked[id][0] = now;
+					save = true;
+				}
+
+				if (deleteOnError || DB.infoChecked[id][2] < 1) //delete if failed find name after 4 weeks
+				{
+log("Show with ID: " + id + " was removed after unseccessfull attempt retreive it's name in last 4 weeks");
+//					DB.infoChecked[id][2] = 0;
+					delete DB.infoChecked[id];
+					delete DB.info[id];
+					assignColor(id, "#FFFFFF", true);
+					save = true;
+				}
+
+				if (save)
+				{
+					clearTimeout(DB.timer);
+					DB.timer = setTimeout(DB.infoSave, 100);
+				}
 				return;
 			}
 			let title = $(obj).find("b").first().text();
@@ -5334,7 +5381,7 @@ log("Show with ID: " + id + " not found");
 				isUser = userCookie && userCookie.indexOf("username=") > 0;
 		DB.info = {};
 		DB.infoLoaded = false;
-
+		DB.infoChecked = ls("infoChecked") || {};
 		// load colors right away.  
 		DB.getColors().done( function(data){
 			for (var i = 0; i < data.length; i++)
