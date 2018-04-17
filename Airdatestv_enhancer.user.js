@@ -17,6 +17,8 @@
 
 
 var changesLogText = multiline(function(){/*
+1.38 (2018-04-16)
+	+ option to track today (feature introduced in v 1.35)
 1.37.4 (2018-04-15)
 	! MS Edge compatibility
 1.37.3 (2018-04-13)
@@ -378,6 +380,7 @@ let func = function(event)
 			animSpeed: 2,
 			searchScroll: 1,
 			timeOffset: 0,
+			todayChange: 1,
 			colorsCustom: {
 				"807fff": {name: ""},
 				"ff7fff": {name: ""},
@@ -551,6 +554,8 @@ let func = function(event)
 			opt = createCheckbox("smallLogo", "Small logo", this.prefs.smallLogo ? true : false, this.callback, null, "pointer");
 			content.append(opt);
 			opt = createCheckbox("searchScroll", "Auto scroll to the top", this.prefs.searchScroll ? true : false, this.callback, ["Scroll to the top on search and page refresh"], "pointer");
+			content.append(opt);
+			opt = createCheckbox("todayChange", "Track today", this.prefs.todayChange ? true : false, this.callback, ['Change "today" at midnight'], "pointer");
 			content.append(opt);
 			opt = $(multiline(function(){/*
 <span id="timeOffsetBox">
@@ -6254,6 +6259,9 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 
 	function todayChange()
 	{
+		if (!Settings.prefs.todayChange)
+			return;
+
 		today = new Date();
 		let t = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
 		if (todayChange.day == t)
