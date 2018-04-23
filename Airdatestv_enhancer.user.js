@@ -425,13 +425,13 @@ let func = function(event)
 				this.prefs = Object.assign({}, this.prefsDef);
 
 			//add any missing settings
-			for(i in this.prefsDef)
+			for(let i in this.prefsDef)
 			{
 				if (!(i in this.prefs))
 					this.prefs[i] = this.prefsDef[i];
 			}
 			//remove any non-existing settings
-			for(i in this.prefs)
+			for(let i in this.prefs)
 			{
 				if (!(i in this.prefsDef) || typeof(this.prefs[i]) !== typeof(this.prefsDef[i]))
 					delete this.prefs[i];
@@ -1138,7 +1138,7 @@ let func = function(event)
 		{
 			list[list.length] = enginesDefault[i].host;
 		}
-		for (i in customLinks._list)
+		for (let i in customLinks._list)
 		{
 			if (list.indexOf(i) == -1)
 				list[list.length] = i;
@@ -1734,7 +1734,7 @@ let func = function(event)
 			{
 				list[list.length] = enginesDefault[i].host;
 			}
-			for (i in customLinks._list)
+			for (let i in customLinks._list)
 			{
 				list[list.length] = customLinks._list[i].host;
 			}
@@ -2310,7 +2310,7 @@ let func = function(event)
 	});
 
 	let _today,
-			showHidden = Settings.pref("showHidden") ? true : false;
+			showHidden = Settings.pref("showHidden") ? true : false,
 			_assignColor = assignColor;
 
 	/*
@@ -2982,7 +2982,7 @@ div.entry,
 {
 	margin: 0 0.1em 0 -1px;
 	width: 18px;
-  height: 16px;
+	height: 16px;
 }
 div.details > span.engines > br + div.tools
 {
@@ -4005,7 +4005,7 @@ div.undo > div
 {
 	background: #fde073;
 	line-height: 2.5;
-	overflow: hidden; 
+	overflow: hidden;
 	-webkit-box-shadow: 0 0 5px black;
 	-moz-box-shadow:    0 0 5px black;
 	box-shadow:         0 0 5px black;
@@ -4027,7 +4027,7 @@ div.undo > div > .close
 
 .cp-disp
 {
-	padding-bottom: 5px; 
+	padding-bottom: 5px;
 	clear: both;
 	text-align: center;
 	display: flex;
@@ -4044,7 +4044,7 @@ div.undo > div > .close
 	font-family: 'courier new', Monaco,"DejaVu Sans Mono",'times new roman', fixed, monospace;
 	padding-left: 3px;
 	padding-right: 2px;
-	
+
 }
 
 #timeOffsetBox
@@ -4180,7 +4180,7 @@ div.undo > div > .close
 				.on( "click", "input", function()
 				{
 					if (!this.value || this.id == 'colorpicker-hex')
-						return; 
+						return;
 
 					if (this.value == 'Save')
 					{
@@ -4201,7 +4201,7 @@ div.undo > div > .close
 
 					if (e.type == "keydown")
 					{
-						if (!e.shiftKey && 
+						if (!e.shiftKey &&
 								((start == 1 && end == 1 && (e.key == "ArrowLeft" || e.which == 37))
 									|| (e.key == "ArrowUp" || e.which == 38)
 									|| (e.key == "Home" || e.which == 36)))
@@ -4282,15 +4282,15 @@ div.undo > div > .close
 						if(col.length == 7)
 						{
 							assignColor(editingSeriesId, col, false);
-							cp.color.setColor(col); 
-							cp.render(undefined); 
+							cp.color.setColor(col);
+							cp.render(undefined);
 						}
 					}
 					catch(err)
 					{
 log(err);
 					}
-				}); 
+				});
 
 			$("body").on("keydown", function(e)
 			{
@@ -4328,7 +4328,7 @@ log(err);
 					let i = this.index + val;
 					if (i > -1 && i < this.store.length)
 						this.index = i;
-					
+
 					return this.store[i];
 				}
 
@@ -4520,17 +4520,17 @@ log(err);
 		$("body").on("click", "div.entry div.title", entryOpen);//$("body").on("click", "div.entry div.title", function(e)
 	});
 	let aniSpeed = (device.tablet() || device.mobile())? 0 : 100;
-	function entryOpen(e, _engs)
+	function entryOpen(ev, _engs)
 	{
-		if (!e.target)
+		if (!ev.target)
 			return;
 
-		if (!$(e.target).hasClass("title"))
+		if (!$(ev.target).hasClass("title"))
 		{
 			return entryOpen({target: e.target.parentNode});
 		}
 		force = false;
-		let obj = e.target,
+		let obj = ev.target,
 				$entry = $(obj).parent(),
 				details = $entry.find(".details");
 
@@ -4547,11 +4547,11 @@ log(err);
 						engs = engs.concat([{name: "Show in calendar", host: "airdates.tv", href: "MONKEY_ARCHIVELINK", cls:"archive-link"}]);
 				}
 				var e = $( $.parseHTML($( "#detailsTemplate" ).html()) ).appendTo( $entry );
-	    		
-				var MONKEY = encodeURIComponent( $entry.children("div.title").text() ); //.replace( /[^A-Za-z0-9 -]/g, '' ) ); 
-				var MONKEY_N = encodeURIComponent( $entry.children("div.title").text().replace( /S[0-9]+E[0-9]+$/g, '' ) ); 
-				var MONKEY_ID = encodeURIComponent( $entry.data("series-id") ); 
-				var WIKI_TITLE = encodeURIComponent( $entry.data("series-source") ); 
+
+				var MONKEY = encodeURIComponent( $entry.children("div.title").text() ); //.replace( /[^A-Za-z0-9 -]/g, '' ) );
+				var MONKEY_N = encodeURIComponent( $entry.children("div.title").text().replace( /S[0-9]+E[0-9]+$/g, '' ) );
+				var MONKEY_ID = encodeURIComponent( $entry.data("series-id") );
+				var WIKI_TITLE = encodeURIComponent( $entry.data("series-source") );
 				$.each( engs, function( i, engine ){
 					let eng = $( "#engineTemplate" ).children().clone().appendTo( e.find( ".engines" ) ),
 							a = eng.filter("a.link"),
@@ -4570,7 +4570,7 @@ log(err);
 						.addClass(engine.cls||"")
 						.text( engine.name );
 					a[0].insertBefore(img[0], a[0].firstChild);
-					eng.css( "display", "" ); 
+					eng.css( "display", "" );
 					if(engine.host == "airdates.tv")
 					{
 						a.attr("target","");
@@ -4682,7 +4682,7 @@ log(err);
 		$( "div.entry" ).filter("[opened]").find("div.details").slideUp(speed, function()
 		{
 			callbackClose(this);
-		}); 
+		});
 		if( !open )
 		{
 			function callbackOpen()
@@ -4780,8 +4780,8 @@ log(err);
 				},
 				text: "Please enter the crazy text!",
 				ext: ".txt"
-			}); 
-			return false; 
+			});
+			return false;
 		});
 	} //showHideLoad()
 	DB.viewing = DB.username != DB.loggedInUsername;
@@ -5405,14 +5405,14 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 		DB.info = {};
 		DB.infoLoaded = false;
 		DB.infoChecked = ls("infoChecked") || {};
-		// load colors right away.  
+		// load colors right away.
 		DB.getColors().done( function(data){
 			for (var i = 0; i < data.length; i++)
 			{
 				var series = data[i];
 				assignColor(series.id, series.color, false );
 			}
-			updateSelectedOnly(); 
+			updateSelectedOnly();
 		}).fail(function(){
 			alert("Not allowed? No internet? It's hard to tell, but what's important is that the colors were not loaded.");
 		}).always(function()
@@ -5466,13 +5466,15 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		$( "#searchBecauseNoOneChecks" ).on( "input", function(e)
 		{
 		}).trigger("change");
-*/		let lastQ = "",
+*/
+		let lastQ = "",
 				searchTimer = null,
 				events = ["change", "search", "keyup", "input"],
 				origFunc = jQuery._data($( "#searchBecauseNoOneChecks" )[0]).events.change[0].handler,
 				string = origFunc.toString(),
 				line = "$('html, body').animate({ scrollTop: 0 }, 500);",
 				index = string.indexOf(line),
+				newFuncString,
 				//will fallback to this original function, if modification failed
 				newFunc = function(e)
 				{
@@ -5560,7 +5562,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 							{
 								if (new Date() > i)
 									return;
-								
+
 								$('html, body').stop(true);
 								setTimeout(loop);
 							})();
@@ -5887,7 +5889,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		$("#username").val(DB.loggedInUsername);
 
 /* changes log */
-	changesLog = function changesLog(f)
+	let changesLog = function changesLog(f)
 	{
 		if (!f && (Settings.pref("noChangesLog") || Settings.pref("version") == adeVersion))
 			return;
@@ -5908,7 +5910,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		$("body").toggleClass("changesLog", true);
 		setPopup(true);
 	}
-	
+
 	changesLog.hide = function ()
 	{
 		$("body").toggleClass("changesLog", false);
@@ -6154,7 +6156,6 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			{
 				span.removeAttribute("msg-show");
 			}, 2000);
-			
 		});
 
 		cancel.on("click", close);
