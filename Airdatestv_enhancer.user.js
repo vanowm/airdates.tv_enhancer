@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.38.2
+// @version     1.38.3
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,8 @@
 
 
 var changesLogText = multiline(function(){/*
+1.38.3 (2018-05-26)
+	! collapse multiple failed at midnight when enabled "Track today"
 1.38.2 (2018-04-23)
 	! Show details would not open
 1.38.1 (2018-04-22)
@@ -1510,8 +1512,7 @@ let func = function(event)
 			engResHidden.find("div.title").text(entry.find("div.title").text());
 		}
 
-		if (enginesSort.changed())
-			popup.attr("changed", true);
+		setAttr(popup, "changed", enginesSort.changed());
 
 		function change(e)
 		{
@@ -1620,6 +1621,7 @@ let func = function(event)
 						href: engUrl.val().trim(),
 						host: engId.val().trim()
 					};
+
 			if (!engine.href.match(/[a-z]+:\/\//i))
 				engine.href = "http://" + engine.href;
 
@@ -1842,10 +1844,7 @@ let func = function(event)
 					dragged.parentNode.classList.remove("dragging");
 					enginesSort(list, true);
 					ls("enginesSort", list);
-					if (enginesSort.changed())
-						popup.attr("changed", true);
-					else
-						popup.removeAttr("changed");
+					setAttr(popup, "changed", enginesSort.changed());
 
 					updateDetails();
 					dragged = false;
@@ -2147,6 +2146,13 @@ let func = function(event)
 		$('<style id="css_' + id + '"></style>').html(css+css2).appendTo("head");
 	}
 
+	function setAttr(popup, attr, val)
+	{
+		if (val)
+			popup.attr(attr, true);
+		else
+			popup.removeAttr(attr);
+	}
 	/* colors manager */
 	function colorsManager()
 	{
@@ -3991,7 +3997,7 @@ body.prompt.scrollbar
 	position: absolute;
 }
 
-div.undo
+div.undoBar
 {
 	position: fixed !important;
 	top: 0 !important;
@@ -4003,7 +4009,7 @@ div.undo
 	height: 0;
 	width: 100% !important;
 }
-div.undo > div
+div.undoBar > div
 {
 	background: #fde073;
 	line-height: 2.5;
@@ -4014,12 +4020,12 @@ div.undo > div
 	display: inline-block;
 	padding: 0 0 0 1em;
 }
-div.undo > div a
+div.undoBar > div a
 {
 	cursor: pointer;
 	text-decoration: underline;
 }
-div.undo > div > .close
+div.undoBar > div > .close
 {
 	cursor: pointer;
 	margin-left: 1em;
@@ -4292,7 +4298,7 @@ div.undo > div > .close
 					{
 log(err);
 					}
-				});
+				});//.on( "input keydown keyup click", '#colorpicker-hex'
 
 			$("body").on("keydown", function(e)
 			{
@@ -4335,8 +4341,8 @@ log(err);
 				}
 
 				return this;
-			}
-		},
+			}//undo()
+		},//buildCallback: function()
 		renderCallback: function($elm, toggled) {
 			var colors = this.color.colors;
 			let cpHex = $("#colorpicker-hex");
@@ -5713,7 +5719,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 				let that = this;
 				if (!this.undoObj[id])
 				{
-					this.undoObj[id] = $('<div class="undo"><div><span class="msg"></span> <a class="undo">Undo</a><span class="undo close">X</span><div></div>').appendTo("body");
+					this.undoObj[id] = $('<div class="undoBar"><div><span class="msg"></span> <a class="undoBar">Undo</a><span class="undo close">X</span><div></div>').appendTo("body");
 					this.undoObj[id].find("a").on("click", function()
 					{
 						let id = that.last.pop();
@@ -5841,7 +5847,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		if (e.isTrigger || e.target.isTrigger)
 			return;
 
-		if (!$("body").hasClass("popup") || $("body").hasClass("prompt") || (e.target.className.indexOf && e.target.className.indexOf("undo") != -1))
+		if (!$("body").hasClass("popup") || $("body").hasClass("prompt") || (e.target.className.indexOf && e.target.className.indexOf("undoBar") != -1))
 			return;
 
 		let target = $(e.target),
@@ -6324,7 +6330,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			days.find('div.day[data-date="' + dataDate + '"]').addClass("today").attr("id", "today").attr("today", true);
 			showPast(function()
 			{
-				$("div.day").each(function()
+				$("div.day").each(function(i)
 				{
 					collapseMulti(i, this, true);
 				});
