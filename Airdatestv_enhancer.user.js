@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.40.2
+// @version     1.41
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,8 @@
 
 
 var changesLogText = multiline(function(){/*
+1.41 (2018-07-13)
+	+ dark theme build-in
 1.40.2 (2018-07-13)
 	* better support for dark themes
 1.40.1 (2018-07-10)
@@ -398,6 +400,7 @@ let func = function(event)
 			searchScroll: 1,
 			timeOffset: 0,
 			todayChange: 1,
+			theme: 0,
 /*			colorsCustom: {
 				"807fff": {name: ""},
 				"ff7fff": {name: ""},
@@ -569,11 +572,9 @@ let func = function(event)
 
 			Settings.box = popup;
 			content.append(createCheckbox("enableWatched", "Enable watched", this.prefs.enableWatched ? true : false, this.callback, null, "pointer"));
-			let opt = createCheckbox("shortTitle", "Truncate long titles", this.prefs.shortTitle ? true : false, this.callback, null, "pointer");
-			opt.title = "Shorten titles to fit into single row.";
+			let opt = createCheckbox("shortTitle", "Truncate long titles", this.prefs.shortTitle ? true : false, this.callback, ["Shorten titles to fit into single row."], "pointer");
 			content.append(opt);
-			opt = createCheckbox("shortTitleExpand", "Auto expand truncated titles", this.prefs.shortTitleExpand ? true : false, this.callback, null, "pointer");
-			opt.title = "Show full title when cursor over it. If disabled you still be able see full title in tooltip or when show is opened.";
+			opt = createCheckbox("shortTitleExpand", "Auto expand truncated titles", this.prefs.shortTitleExpand ? true : false, this.callback, ["Show full title when cursor over it. If disabled you still be able see full title in tooltip or when show is opened."], "pointer");
 			content.append(opt);
 	//		content.append(createCheckbox("animateExpand", "Animate during expanding", this.prefs.animateExpand ? true : false, this.callback, null, "pointer"));
 			opt = createCheckbox("smallLogo", "Small logo", this.prefs.smallLogo ? true : false, this.callback, null, "pointer");
@@ -641,6 +642,14 @@ let func = function(event)
 					})
 					.trigger("input");
 			}
+			opt = createCheckbox("theme", "Dark theme", this.prefs.theme ? true : false, function(e, id, check)
+				{
+					$("body").toggleClass("dark", check);
+					Settings.callback(e, id, check);
+					Settings.prefs[id] = check ? 1 : 0;
+					Settings.save();
+				}, null, "pointer");
+			content.append(opt);
 			content.append('<div class="spacer"/>');
 
 			a.href = "#";
@@ -2368,6 +2377,7 @@ let func = function(event)
 	})();
 
 	Settings.init();
+	$("body").toggleClass("dark", Settings.prefs["theme"] == 1);
 	// fix highlighting today would remove /u/user ..
 	$( "#linkToday" ).click(function click(e)
 	{
@@ -4391,6 +4401,147 @@ div.entry[color="white"] .epNumFix .input
 body
 {
 	min-width: 940px;
+}
+
+
+/*
+Dark Theme
+*//*
+
+body.dark 
+{
+	background-color: #191919 !important;
+	color: #b9b2b2;
+}
+
+body.dark a
+{
+	color: #737373;
+}
+
+body.dark .day a
+{
+	color: inherit;
+}
+
+body.dark .title:hover
+{
+	background: rgb(210,210, 210) !important;
+}
+
+body.dark #searchbar
+{
+	background-color: rgb(76, 76, 76);
+}
+
+body.dark #account-popup-content,
+body.dark #settings-popup .content,
+body.dark #manage-links-popup-content,
+body.dark #changesLogBox
+{
+	background: rgb(76, 76, 76) !important;
+}
+
+body.dark svg,
+body.dark #searchResults a,
+body.dark #account-popup-content .content a,
+body.dark #settings-popup .content a,
+body.dark #manage-links-popup-content a,
+body.dark #changesLogBox
+{
+	color: rgb(210, 210, 210) !important;
+	fill: rgb(210,210, 210) !important;
+}
+
+body.dark #manage-links-popup .content > div.dragging:not(.hide),
+body.dark #manage-links-popup .content > div.dragging:not(.hide) *,
+body.dark #manage-links-popup .content:not(.dragging) > div:hover,
+body.dark #manage-links-popup .content:not(.dragging) > div:hover *
+{
+	color: rgb(76, 76, 76) !important;
+	fill: rgb(76, 76, 76) !important;
+}
+
+body.dark #manage-links-popup .content > div.dragging:not(.hide),
+body.dark #manage-links-popup .content:not(.dragging) > div:hover
+{
+	background-color: rgb(210, 210, 210);
+	outline: 1px dotted grey;
+}
+
+
+body.dark div.entry[color="white"] .showhide0 > svg,
+body.dark div.entry[color="white"] .showhide1 > svg,
+body.dark div.entry:not([color]) .showhide0 > svg,
+body.dark div.entry:not([color]) .showhide1 > svg
+{
+	fill: white;
+}
+
+body.dark div.entry[color="black"] .showhide0 > svg,
+body.dark div.entry[color="black"] .showhide1 > svg,
+body.dark .cl_added > span:first-child,
+body.dark .cl_changed > span:first-child,
+body.dark .cl_removed > span:first-child,
+body.dark .cl_fixed > span:first-child
+{
+	color: black;
+	fill: black !important;
+}
+
+body.dark span.button,
+body.dark .header,
+body.dark .header h4
+{
+	background: rgb(112, 112, 112) !important;
+	color: inherit;
+}
+
+body.dark .header a
+{
+	color: inherit;
+}
+
+body.dark body.collapseMulti div.day:not(.expand):not(.opened) div.entry.multif div.title:after
+{
+	background-color: white;
+	border-left: 1px solid black;
+}
+
+body.dark .details:hover,
+body.dark .engines:hover
+{
+	background:none !important;
+}
+
+body.dark div.date
+{
+	background-color: #4c4c4c;
+}
+
+body.dark div.today div.date
+{
+	background-color: rgb(255, 0, 0);
+}
+
+body.dark div.day
+{
+	border: 1px solid #191919;
+}
+
+body.dark div.entry
+{
+	border-top: 1px dashed #4c4c4c;
+}
+
+body.dark #searchResults .description
+{
+	color: #b9b2b2;
+}
+
+body.dark.archive div.day
+{
+	background-color: #191919;
 }
 */});//css
 
