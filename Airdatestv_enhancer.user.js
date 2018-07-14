@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.43
+// @version     1.43.1
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,10 @@
 
 
 var changesLogText = multiline(function(){/*
+1.43.1 (2018-07-14)
+	! colopicker stops working if used at search results
+	! on small screens sundays would move underneath of saturday when search is active
+	! when myshows list is opened, adding/removing a show would not reflect at the list
 1.43 (2018-07-14)
 	+ remember and show last 7 custom colors as quick pick
 	! main input hex color in colopicker would fail
@@ -4514,11 +4518,14 @@ div.entry[color="white"] .epNumFix .input
 {
 	border: 1px solid white;
 }
-body
+div.days
 {
-	min-width: 940px;
+	min-width: 865px;
 }
-
+div.day
+{
+	min-width: 118px;
+}
 
 /*
 Dark Theme
@@ -4533,11 +4540,6 @@ body.dark
 body.dark a
 {
 	color: #737373;
-}
-
-body.dark .day a
-{
-	color: inherit;
 }
 
 body.dark .title:hover
@@ -4558,8 +4560,13 @@ body.dark #changesLogBox
 	background: rgb(76, 76, 76) !important;
 }
 
+body.dark #searchResults a
+{
+	color: rgb(210, 210, 210);
+	fill: rgb(210,210, 210);
+}
+
 body.dark svg,
-body.dark #searchResults a,
 body.dark #account-popup-content .content a,
 body.dark #settings-popup .content a,
 body.dark #manage-links-popup-content a,
@@ -4586,16 +4593,13 @@ body.dark #manage-links-popup .content:not(.dragging) > div:hover
 }
 
 
-body.dark div.entry[color="white"] .showhide0 > svg,
-body.dark div.entry[color="white"] .showhide1 > svg,
-body.dark div.entry:not([color]) .showhide0 > svg,
-body.dark div.entry:not([color]) .showhide1 > svg
+body.dark div.entry[color="white"] svg,
+body.dark div.entry:not([color]) svg
 {
-	fill: white;
+	fill: white !important;
 }
 
-body.dark div.entry[color="black"] .showhide0 > svg,
-body.dark div.entry[color="black"] .showhide1 > svg,
+body.dark div.entry[color="black"] svg,
 body.dark .cl_added > span:first-child,
 body.dark .cl_changed > span:first-child,
 body.dark .cl_removed > span:first-child,
@@ -4611,6 +4615,12 @@ body.dark .header h4
 {
 	background: rgb(112, 112, 112) !important;
 	color: inherit;
+}
+
+body.dark .details a,
+body.dark .day a
+{
+	color: inherit !important;
 }
 
 body.dark .header a
@@ -4659,12 +4669,13 @@ body.dark .entry[opened]
 	border: 1px solid white;
 	border-top: 1px solid white;
 }
+/*
 body.dark .entry[opened][color="black"]
 {
 	border: 1px solid black;
 	border-top: 1px solid black;
 }
-
+*//*
 body.dark #searchResults .description
 {
 	color: #b9b2b2;
@@ -5305,6 +5316,7 @@ log(err);
 				return;
 
 			entry.removeAttr("opened");
+			parent.removeAttr("opened");
 			parent.toggleClass("opened", false);
 			if (parent[0])
 				collapseMulti.setTitle(parent[0].list, Settings.prefs.collapseMulti && !parent.hasClass("expand")? "_titleCollapsed" : "_titleOrig");
@@ -5318,6 +5330,7 @@ log(err);
 			function callbackOpen()
 			{
 				$entry.attr("opened", "");
+				parent.attr("opened", "");
 				parent.toggleClass("opened", true);
 				if (parent[0])
 					collapseMulti.setTitle(parent[0].list, "_titleOrig");
@@ -5493,14 +5506,15 @@ px)
 			DB.infoAdd(id);
 		else if (_hidden.indexOf(id) == -1)
 			DB.infoRemove(id);
-		if (showMyShows.box)
-			showMyShows();
-		else if (showMyHidden.box)
-		{
-			showMyHidden();
-		}
 
 		this._setColor(id, c);
+		if (!document.getElementById("searchResults").hasAttribute("opened"))
+		{
+			if (showMyShows.box)
+				showMyShows();
+			else if (showMyHidden.box)
+				showMyHidden();
+		}
 	};
 
 	//hiding old combined checkboxes
@@ -5760,6 +5774,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 				entry = entry.cloneNode(true);
 				title = entry.firstChild;
 				entry.setAttribute("data-series-id", id);
+				entry.setAttribute("color", $(entry).css("color") == "rgb(0, 0, 0)" ? "black" : "white");
 				entry.setAttribute("data-series-source", info[id][1]);
 				title.textContent = info[id][0];
 				if (title.textContent === "ZZZZZZZZZZZZZ")
