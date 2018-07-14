@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.42.1
+// @version     1.43
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,7 +17,9 @@
 
 
 var changesLogText = multiline(function(){/*
-1.42.1 (2018-07-14)
+1.43 (2018-07-14)
+	+ remember and show last 7 custom colors as quick pick
+	! main input hex color in colopicker would fail
 	* updated logo with less outline on darker theme
 1.42 (2018-07-14)
 	+ updated logo, it now looks good with any background.
@@ -407,6 +409,7 @@ let func = function(event)
 			timeOffset: 0,
 			todayChange: 1,
 			theme: 0,
+			lastColors: [],
 /*			colorsCustom: {
 				"807fff": {name: ""},
 				"ff7fff": {name: ""},
@@ -589,6 +592,15 @@ let func = function(event)
 			content.append(opt);
 			opt = createCheckbox("todayChange", "Track today", this.prefs.todayChange ? true : false, this.callback, ['Automatically change "today" at midnight'], "pointer");
 			content.append(opt);
+			opt = createCheckbox("theme", "Dark theme", this.prefs.theme ? true : false, function(e, id, check)
+				{
+					$("body").toggleClass("dark", check);
+					$("#disqus_thread").find("iframe")[0].contentWindow.postMessage({id: "ade", func: "disqusTheme", args: [check], return: null}, "https://disqus.com");
+					Settings.callback(e, id, check);
+					Settings.prefs[id] = check ? 1 : 0;
+					Settings.save();
+				}, null, "pointer");
+			content.append(opt);
 			opt = $(multiline(function(){/*
 <span id="timeOffsetBox">
 	Time offset <input id="timeOffset" type="number" min="-24" max="24"> hours
@@ -648,15 +660,6 @@ let func = function(event)
 					})
 					.trigger("input");
 			}
-			opt = createCheckbox("theme", "Dark theme", this.prefs.theme ? true : false, function(e, id, check)
-				{
-					$("body").toggleClass("dark", check);
-					$("#disqus_thread").find("iframe")[0].contentWindow.postMessage({id: "ade", func: "disqusTheme", args: [check], return: null}, "https://disqus.com");
-					Settings.callback(e, id, check);
-					Settings.prefs[id] = check ? 1 : 0;
-					Settings.save();
-				}, null, "pointer");
-			content.append(opt);
 			content.append('<div class="spacer"/>');
 
 			a.href = "#";
@@ -995,6 +998,106 @@ let func = function(event)
 			Settings.box.hide();
 			setPopup(false);
 			Settings.box.find("div.moreOpt").removeAttr("opened");
+		},
+
+		colors:
+		{
+			default: [], //list of predefined colors
+			max: 7, //max colors to remember
+			inited: false,
+			add: function add(color, save)
+			{
+				color = color.toUpperCase();
+				if (color == "FFFFFF" || this.default.indexOf(color) != -1 || Settings.prefs.lastColors.indexOf(color) != -1)
+					return;
+
+				let colors = Settings.prefs.lastColors;
+				colors[colors.length] = color;
+				if (colors.length > this.max)
+					colors.splice(0, colors.length - this.max);
+
+				this.css();
+				if (save)
+					this.save();
+			},
+
+			save: function save(color)
+			{
+				Settings.save();
+			},
+
+			css: function()
+			{
+				let css = "",
+						colors = Settings.prefs.lastColors;
+
+				for(let i = 0; i < colors.length; i++)
+				{
+					css += ".soft_cust" + i + "{background-color:#" + colors[colors.length - i - 1] + ";display:inline-block}\n";
+				}
+				document.getElementById("customColorsCSS2").innerHTML = css;
+			},
+
+			init: function()
+			{
+				$("#detailsTemplate div.colors .color").each(function(i, e)
+				{
+					if (!this.classList.contains( "none" ))
+						Settings.colors.default[Settings.colors.default.length] = new Colors().setColor($(this).css( "background-color" )).HEX.toUpperCase();
+				});
+
+				let css = "",
+						style = document.createElement("style"),
+						style2 = document.createElement("style"),
+						span = document.createElement("span"),
+						box = document.createElement("div"),
+						last = $("#detailsTemplate .colors"),
+						colors = Settings.prefs.lastColors;
+
+				for(let i = 0; i < this.max; i++)
+				{
+					let cl = "soft_cust" + i;
+					css += "." + cl + "{display:none;}\n";
+					span = span.cloneNode(true);
+					span.className = "color " + cl;
+					span.setAttribute("i", i);
+					box.appendChild(span);
+					box.appendChild(document.createTextNode("\n			"));
+				}
+				$("#detailsTemplate .colors").append(box);
+				style.innerHTML = css;
+				style.id = "customColorsCSS";
+				style2.id = "customColorsCSS2";
+				box.className = "customColors";
+				$("head").append(style);
+				$("head").append(style2);
+				for(let i = 0; i < colors.length; i++)
+					colors[i] = colors[i].toUpperCase();
+
+				this.css();
+
+				if (this.inited)
+					return
+
+				$( document ).on( "mousedown", "div.colors .color", function(e)
+				{
+					if (e.which != 2)
+						return;
+
+					let col = new Colors().setColor($(this).css( "background-color" )).HEX.toUpperCase();
+							index = Settings.prefs.lastColors.indexOf(col);
+					
+					if (index != -1)
+					{
+						Settings.prefs.lastColors.splice(index, 1);
+						Settings.colors.css();
+						Settings.colors.save();
+					}
+					
+					e.preventDefault();
+				});
+				this.inited = true;
+			}//Settings.colors.init()
 		},
 	}//Settings
 
@@ -4542,9 +4645,24 @@ body.dark div.day
 	border: 1px solid #191919;
 }
 
+body.dark .entry:not([color="white"]) div.details > span.engines > br + div.tools,
+body.dark .entry:not([color="white"]) div.details,
+body.dark .entry:not([color="white"]) div.colors,
 body.dark div.entry
 {
 	border-top: 1px dashed #4c4c4c;
+}
+
+/* highlight opened entry *//*
+body.dark .entry[opened]
+{
+	border: 1px solid white;
+	border-top: 1px solid white;
+}
+body.dark .entry[opened][color="black"]
+{
+	border: 1px solid black;
+	border-top: 1px solid black;
 }
 
 body.dark #searchResults .description
@@ -4560,7 +4678,6 @@ body.dark.archive div.day
 
 	style.innerHTML = css;
 	$("head").append(style);
-
 
 	//fix incorrect initial color in colorpicker
 	//fix clicking outside of colorpicker saves selected color instead of discarding
@@ -4585,6 +4702,8 @@ body.dark.archive div.day
 
 					if (this.value == 'Save')
 					{
+
+						Settings.colors.add(cp.color.colors.HEX, cp.color.colors.HEX.toUpperCase() != "FFFFFF");
 						assignColor( editingSeriesId, "#" + cp.color.colors.HEX, true );
 						editingSeriesId = -1;
 					}
@@ -4594,7 +4713,7 @@ body.dark.archive div.day
 				{
 					if (e.key == "Enter" || e.which == 13) //ENTER(13)
 					{
-						$elm.find('input[value="save"]').click();
+						$elm.find('input[value="Save"]').click();
 						return;
 					}
 					let start = this.selectionStart,
@@ -4645,7 +4764,7 @@ body.dark.archive div.day
 							r = "#",
 							val = this.value.toUpperCase();
 
-					if (val.charAt(i) != "#")
+					if (val.charAt(0) != "#")
 					{
 						val = "#" + val;
 						start++;
@@ -6329,6 +6448,8 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			hideNode("clearHidden");
 			hideNode("clearWatched");
 		}
+
+		Settings.colors.init()
 	});//document.ready()
 
 //ESC(27) = close popups
