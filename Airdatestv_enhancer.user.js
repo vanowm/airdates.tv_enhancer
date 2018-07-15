@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.43.1
+// @version     1.44
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,12 +17,15 @@
 
 
 var changesLogText = multiline(function(){/*
+1.44 (2018-07-15)
+	+ discus message notification badge on top of the page
+	+ colorpicker set to last used color if current show has no assigned color
 1.43.1 (2018-07-14)
-	! colopicker stops working if used at search results
+	! colorpicker stops working if used at search results
 	! on small screens sundays would move underneath of saturday when search is active
 	! when myshows list is opened, adding/removing a show would not reflect at the list
 1.43 (2018-07-14)
-	+ remember and show last 7 custom colors as quick pick
+	+ remember and show last 7 custom colors as quick pick, they can be removed via middle click
 	! main input hex color in colopicker would fail
 	* updated logo with less outline on darker theme
 1.42 (2018-07-14)
@@ -353,6 +356,21 @@ let func = function(event)
 	if (browser)
 		document.body.classList.toggle(browser, true);
 
+	window.disqusMessageCount = function disqusMessageCount(count)
+	{
+		if (count)
+		{
+			disqusMessageCount.el.parentNode.setAttribute("unread", "");
+			disqusMessageCount.el.parentNode.classList.toggle("loading", false);
+		}
+		else
+		{
+			disqusMessageCount.el.parentNode.removeAttribute("unread");
+			count = "";
+		}
+
+		disqusMessageCount.el.textContent = count;
+	}
 	let adeName = "Airdates.tv enhancer",
 			adeVersion = "n/a",
 			force = false,
@@ -413,6 +431,7 @@ let func = function(event)
 			timeOffset: 0,
 			todayChange: 1,
 			theme: 0,
+			lastColor: "",
 			lastColors: [],
 /*			colorsCustom: {
 				"807fff": {name: ""},
@@ -2518,6 +2537,11 @@ let func = function(event)
 
 		if (html)
 		{
+			if (permanent)
+			{
+				Settings.prefs.lastColor = html.match(/background-color:#([0-9a-zA-Z]{6})/)[1];
+				Settings.save();
+			}
 			css.html(html.replace(/(\s+)(\.activeOnly)([^\{]+)\{/, "$1$2$3:not(.multi),body:not(.collapseMulti) $2$3,$2 .day.expand $3,$2 .day.opened $3{"));
 			try
 			{
@@ -4685,6 +4709,71 @@ body.dark.archive div.day
 {
 	background-color: #191919;
 }
+
+/*
+disqus notificaiton badge
+*//*
+
+.notifBadge:not([unread])
+{
+	display: none;
+}
+.notifBadge.loading > span
+{
+	display: none;
+}
+.notifBadge.loading:before
+{
+	display: block;
+	width: 14px;
+	height: 14px;
+	border-radius: 25px;
+	border: 2px solid transparent;
+	border-color: transparent #c2c6cc;
+	position: absolute;
+	top: 0;
+	left: 1px;
+	animation: rotate-loading 1.5s linear 0s infinite normal;
+	transform-origin: 50% 50%;
+	content: "";
+}
+.notifBadge
+{
+	cursor: pointer;
+	position: relative;
+	margin-left: 0.5em;
+}
+.notifBadge > .notifIcon
+{
+	color: #f05f70;
+	position: absolute;
+	top: 0;
+	left: 0;
+	font-size: 15px;
+	font-family: icons;
+	transition: color .1s;
+}
+.notifBadge > .notifIcon::before
+{
+	content: "\e603";
+}
+.notifBadge > .notifCount
+{
+	position: absolute;
+	top: 1px;
+	left: 0;
+	width: 16px;
+	color: #fff;
+	font-size: 10px;
+	font-weight: 700;
+	text-align: center;
+}
+@font-face {
+ font-family:icons;
+ src:url(https://c.disquscdn.com/next/embed/assets/font/icons.4cc7a703d2fdfe684151ff8ac24d45f1.woff2) format("woff2"),url(https://c.disquscdn.com/next/embed/assets/font/icons.690eabaf849f09912ee323188780339b.woff) format("woff");
+ font-weight:400;
+ font-style:normal
+}
 */});//css
 
 	style.innerHTML = css;
@@ -4912,7 +5001,11 @@ log(err);
 
 		editingSeriesId = $(this).parents("[data-series-id]").data("series-id");
 	//set initial color in colorpicker based on current entry or default to white
-		picker.val(coalesce(DB.savedColors[editingSeriesId], "#FFFFFF"));
+		let col = coalesce(DB.savedColors[editingSeriesId], "#FFFFFF");
+		if (col == "#FFFFFF" && Settings.prefs.lastColor)
+			col = "#" + Settings.prefs.lastColor;
+
+		picker.val(col);
 		picker.detach().appendTo(this).click();
 	});
 
@@ -5494,7 +5587,12 @@ px)
 		if (monkey)
 			monkey.innerHTML = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve" style="height: 1.2em; width: 1.2em; vertical-align: middle;"><circle style="fill:#5d433f;" cx="66.06" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="66.06" cy="222.97" r="41.29"/><circle style="fill:#5d433f;" cx="445.94" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="445.94" cy="222.97" r="41.29"/><path style="fill:#543e3b;" d="M442.589,262.049c-8.366-14.436-13.169-30.655-13.169-47.34v-0.001c0-72.373-44.364-134.33-107.355-160.318V24.774l-41.29,16.516l-8.258-33.032c-21.781,7.261-40.361,22.498-54.356,37.298c-77.557,17.283-135.58,86.39-135.58,169.154c0,16.685-4.803,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,93.496,92.431,169.29,206.452,169.29s206.452-75.794,206.452-169.29C462.452,308.532,455.308,283.997,442.589,262.049z"/><path style="fill:#543e3b;" d="M140.387,364.043c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-84.035,43.969-155.956,106.493-186.502l-7.396-29.584c-21.781,7.261-40.361,22.498-54.357,37.298C140.604,62.839,82.581,131.946,82.581,214.71c0,16.685-4.802,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,75.465,60.232,139.37,143.415,161.223C160.282,460.734,140.387,414.619,140.387,364.043z"/><path style="fill:#f7b189;" d="M256,470.71c68.412,0,123.871-44.367,123.871-99.097c0-11.354-2.414-22.245-6.835-32.386c-6.41-14.707-4.228-31.587,6.07-43.889c13.134-15.691,19.908-36.877,16.333-59.635c-4.91-31.259-30.182-56.486-61.448-61.353c-23.892-3.719-46.037,3.968-61.903,18.439c-4.51,4.113-10.3,6.17-16.087,6.17c-5.79,0-11.581-2.056-16.091-6.17c-15.866-14.471-38.011-22.158-61.903-18.439c-31.266,4.866-56.537,30.094-61.448,61.353c-3.575,22.757,3.199,43.943,16.333,59.635c10.298,12.303,12.48,29.182,6.07,43.889c-4.42,10.142-6.835,21.033-6.835,32.386C132.129,426.342,187.588,470.71,256,470.71z"/><path style="fill:#f7b189;" d="M132.129,371.612c0,18.522,6.468,35.795,17.524,50.625c-5.938-18.411-9.266-37.916-9.266-58.195c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-17.307,1.96-34.056,5.468-50.08c-0.295,0.042-0.583,0.04-0.879,0.086c-31.266,4.866-56.536,30.094-61.448,61.352c-3.575,22.758,3.2,43.944,16.333,59.635c10.298,12.302,12.481,29.181,6.071,43.889C134.543,349.368,132.129,360.259,132.129,371.612z"/><g><path style="fill:#5D5360;" d="M239.476,330.323c-1.242,0-2.5-0.278-3.685-0.871l-16.516-8.258c-4.081-2.04-5.734-7-3.694-11.081c2.048-4.081,7-5.734,11.081-3.694l16.516,8.258c4.081,2.04,5.734,7,3.694,11.081C245.419,328.653,242.508,330.323,239.476,330.323z"/><path style="fill:#5D5360;" d="M272.524,330.323c-3.032,0-5.944-1.669-7.395-4.565c-2.04-4.081-0.387-9.04,3.694-11.081l16.516-8.258c4.073-2.04,9.032-0.387,11.081,3.694c2.04,4.081,0.387,9.04-3.694,11.081l-16.516,8.258C275.024,330.044,273.766,330.323,272.524,330.323z"/></g><path style="fill:#4B3F4E;" d="M182.319,363.355c-5.001,0-8.941,4.431-8.248,9.384c5.126,36.617,39.853,64.938,81.929,64.938c42.077,0,76.803-28.321,81.929-64.938c0.693-4.953-3.247-9.384-8.248-9.384H182.319z"/><path style="fill:#E6646E;" d="M208.417,424.038c13.457,8.563,29.849,13.639,47.583,13.639s34.126-5.076,47.583-13.639c-5.966-20.666-25.063-35.909-47.583-35.909S214.383,403.371,208.417,424.038z"/><path style="fill:#4B3F4E;" d="M181.677,272.516L181.677,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C206.452,261.424,195.36,272.516,181.677,272.516z"/><path style="fill:#5D5360;" d="M181.677,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C206.452,225.801,195.36,214.71,181.677,214.71z"/><circle style="fill:#FFFFFF;" cx="181.68" cy="231.23" r="8.258"/><path style="fill:#4B3F4E;" d="M330.323,272.516L330.323,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C355.097,261.424,344.005,272.516,330.323,272.516z"/><path style="fill:#5D5360;" d="M330.323,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C355.097,225.801,344.005,214.71,330.323,214.71z"/><circle style="fill:#FFFFFF;" cx="330.32" cy="231.23" r="8.258"/><path style="fill:#FF8087;" d="M256,437.677c2.792,0,5.538-0.169,8.258-0.415v-16.101c0-4.56-3.694-8.258-8.258-8.258s-8.258,3.698-8.258,8.258v16.101C250.462,437.508,253.208,437.677,256,437.677z"/></svg>';
 	}
-
+	disqusMessageCount.el = $("#account-overview").parent().append('<span class="notifBadge"><span class="notifIcon"></span><span class="notifCount"></span></span>').find("span > span").last()[0];
+	disqusMessageCount.el.parentNode.addEventListener("click", function(e)
+	{
+		disqusMessageCount.el.parentNode.classList.toggle("loading", true);
+		$("#disqus_thread").find("iframe")[0].contentWindow.postMessage({id: "ade", func: "disqusNotifClick", args: null, return: null}, "https://disqus.com");
+	}, false);
 	//fix when removing color it still saves it in database as #FFFFFF
 	window.DB._setColor = window.DB.setColor;
 	window.DB.setColor = function setColor(id, c)
@@ -7066,7 +7164,10 @@ if (isFrame)
 	{
 		document.body.classList.toggle("dark", dark);
 	}
-
+	window.disqusNotifClick = function disqusNotifClick()
+	{
+		$("li.nav-tab.nav-tab--primary.notification-menu.unread>a")[0].click();
+	}
 //disqus troll filter
 	let trollHide = false,
 			trollTimer,
@@ -7545,6 +7646,66 @@ li.reload
 */
 		});//disqus css
 		document.getElementsByTagName("head")[0].appendChild(style);
+
+//disqus notification badge
+		if (!document.getElementById("message"))
+		{
+
+			(function loop()
+			{
+				let now = (new Date()).getTime();
+				if (!loop.timer)
+				{
+					loop.timer = setInterval(loop, 1000);
+					loop.session = {attributes: {notificationCount: 0}};
+					loop.notificationCount = 0;
+					loop.lastUpdate = now;
+				}
+
+				if (!loop.session.fetchNotificationCount)
+				{
+					let modules = ["common/Session"],
+							c = 0;
+
+					for(let i = 0; i < modules.length; i++)
+					{
+						let module = modules[i];
+						if (!require.specified(module))
+							return;
+					}
+					require(modules, function(session)
+					{
+						loop.session = session.get();
+						loop.session.fetchNotificationCount();
+					});
+				}
+				if (loop.lastUpdate < now - 60000)
+				{
+					loop.session.fetchNotificationCount();
+					loop.lastUpdate = now;
+				}
+				if (loop.notificationCount != loop.session.attributes.notificationCount)
+				{
+					loop.notificationCount = loop.session.attributes.notificationCount;
+/*
+log(loop.session);
+log(loop.notificationCount);
+					if (!loop.msg)
+					{
+						let nodes = document.getElementsByClassName("nav-tab nav-tab--primary notification-menu");
+						loop.msg = nodes[0];
+					}
+					if (!loop.msg)
+						return
+
+					let count = loop.msg.getElementsByClassName("notification-count")[0].textContent;
+					
+log(count);
+*/
+					window.top.postMessage({id: "ade", func: "disqusMessageCount", args: [loop.notificationCount], return: null}, "http://www.airdates.tv");
+				}
+			})()
+		}
 	}, false); //window load()
 }//disqus
 else
