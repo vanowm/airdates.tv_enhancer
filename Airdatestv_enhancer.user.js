@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.45.1
+// @version     1.45.3
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,11 @@
 
 
 var changesLogText = multiline(function(){/*
+1.45.3 (2018-10-02)
+	! track today not working when 1st of the month is monday
+1.45.2 (2018-09-29)
+	! missing comments reload button in some browsers
+	! black comments reload icon in dark theme
 1.45.1 (2018-08-12)
 	! filter checkboxes were too close to each other
 1.45 (2018-08-12)
@@ -196,12 +201,11 @@ var changesLogText = multiline(function(){/*
 */}, true).trim();
 
 
-let log = console.log,
+let log = console.log.bind(console),
 		self = this,
 		timeOffset = 0,
 		isFrame = window.top !== window.self,
 		blankFunc = function(){};
-
 
 if (!isFrame)
 {
@@ -1179,161 +1183,163 @@ let func = function(event)
 Dark Theme
 *//*
 
-body.$
+body
 {
 	background-color: #191919 !important;
 	color: #b9b2b2;
 }
-body.$.archive
+
+body.archive
 {
 	background-color: #292929 !important;
 }
-body.$ a
+
+a
 {
 	color: #737373;
 }
 
-body.$ .title:hover
+.title:hover
 {
 	background: rgb(210,210, 210) !important;
 }
 
-body.$ #searchbar
+#searchbar
 {
 	background-color: rgb(76, 76, 76);
 }
 
-body.$ #account-popup-content,
-body.$ #settings-popup .content,
-body.$ #manage-links-popup-content,
-body.$ #changesLogBox
+#account-popup-content,
+#settings-popup .content,
+#manage-links-popup-content,
+#changesLogBox
 {
 	background: rgb(76, 76, 76) !important;
 }
 
-body.$ #searchResults a
+#searchResults a
 {
 	color: rgb(210, 210, 210);
 	fill: rgb(210,210, 210);
 }
 
-body.$ svg,
-body.$ #account-popup-content .content a,
-body.$ #settings-popup .content a,
-body.$ #manage-links-popup-content a,
-body.$ #changesLogBox
+svg,
+#account-popup-content .content a,
+#settings-popup .content a,
+#manage-links-popup-content a,
+#changesLogBox
 {
 	color: rgb(210, 210, 210) !important;
 	fill: rgb(210,210, 210) !important;
 }
 
-body.$ #manage-links-popup .content > div.dragging:not(.hide),
-body.$ #manage-links-popup .content > div.dragging:not(.hide) *,
-body.$ #manage-links-popup .content:not(.dragging) > div:hover,
-body.$ #manage-links-popup .content:not(.dragging) > div:hover *
+#manage-links-popup .content > div.dragging:not(.hide),
+#manage-links-popup .content > div.dragging:not(.hide) *,
+#manage-links-popup .content:not(.dragging) > div:hover,
+#manage-links-popup .content:not(.dragging) > div:hover *
 {
 	color: rgb(76, 76, 76) !important;
 	fill: rgb(76, 76, 76) !important;
 }
 
-body.$ #manage-links-popup .content > div.dragging:not(.hide),
-body.$ #manage-links-popup .content:not(.dragging) > div:hover
+#manage-links-popup .content > div.dragging:not(.hide),
+#manage-links-popup .content:not(.dragging) > div:hover
 {
 	background-color: rgb(210, 210, 210);
 	outline: 1px dotted grey;
 }
 
 
-body.$ div.entry[color="white"] svg,
-body.$ div.entry:not([color]) svg
+div.entry[color="white"] svg,
+div.entry:not([color]) svg
 {
 	fill: white !important;
 }
 
-body.$ div.entry[color="black"] svg,
-body.$ .cl_added > span:first-child,
-body.$ .cl_changed > span:first-child,
-body.$ .cl_removed > span:first-child,
-body.$ .cl_fixed > span:first-child
+div.entry[color="black"] svg,
+.cl_added > span:first-child,
+.cl_changed > span:first-child,
+.cl_removed > span:first-child,
+.cl_fixed > span:first-child
 {
 	color: black;
 	fill: black !important;
 }
 
-body.$ span.button,
-body.$ .header,
-body.$ .header h4
+span.button,
+.header,
+.header h4
 {
 	background: rgb(112, 112, 112) !important;
 	color: inherit;
 }
 
-body.$ .details a,
-body.$ .day a
+.details a,
+.day a
 {
 	color: inherit !important;
 }
 
-body.$ .header a
+.header a
 {
 	color: inherit;
 }
 
-body.$ body.collapseMulti div.day:not(.expand):not(.opened) div.entry.multif div.title:after
+body.collapseMulti div.day:not(.expand):not(.opened) div.entry.multif div.title:after
 {
 	background-color: white;
 	border-left: 1px solid black;
 }
 
-body.$ .details:hover,
-body.$ .engines:hover
+.details:hover,
+.engines:hover
 {
 	background:none !important;
 }
 
-body.$ div.date
+div.date
 {
 	background-color: #4c4c4c;
 	color: #8c8c8c;
 }
 
-body.$ div.today div.date
+div.today div.date
 {
 	background-color: rgb(190, 0, 0);
 	color: black;
 }
 
-body.$ div.day,
-body.$.archive div.day
+div.day,
+body.archive div.day
 {
 	border: 1px solid #595959;
 }
-body.$.archive div.day
+body.archive div.day
 {
 	background-color: #191919;
 }
-body.$ .entry:not([color="white"]) div.details > span.engines > br + div.tools,
-body.$ .entry:not([color="white"]) div.details,
-body.$ .entry:not([color="white"]) div.colors,
-body.$ div.entry
+.entry:not([color="white"]) div.details > span.engines > br + div.tools,
+.entry:not([color="white"]) div.details,
+.entry:not([color="white"]) div.colors,
+div.entry
 {
 	border-top: 1px dashed #4c4c4c;
 }
 
 /* highlight opened entry *//*
-body.$ .entry[opened]
+.entry[opened]
 {
 	border: 1px solid white;
 	border-top: 1px solid white;
 }
 /*
-body.$ .entry[opened][color="black"]
+.entry[opened][color="black"]
 {
 	border: 1px solid black;
 	border-top: 1px solid black;
 }
 *//*
-body.$ #searchResults .description
+#searchResults .description
 {
 	color: #b9b2b2;
 }
@@ -1367,10 +1373,18 @@ END DARK THEME
 
 					let name = cssName.replace(/[^a-zA-Z0-9_-]/g, "_"),
 							id = "theme_" + name,
-							style = document.getElementById(id) || document.createElement("style");
+							style = document.getElementById(id) || document.createElement("style"),
+							reg = function(a,b,c)
+							{
+								let r = "body." + id;
+								if (a.toLowerCase() != "body")
+									r += " " + a;
+
+								return r;
+							}
 
 					style.id = id;
-					style.innerHTML = this.list[cssName].css.replace(/[\n\t]*/g, "").replace(/\$/g, id);
+					style.innerHTML = this.list[cssName].css.replace(/^(?!\*\/)(body|\w|[\.#\[\:\$@\*])/gm, reg).replace(/(\/\*([\s\S]*?)\*\/)|(\/\/(.*)$)/gm, '').replace(/[\n\t]*/g, "");
 					head.appendChild(style);
 				}
 			},
@@ -2726,7 +2740,7 @@ END DARK THEME
 			checkoff.title = title[1] || title[0];
 			a.title = title[2] || title[0];
 		}
-		a.className = "checkbox " + id + (typeof(className) == "undefined" ? " filter " : className + " ");
+		a.className = "checkbox " + id + " " + (typeof(className) == "undefined" ? "filter" : className);
 		checkon.className = "checkon nu";
 		checkoff.className = "checkoff nu";
 		checkon.innerHTML = "☑";
@@ -3392,7 +3406,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 		{
 			if ($(this).is(_today))
 			{
-				$(this).attr("today", "true");
+				$(this).addClass("today").attr("id", "today").attr("today", "true");
 				stop = true;
 			}
 			if (stop)
@@ -3628,6 +3642,7 @@ div[opened] + div
 	white-space: nowrap;
 	display: block;
 }
+
 div.entry
 {
 	float: left;
@@ -7252,8 +7267,10 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		if (!Settings.prefs.todayChange)
 			return;
 
+
 		today = new Date();
 		let t = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+
 		if (todayChange.day == t)
 			return;
 
@@ -7262,15 +7279,17 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		let todayOld = $("#today"),
 				dataDate = today.getFullYear() + pad2( today.getMonth() + 1 ) + pad2( today.getDate() );
 
+		_today = todayOld.parent().find('.day[data-date="' + dataDate + '"]').find('div.day[data-date="' + dataDate + '"]');
 		if (dataDate != todayOld.attr("data-date"))
 		{
 			todayOld.removeClass("today").removeAttr("id").removeAttr("today");
-			todayOld.parent().find('.day[data-date="' + dataDate + '"]').addClass("today").attr("id", "today").attr("today", true);
+			_today.addClass("today").attr("id", "today").attr("today", true);
 		}
 		let div = $("<div/>");
 		div.load("/_archive/" + ~~(ymToday/12) + "-" + ~~((ymToday%12)+1), function()
 		{
 			let days = $("div.days");
+			_today = days.find('div.day[data-date="' + dataDate + '"]');
 			div.find("div.day").each(function(i)
 			{
 				let day = days.find('div.day[data-date="' + this.getAttribute("data-date") + '"]');
@@ -7298,7 +7317,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 				}
 			});
 			todayOld.removeClass("today").removeAttr("id").removeAttr("today");
-			days.find('div.day[data-date="' + dataDate + '"]').addClass("today").attr("id", "today").attr("today", true);
+			_today.addClass("today").attr("id", "today").attr("today", true);
 			showPast(function()
 			{
 				$("div.day").each(function(i)
@@ -7559,7 +7578,7 @@ if (isFrame)
 			.attr("class", "nav-tab nav-tab--secondary reload")
 			.attr("title", "Reload comments")
 			.append('<a><svg viewBox="0 0 24 24"><path d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"></path></svg><span>Reload</span></a>')
-			.insertAfter($("#thread-share-menu"))
+			.insertAfter( $("#thread-share-menu, #thread-share-bar"))
 			.click(function()
 			{
 //							window.top.postMessage({id: "ade", func: "_reloadDisqus", args: [], return: null}, "http://www.airdates.tv");
@@ -7846,6 +7865,11 @@ li.reload:hover > a > svg
 {
 	fill: black;
 }
+body.dark li.reload:hover > a > svg
+{
+	fill: grey;
+}
+
 li.reload > a > svg
 {
 	width: 19px;
