@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.45.3
+// @version     1.46
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,12 @@
 
 
 var changesLogText = multiline(function(){/*
+1.46 (2018-10-18)
+	+ ability add <a href="https://www.w3schools.com/jsref/jsref_obj_regexp.asp" target="_blank">regular expressions</a> filters to links (one regexp per line)
+	! edit buttons not shown in links manager in some browsers
+	! edited link would fail in opened show details
+	! in older browsers show details would not open on first click and episode offset would fail
+	! MagnetDL links
 1.45.3 (2018-10-02)
 	! track today not working when 1st of the month is monday
 1.45.2 (2018-09-29)
@@ -200,12 +206,18 @@ var changesLogText = multiline(function(){/*
 	! significantly improved initialization speed for guests and members with no colors (very noticeable with #showhidden in the address)
 */}, true).trim();
 
-
 let log = console.log.bind(console),
 		self = this,
 		timeOffset = 0,
 		isFrame = window.top !== window.self,
 		blankFunc = function(){};
+
+/*work around for some SVG pictures shown huge before page is fully loaded*/
+(function(style)
+{
+	document.getElementsByTagName("head")[0].appendChild(style);
+	style.innerHTML = "svg{max-width:1.2em;max-height:1.2em;}";
+})(document.createElement("style"));
 
 if (!isFrame)
 {
@@ -318,6 +330,7 @@ this._scrollTo = function(y)
 	$("html, body").animate({scrollTop: $("#disqus_thread").find("iframe")[0].offsetTop + y }, 300);
 //	$("html, body").prop("scrollTop", $("#disqus_thread").find("iframe")[0].offsetTop + y);
 }
+
 function receiveMessage(event)
 {
 	if (["https://disqus.com", "http://www.airdates.tv"].indexOf(event.origin) == -1 || typeof(event.data) != "object" || event.data.id != "ade")
@@ -600,16 +613,16 @@ let func = function(event)
 	<div id="settings-popup-content">
 		<div class="header">
 			<div class="back" title="Back">
-				<svg style="max-width:1.2em;max-height:1.2em;" viewBox="0 0 24 24">
+				<svg viewBox="0 0 24 24">
 					<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
 				</svg>
 			</div>
 			<h4>Options</h4>
 			<div class="close" title="Close" title="Close">
-				<svg style="max-width:1.2em;max-height:1.2em;" viewBox="0 0 24 24">
+				<svg viewBox="0 0 24 24">
 					<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
 				</svg>
-				<svg style="max-width:1.2em;max-height:1.2em;" viewBox="0 0 24 24">
+				<svg viewBox="0 0 24 24">
 					<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
 				</svg>
 			</div>
@@ -1629,6 +1642,7 @@ END DARK THEME
 
 		window.engines = newEnginesList;
 	}
+
 	enginesSort.changed = function()
 	{
 		let list = [];
@@ -1670,6 +1684,7 @@ END DARK THEME
 		a.href = url;
 		return a.hostname;
 	}
+
 	function engineFixHost(engine)
 	{
 		if (engine.host)
@@ -1745,6 +1760,7 @@ END DARK THEME
 		}
 		return true;
 	}
+
 	command.list = {};
 	command.add = function(id, objId, func)
 	{
@@ -1765,6 +1781,7 @@ END DARK THEME
 
 		watched.update(entry, entry._input.checked);
 	}
+
 	watched._list = ls("watched") || {};
 	watched._saving = false;
 	watched.add = function(id, episode)
@@ -1933,16 +1950,16 @@ END DARK THEME
 		<div id="manage-links-popup-content">
 			<div class="header">
 				<div class="back" title="Back">
-					<svg style="max-width:1.2em;max-height:1.2em;" viewBox="0 0 24 24">
+					<svg viewBox="0 0 24 24">
 						<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
 					</svg>
 				</div>
 				<h4>Links Manager</h4>
 				<div class="close" title="Close">
-					<svg style="max-width:1.2em;max-height:1.2em;" viewBox="0 0 24 24">
+					<svg viewBox="0 0 24 24">
 						<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
 					</svg>
-					<svg style="max-width:1.2em;max-height:1.2em;" viewBox="0 0 24 24">
+					<svg viewBox="0 0 24 24">
 						<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
 					</svg>
 				</div>
@@ -1981,7 +1998,9 @@ END DARK THEME
 					<select id="engine-tags" size="1">
 						<option value=""></option>
 						<option value="MONKEY_N">Name</option>
+						<option value="MONKEY_N_REGEXP">Name (RegExp)</option>
 						<option value="MONKEY">Name+Episode</option>
+						<option value="MONKEY_REGEXP">Name+Episode (RegExp)</option>
 						<option value="MONKEY_ID">ID</option>
 						<option value="{WIKI_TITLE}">Wiki page</option>
 						<option value="MONKEY_ARCHIVELINK">Archive link</option>
@@ -1992,6 +2011,13 @@ END DARK THEME
 				<label>ID:</label>
 				<div>
 					<input id="engine-id" placeholder="&lt;optional&gt;">
+				</div>
+			</div>
+			<div title="You can add multiple regular expressions separated by new line">
+				<label><a href="https://developer.mozilla.org/docs/Web/JavaScript/Guide/Regular_Expressions" target="_blank">RegExp</a>:</label>
+				<div class="engine-regexp">
+					<textarea id="engine-regexp" placeholder="&lt;regular expressions&gt;" title="Regular expression, one per line"></textarea>
+					<textarea id="engine-regexp-replace" placeholder="&lt;replace&gt;" title="Replacement string, one per line" ></textarea>
 				</div>
 			</div>
 			<div>
@@ -2020,6 +2046,8 @@ END DARK THEME
 				engReset = $("#engine-reset"),
 				engSortReset = $("#sort-reset"),
 				engResHidden = $('<div id="engine-hidden" class="entry" data-series-id="1234" data-series-source="List of Monsuno episodes" data-date="20120223"><div class="title">Monsuno S01E01</div></div>').appendTo(popup),
+				engRegexp = $("#engine-regexp"),
+				engRegexpReplace = $("#engine-regexp-replace"),
 				prevTarget = null,
 				prevVal = null,
 				entry = $("div.entry");
@@ -2043,10 +2071,17 @@ END DARK THEME
 				prevVal = e.target.value;
 				prevTarget = e.target;
 				engResHidden.find(".details").remove();
+				let txt = engRegexp.val().trim(),
+						reg = getRegexp(txt, engRegexpReplace.val().trim()),
+						ok = txt ? reg.length : true;
+
+				regexpCheck(reg);
+
 				let eng = [{
 							name: engName.val(),
 							host: engId.val().trim(),
-							href: engUrl.val().trim()
+							href: engUrl.val().trim(),
+							regexp: reg
 						}];
 
 				if (!eng[0].href.match(/[a-z]+:\/\//i))
@@ -2064,7 +2099,9 @@ END DARK THEME
 				img.src = "http://www.google.com/s2/favicons?domain=" + domain;
 
 				engRes.html("");
-				engRes.append(a);
+				if (domain || a.text())
+					engRes.append(a);
+
 				return;
 			}, 300);
 			buttonsUpdate();
@@ -2072,9 +2109,8 @@ END DARK THEME
 
 		function buttonsUpdate()
 		{
-			let disabled = engName.val() + engId.val().trim() + engUrl.val().trim() ? false: true;
-			engSubmit.prop("disabled", disabled);
-			engReset.prop("disabled", disabled);
+			engSubmit.prop("disabled", !engName.val().trim() || !engUrl.val().trim() || engRegexp.hasClass("error"));
+			engReset.prop("disabled", !(engName.val().trim() + engId.val() + engUrl.val() + engRegexp.val() + engRegexpReplace.val()));
 		}
 
 
@@ -2096,6 +2132,17 @@ END DARK THEME
 			e.target.value = "";
 		});
 
+		function regexpCheck(reg)
+		{
+			let txt = engRegexp.val().trim();
+			if (!reg)
+				reg = getRegexp(txt, "");
+
+			let ok = txt ? reg.length : true;
+			engRegexp.toggleClass("error", !ok);
+		}
+		engRegexp.on("input change", change);
+		engRegexpReplace.on("input change",change);
 		engReset.click(function(e)
 		{
 			clearTimeout(change.timer);
@@ -2137,12 +2184,16 @@ END DARK THEME
 		engForm.on("submit", function(e)
 		{
 			e.preventDefault();
+			let reg = getRegexp(engRegexp.val().trim(), engRegexpReplace.val());
 			let engine = {
 						name: engName.val().trim(),
 						href: engUrl.val().trim(),
 						host: engId.val().trim()
 					};
-
+			if (reg.length)
+			{
+				engine.regexp = reg;
+			}
 			if (!engine.href.match(/[a-z]+:\/\//i))
 				engine.href = "http://" + engine.href;
 
@@ -2211,14 +2262,14 @@ END DARK THEME
 					flash($(update));
 				}));
 				let entry = $("div.entry").find(".engines");
-				entry.each(function()
-				{
-					$(this).find("." + id).filter("a.link").attr("href", parseLink(this, engine).href).contents().filter(function()
+					entry.each(function()
 					{
-						if (this.nodeType === 3)
-							this.textContent = engine.name;
+						$(this).find("." + id).filter("a.link").attr("href", parseLink(this.parentNode.parentNode, engine).href).contents().filter(function()
+						{
+							if (this.nodeType === 3)
+								this.textContent = engine.name;
+						});
 					});
-				});
 			}
 			else
 			{
@@ -2230,6 +2281,8 @@ END DARK THEME
 			engName.val("");
 			engId.val("");
 			engUrl.val("");
+			engRegexp.val("");
+			engRegexpReplace.val("");
 		});//engForm.submit()
 
 		function updateDetails()
@@ -2243,7 +2296,17 @@ END DARK THEME
 			opened.toggleClass("details", true);
 			setTimeout(function()
 			{
-				$('div:not(#engine-hidden) .details[style="display: block;"]').find(".engines").replaceWith(clone.find(".engines"));
+				$('div:not(#engine-hidden) .details').find(".engines").replaceWith(clone.find(".engines"));
+				$('div:not(#engine-hidden) .details').find(".engines").each(function()
+				{
+					for(let i = 0; i < window.engines.length; i++)
+					{
+						let eng = window.engines[i],
+								id = "engine_" + cleanName(eng.host);
+
+						$(this).find("." + id).filter("a.link").attr("href", parseLink(this.parentNode.parentNode, eng).href)
+					}
+				});
 				clone.remove();
 			}, 300);
 		}
@@ -2455,6 +2518,17 @@ END DARK THEME
 					engId.val((getHost(engine.href) == engine.host) ? "" : engine.host);
 					engName.val(engine.name);
 					engUrl.val(engine.href.replace(/http:\/\//i, ""));
+					let reg = engine.regexp || [],
+							regexp = [],
+							repl = [];
+					for(let i = 0; i < reg.length; i++)
+					{
+						regexp[regexp.length] = reg[i][0];
+						repl[repl.length] = reg[i][1];
+					}
+					engRegexp.val(regexp.join("\n"));
+					engRegexpReplace.val(repl.join("\n"));
+					engRegexp.trigger("input");
 					engId.trigger("input");
 				});
 				if (customLinks._list[engine.host])
@@ -2467,14 +2541,17 @@ END DARK THEME
 						e.preventDefault();
 						flash($("#" + id), e.isTrigger ? null : "#FF9090");
 						let scroll = $(customLinks.div).find(".content")[0].scrollTop;
+						let _engine = Object.assign(Array.isArray(engine) ? [] : {}, engine);
 						setTimeout(function()
 						{
 							let host = engId.val(),
 									name = engName.val(),
-									href = engUrl.val();
+									href = engUrl.val(),
+									engine = _engine,
+									update = false;
 
 							delete customLinks._list[engine.host];
-							let update = false;
+
 							for(let i = 0; i < window.engines.length; i++)
 							{
 								if (window.engines[i].host == engine.host)
@@ -2523,11 +2600,29 @@ END DARK THEME
 							{
 								if (update !== false)
 								{
-									let aNew = $("#manage-links-popup").find("#" + id).find("a.link"),
-											a = $('.details[style="display: block;"]').find(".engines").find("a." + id);
+									for(let i = 0; i < window.engines.length; i++)
+									{
+										if (window.engines[i].host == engine.host)
+										{
+											engine = Object.assign(Array.isArray(window.engines[i]) ? [] : {}, window.engines[i]);
+											break;
+										}
+									}
+									let aNew = $("#manage-links-popup").find("#" + id).find("a.link");
+									$('.details')
+										.find(".engines")
+										.find("a." + id)
+										.each(function()
+										{
+											$(this).attr("href", parseLink(this.parentNode.parentNode.parentNode, engine).href)
+										})
+										.contents()
+										.filter(function()
+										{
+											if (this.nodeType === 3)
+												this.textContent = aNew.text();
+										});
 
-									a.html(aNew.html());
-									a.attr("href", aNew.attr("href"));
 								}
 								if (host || name || href)
 								{
@@ -2683,16 +2778,16 @@ END DARK THEME
 		<div id="colorsmanager-popup-content">
 			<div class="header">
 				<div class="back" title="Back">
-					<svg style="max-width:1.2em;max-height:1.2em;" viewBox="0 0 24 24">
+					<svg viewBox="0 0 24 24">
 						<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
 					</svg>
 				</div>
 				<h4>Colors Manager</h4>
 				<div class="close" title="Close">
-					<svg style="max-width:1.2em;max-height:1.2em;" viewBox="0 0 24 24">
+					<svg viewBox="0 0 24 24">
 						<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
 					</svg>
-					<svg style="max-width:1.2em;max-height:1.2em;" viewBox="0 0 24 24">
+					<svg viewBox="0 0 24 24">
 						<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
 					</svg>
 				</div>
@@ -3540,6 +3635,7 @@ svg
 	max-width: 1.2em;
 	max-height: 1.2em;
 	vertical-align: top;
+	width: 1.2em;
 }
 body.userViewer .settings > div.spacer,
 body.userViewer .myHidden,
@@ -3825,8 +3921,8 @@ div.moreOpt:not([opened]) > div
 }
 #manage-links-popup-content .content > div > div
 {
-	min-width: 15em;
-	max-width: 15em;
+	min-width: 18em;
+	max-width: 18em;
 	overflow: hidden;
 	vertical-align: bottom;
 }
@@ -3932,6 +4028,7 @@ div:not(#account-popup-content) > .header
 {
 	display: table-row;
 	white-space: nowrap;
+	height: 100%;
 }
 #engine-edit > div > *,
 #manage-links-popup .content > div > *
@@ -4035,7 +4132,8 @@ input#engine-url
 }
 body.ff #engine-edit > div > div > select
 {
-	height: 1.55em;
+	height: 1.57em;
+	left: -1.4em;
 }
 body.edge #engine-edit > div > div > select
 {
@@ -4074,6 +4172,10 @@ body.edge #engine-edit > div > div > select
 	width: 48% !important;
 	float: left;
 }
+body.ff #engine-reset
+{
+	margin-right: -0.6em;
+}
 #engine-reset
 {
 	float: right;
@@ -4111,6 +4213,37 @@ div.reset > span
 	transition:background-color 0.4s ease-in;
 }
 
+.engine-regexp
+{
+	height: 100%;
+}
+#engine-edit #engine-regexp
+{
+	width: 70%;
+}
+body.ff #engine-edit #engine-regexp-replace
+{
+	left: 2px;
+}
+#engine-edit #engine-regexp-replace
+{
+	width: 30%;
+}
+textarea.error
+{
+	background-color: #FF9090;
+}
+
+#engine-edit textarea
+{
+	white-space: pre;
+	overflow: auto;
+	vertical-align: top;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	position: relative;
+}
 [draggable]
 {
 	-moz-user-select: none;
@@ -5248,22 +5381,44 @@ log(err);
 
 		title = title.replace("?", "").replace(/[0-9]+-[0-9]+-[0-9]+/, "");
 	//				MONKEY = encodeURIComponent( title ),
-		let MONKEY = encodeURIComponent( title.replace(/ E[0-9]+/g, "") ),
-				MONKEY_N = encodeURIComponent( title.replace( /\s*S[0-9]+E[0-9]+$/g, '' ) ),
+		let _MONKEY = title.replace(/ E[0-9]+/g, "") || "",
+				_MONKEY_N = title.replace( /\s*S[0-9]+E[0-9]+$/g, '' ) || "",
+				regexp = getRegexp(engine.regexp, undefined, true),
+				MONKEY_REGEXP = _MONKEY,
+				MONKEY_N_REGEXP = _MONKEY_N;
+
+		if (regexp.length)
+		{
+			
+			for(let i = 0; i < regexp.length; i++)
+			{
+				MONKEY_REGEXP = MONKEY_REGEXP.replace(regexp[i][0], regexp[i][1]);
+				MONKEY_N_REGEXP = MONKEY_N_REGEXP.replace(regexp[i][0], regexp[i][1]);
+			}
+		}
+		MONKEY_REGEXP = encodeURIComponent(MONKEY_REGEXP);
+		MONKEY_N_REGEXP = encodeURIComponent(MONKEY_N_REGEXP);
+
+		let MONKEY = encodeURIComponent( _MONKEY ),
+				MONKEY_N = encodeURIComponent( _MONKEY_N ),
 				WIKI_TITLE = encodeURIComponent( el.data("series-source") ),
 				MONKEY_ID = encodeURIComponent( el.data("series-id") ),
 				href = engine.href
 							.replace( "MONKEY_ID", MONKEY_ID )
+							.replace( "MONKEY_N_REGEXP", MONKEY_N_REGEXP )
+							.replace( "MONKEY_REGEXP", MONKEY_REGEXP )
 							.replace( "MONKEY_N", MONKEY_N )
 							.replace( "MONKEY", MONKEY )
 							.replace( "{WIKI_TITLE}", WIKI_TITLE );
 
 		return {
-			href: fixLink(href, engine.name),
+			href: fixLink(href, engine),
 			title: title,
 			MONKEY: MONKEY,
 			MONKEY_N: MONKEY_N,
 			MONKEY_ID: MONKEY_ID,
+			MONKEY_REGEXP: MONKEY_REGEXP,
+			MONKEY_N_REGEXP: MONKEY_N_REGEXP,
 			WIKI_TITLE: WIKI_TITLE
 		};
 	}//parseLink()
@@ -5332,6 +5487,51 @@ log(err);
 		$("body").on("click", "div.entry div.title", entryOpen);//$("body").on("click", "div.entry div.title", function(e)
 	});
 	let aniSpeed = (device.tablet() || device.mobile())? 0 : 100;
+	function getRegexp(reg, repl, type)
+	{
+		let regexp = [],
+				lines = [],
+				_repl = [];
+		if (typeof(reg) == "string")
+		{
+			lines = reg.trim().replace(/\r/g, "\n").replace(/\n+/g, "\n").split("\n");
+		}
+		else if (reg)
+		{
+			for(let i = 0; i < reg.length; i++)
+			{
+				lines[i] = reg[i][0];
+				_repl[i] = reg[i][1];
+			}
+		}
+			
+		repl = typeof(repl) == "string" ? repl.replace(/\r/g, "\n").replace(/\n+/g, "\n").split("\n") : _repl;
+
+		for(let i = 0; i < lines.length; i++)
+		{
+			let txt = lines[i];
+			try
+			{
+				let reg = /^\/(.*)\/([gimuy]*)$/i,
+						parts = txt.match(reg) || (txt = "/" + txt + "/").match(reg);
+				try
+				{
+					let r = new RegExp(parts[1], parts[2]);
+					if (!type)
+						r = r.toString();
+
+					if (r.toString().match(reg)[1] == parts[1])
+						regexp[regexp.length] = [r, repl[i] || ""];
+				}
+				catch(e){log(e)};
+			}
+			catch(e){};
+		}
+		if (regexp.length != lines.length)
+			return [];
+		return regexp;
+	}
+
 	function entryOpen(ev, _engs)
 	{
 		if (!ev.target)
@@ -5360,12 +5560,30 @@ log(err);
 						engs = engs.concat([{name: "Show in calendar", host: "airdates.tv", href: "MONKEY_ARCHIVELINK", cls:"archive-link"}]);
 				}
 				var e = $( $.parseHTML($( "#detailsTemplate" ).html()) ).appendTo( $entry );
-				var MONKEY = encodeURIComponent( $entry.children("div.title").text() ); //.replace( /[^A-Za-z0-9 -]/g, '' ) );
-				var MONKEY_N = encodeURIComponent( $entry.children("div.title").text().replace( /S[0-9]+E[0-9]+$/g, '' ) );
+				
+				let _MONKEY = $entry.children("div.title").text(),
+						_MONKEY_N = _MONKEY.replace( /S[0-9]+E[0-9]+$/g, '' );
+
+				var MONKEY = encodeURIComponent( _MONKEY ); //.replace( /[^A-Za-z0-9 -]/g, '' ) );
+				var MONKEY_N = encodeURIComponent( _MONKEY_N );
 				var MONKEY_ID = encodeURIComponent( $entry.data("series-id") );
 				var WIKI_TITLE = encodeURIComponent( $entry.data("series-source") );
 
 				$.each( engs, function( i, engine ){
+					let regexp = getRegexp(engine.regexp, undefined, true),
+							MONKEY_REGEXP = _MONKEY,
+							MONKEY_N_REGEXP = _MONKEY_N;
+
+					if (regexp.length)
+					{
+						for(let i = 0; i < regexp.length; i++)
+						{
+							MONKEY_REGEXP = MONKEY_REGEXP.replace(regexp[i][0], regexp[i][1]);
+							MONKEY_N_REGEXP = MONKEY_N_REGEXP.replace(regexp[i][0], regexp[i][1]);
+						}
+					}
+					MONKEY_REGEXP = encodeURIComponent(MONKEY_REGEXP);
+					MONKEY_N_REGEXP = encodeURIComponent(MONKEY_N_REGEXP);
 					let eng = $( "#engineTemplate" ).children().clone().appendTo( e.find( ".engines" ) ),
 							a = eng.filter("a.link"),
 							img = eng.filter("img.icon"),
@@ -5376,6 +5594,8 @@ log(err);
 							href = engine.href
 										.replace("MONKEY_ARCHIVELINK", (""+$entry.closest("[data-date]").data("date")).replace(/([0-9]{4})([0-9]{2})([0-9]{1,2})/,"/archive/$1-$2#$3"))
 										.replace( "MONKEY_ID", MONKEY_ID )
+										.replace( "MONKEY_N_REGEXP", MONKEY_N_REGEXP )
+										.replace( "MONKEY_REGEXP", MONKEY_REGEXP )
 										.replace( "MONKEY_N", MONKEY_N )
 										.replace( "MONKEY", MONKEY )
 										.replace( "{WIKI_TITLE}", WIKI_TITLE );
@@ -5402,7 +5622,7 @@ log(err);
 						a[0].textContent = "Show all episodes";
 						a[0].href = "javascript:search('info:" + MONKEY_ID + "');";
 					}
-					a[0].href = fixLink(a[0].href, a[0].text);
+					a[0].href = fixLink(a[0].href, engine);
 					if (_engs)
 					{
 						br.remove();
@@ -5494,24 +5714,28 @@ log(err);
 				epNumFixInputSeason.max = 999;
 				function epNumFixEvt(evt)
 				{
-					let s = this.selectionStart,
-							e = this.selectionEnd,
-							num = Math.min(1000, Math.max(-1000, Number(this.value.replace(/[^0-9\-]/g, ""))));
-
-					this.value = num;
-
-					if (e !== null)
-						this.selectionEnd = e;
-					if (s !== null)
-						this.selectionStart = s;
-
-					if (!evt.isTrigger)
+					try
 					{
-						epNumFixSave();
-					}
+						let s = this.selectionStart,
+								e = this.selectionEnd,
+								num = Math.min(1000, Math.max(-1000, Number(this.value.replace(/[^0-9\-]/g, ""))));
+
+						this.value = num;
+
+						if (e !== null)
+							this.selectionEnd = e;
+						if (s !== null)
+							this.selectionStart = s;
+
+						if (!evt.isTrigger)
+						{
+							epNumFixSave();
+						}
 	//					Settings.pref("timeOffset", timeOffset);
 	//					if (!evt.isTrigger)
 	//						todayChange(timeOffset);
+				}
+					catch(e){}
 				}
 				function epNumFixSave()
 				{
@@ -5626,8 +5850,20 @@ log(err);
 	function fixLink(link, engine)
 	{
 		link = link.replace("%3F", "").replace(/[0-9]+-[0-9]+-[0-9]+(%20)?/, "").replace(/( |%20)E[0-9]+/, "");
-		if (engine == "Piratebay")
+		if (engine.name == "Piratebay")
 			link = link.replace(/['"`!]/g, '');
+
+		if (engine.host.indexOf("magnetdl.com") != -1)
+		{
+/*
+			link = link.toLowerCase().replace(/%20/g, "-").replace(/%[a-z0-9]{2}/g, "").replace(/\/[a-z]\/\/?([^\/]*\/?)$/, function(a, b)
+			{
+				return "/" + b[0] + "/" + b;
+			});
+*/
+			link = link.replace(/\/[a-z]\/\/?([^\/]*\/?)$/, "/search/?q=$1&m=1&x=0&y=0");
+		}
+
 		return link;
 	}
 
@@ -5773,7 +6009,7 @@ px)
 	//monkey
 		let monkey = $("#account-overview").find("span.nu")[0];
 		if (monkey)
-			monkey.innerHTML = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve" style="height: 1.2em; width: 1.2em; vertical-align: middle;"><circle style="fill:#5d433f;" cx="66.06" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="66.06" cy="222.97" r="41.29"/><circle style="fill:#5d433f;" cx="445.94" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="445.94" cy="222.97" r="41.29"/><path style="fill:#543e3b;" d="M442.589,262.049c-8.366-14.436-13.169-30.655-13.169-47.34v-0.001c0-72.373-44.364-134.33-107.355-160.318V24.774l-41.29,16.516l-8.258-33.032c-21.781,7.261-40.361,22.498-54.356,37.298c-77.557,17.283-135.58,86.39-135.58,169.154c0,16.685-4.803,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,93.496,92.431,169.29,206.452,169.29s206.452-75.794,206.452-169.29C462.452,308.532,455.308,283.997,442.589,262.049z"/><path style="fill:#543e3b;" d="M140.387,364.043c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-84.035,43.969-155.956,106.493-186.502l-7.396-29.584c-21.781,7.261-40.361,22.498-54.357,37.298C140.604,62.839,82.581,131.946,82.581,214.71c0,16.685-4.802,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,75.465,60.232,139.37,143.415,161.223C160.282,460.734,140.387,414.619,140.387,364.043z"/><path style="fill:#f7b189;" d="M256,470.71c68.412,0,123.871-44.367,123.871-99.097c0-11.354-2.414-22.245-6.835-32.386c-6.41-14.707-4.228-31.587,6.07-43.889c13.134-15.691,19.908-36.877,16.333-59.635c-4.91-31.259-30.182-56.486-61.448-61.353c-23.892-3.719-46.037,3.968-61.903,18.439c-4.51,4.113-10.3,6.17-16.087,6.17c-5.79,0-11.581-2.056-16.091-6.17c-15.866-14.471-38.011-22.158-61.903-18.439c-31.266,4.866-56.537,30.094-61.448,61.353c-3.575,22.757,3.199,43.943,16.333,59.635c10.298,12.303,12.48,29.182,6.07,43.889c-4.42,10.142-6.835,21.033-6.835,32.386C132.129,426.342,187.588,470.71,256,470.71z"/><path style="fill:#f7b189;" d="M132.129,371.612c0,18.522,6.468,35.795,17.524,50.625c-5.938-18.411-9.266-37.916-9.266-58.195c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-17.307,1.96-34.056,5.468-50.08c-0.295,0.042-0.583,0.04-0.879,0.086c-31.266,4.866-56.536,30.094-61.448,61.352c-3.575,22.758,3.2,43.944,16.333,59.635c10.298,12.302,12.481,29.181,6.071,43.889C134.543,349.368,132.129,360.259,132.129,371.612z"/><g><path style="fill:#5D5360;" d="M239.476,330.323c-1.242,0-2.5-0.278-3.685-0.871l-16.516-8.258c-4.081-2.04-5.734-7-3.694-11.081c2.048-4.081,7-5.734,11.081-3.694l16.516,8.258c4.081,2.04,5.734,7,3.694,11.081C245.419,328.653,242.508,330.323,239.476,330.323z"/><path style="fill:#5D5360;" d="M272.524,330.323c-3.032,0-5.944-1.669-7.395-4.565c-2.04-4.081-0.387-9.04,3.694-11.081l16.516-8.258c4.073-2.04,9.032-0.387,11.081,3.694c2.04,4.081,0.387,9.04-3.694,11.081l-16.516,8.258C275.024,330.044,273.766,330.323,272.524,330.323z"/></g><path style="fill:#4B3F4E;" d="M182.319,363.355c-5.001,0-8.941,4.431-8.248,9.384c5.126,36.617,39.853,64.938,81.929,64.938c42.077,0,76.803-28.321,81.929-64.938c0.693-4.953-3.247-9.384-8.248-9.384H182.319z"/><path style="fill:#E6646E;" d="M208.417,424.038c13.457,8.563,29.849,13.639,47.583,13.639s34.126-5.076,47.583-13.639c-5.966-20.666-25.063-35.909-47.583-35.909S214.383,403.371,208.417,424.038z"/><path style="fill:#4B3F4E;" d="M181.677,272.516L181.677,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C206.452,261.424,195.36,272.516,181.677,272.516z"/><path style="fill:#5D5360;" d="M181.677,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C206.452,225.801,195.36,214.71,181.677,214.71z"/><circle style="fill:#FFFFFF;" cx="181.68" cy="231.23" r="8.258"/><path style="fill:#4B3F4E;" d="M330.323,272.516L330.323,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C355.097,261.424,344.005,272.516,330.323,272.516z"/><path style="fill:#5D5360;" d="M330.323,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C355.097,225.801,344.005,214.71,330.323,214.71z"/><circle style="fill:#FFFFFF;" cx="330.32" cy="231.23" r="8.258"/><path style="fill:#FF8087;" d="M256,437.677c2.792,0,5.538-0.169,8.258-0.415v-16.101c0-4.56-3.694-8.258-8.258-8.258s-8.258,3.698-8.258,8.258v16.101C250.462,437.508,253.208,437.677,256,437.677z"/></svg>';
+			monkey.innerHTML = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve" style="vertical-align: middle;"><circle style="fill:#5d433f;" cx="66.06" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="66.06" cy="222.97" r="41.29"/><circle style="fill:#5d433f;" cx="445.94" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="445.94" cy="222.97" r="41.29"/><path style="fill:#543e3b;" d="M442.589,262.049c-8.366-14.436-13.169-30.655-13.169-47.34v-0.001c0-72.373-44.364-134.33-107.355-160.318V24.774l-41.29,16.516l-8.258-33.032c-21.781,7.261-40.361,22.498-54.356,37.298c-77.557,17.283-135.58,86.39-135.58,169.154c0,16.685-4.803,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,93.496,92.431,169.29,206.452,169.29s206.452-75.794,206.452-169.29C462.452,308.532,455.308,283.997,442.589,262.049z"/><path style="fill:#543e3b;" d="M140.387,364.043c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-84.035,43.969-155.956,106.493-186.502l-7.396-29.584c-21.781,7.261-40.361,22.498-54.357,37.298C140.604,62.839,82.581,131.946,82.581,214.71c0,16.685-4.802,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,75.465,60.232,139.37,143.415,161.223C160.282,460.734,140.387,414.619,140.387,364.043z"/><path style="fill:#f7b189;" d="M256,470.71c68.412,0,123.871-44.367,123.871-99.097c0-11.354-2.414-22.245-6.835-32.386c-6.41-14.707-4.228-31.587,6.07-43.889c13.134-15.691,19.908-36.877,16.333-59.635c-4.91-31.259-30.182-56.486-61.448-61.353c-23.892-3.719-46.037,3.968-61.903,18.439c-4.51,4.113-10.3,6.17-16.087,6.17c-5.79,0-11.581-2.056-16.091-6.17c-15.866-14.471-38.011-22.158-61.903-18.439c-31.266,4.866-56.537,30.094-61.448,61.353c-3.575,22.757,3.199,43.943,16.333,59.635c10.298,12.303,12.48,29.182,6.07,43.889c-4.42,10.142-6.835,21.033-6.835,32.386C132.129,426.342,187.588,470.71,256,470.71z"/><path style="fill:#f7b189;" d="M132.129,371.612c0,18.522,6.468,35.795,17.524,50.625c-5.938-18.411-9.266-37.916-9.266-58.195c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-17.307,1.96-34.056,5.468-50.08c-0.295,0.042-0.583,0.04-0.879,0.086c-31.266,4.866-56.536,30.094-61.448,61.352c-3.575,22.758,3.2,43.944,16.333,59.635c10.298,12.302,12.481,29.181,6.071,43.889C134.543,349.368,132.129,360.259,132.129,371.612z"/><g><path style="fill:#5D5360;" d="M239.476,330.323c-1.242,0-2.5-0.278-3.685-0.871l-16.516-8.258c-4.081-2.04-5.734-7-3.694-11.081c2.048-4.081,7-5.734,11.081-3.694l16.516,8.258c4.081,2.04,5.734,7,3.694,11.081C245.419,328.653,242.508,330.323,239.476,330.323z"/><path style="fill:#5D5360;" d="M272.524,330.323c-3.032,0-5.944-1.669-7.395-4.565c-2.04-4.081-0.387-9.04,3.694-11.081l16.516-8.258c4.073-2.04,9.032-0.387,11.081,3.694c2.04,4.081,0.387,9.04-3.694,11.081l-16.516,8.258C275.024,330.044,273.766,330.323,272.524,330.323z"/></g><path style="fill:#4B3F4E;" d="M182.319,363.355c-5.001,0-8.941,4.431-8.248,9.384c5.126,36.617,39.853,64.938,81.929,64.938c42.077,0,76.803-28.321,81.929-64.938c0.693-4.953-3.247-9.384-8.248-9.384H182.319z"/><path style="fill:#E6646E;" d="M208.417,424.038c13.457,8.563,29.849,13.639,47.583,13.639s34.126-5.076,47.583-13.639c-5.966-20.666-25.063-35.909-47.583-35.909S214.383,403.371,208.417,424.038z"/><path style="fill:#4B3F4E;" d="M181.677,272.516L181.677,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C206.452,261.424,195.36,272.516,181.677,272.516z"/><path style="fill:#5D5360;" d="M181.677,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C206.452,225.801,195.36,214.71,181.677,214.71z"/><circle style="fill:#FFFFFF;" cx="181.68" cy="231.23" r="8.258"/><path style="fill:#4B3F4E;" d="M330.323,272.516L330.323,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C355.097,261.424,344.005,272.516,330.323,272.516z"/><path style="fill:#5D5360;" d="M330.323,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C355.097,225.801,344.005,214.71,330.323,214.71z"/><circle style="fill:#FFFFFF;" cx="330.32" cy="231.23" r="8.258"/><path style="fill:#FF8087;" d="M256,437.677c2.792,0,5.538-0.169,8.258-0.415v-16.101c0-4.56-3.694-8.258-8.258-8.258s-8.258,3.698-8.258,8.258v16.101C250.462,437.508,253.208,437.677,256,437.677z"/></svg>';
 	}
 	disqusMessageCount.el = $("#account-overview").parent().append('<span class="notifBadge"></span>').find("span").last()[0];
 	function disqusMessageNotifLoaded(loading)
@@ -6250,7 +6486,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			{
 //some browsers don't have proper icon in the font
 				let span = document.createElement("span");
-				span.innerHTML = header[0].firstChild.textContent.replace("🍪", multiline(function(){/*<span title="Cookies"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"viewBox="0 0 512 512" style="width:1.2em;height:1.2em;enable-background:new 0 0 512 512;" xml:space="preserve"><circle style="fill:#D5A150;" cx="256" cy="256" r="256"/><path style="fill:#AD712C;" d="M415.237,55.557c34.771,43.71,55.556,99.043,55.556,159.236c0,141.385-114.615,256-256,256c-60.193,0-115.527-20.785-159.237-55.556C102.456,474.194,174.808,512,256,512c141.385,0,256-114.615,256-256C512,174.809,474.194,102.456,415.237,55.557z"/><path style="fill:#C98A2E;" d="M139.553,145.28c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595c15.135,0,29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C150.099,143.269,144.826,145.28,139.553,145.28z"/><circle style="fill:#674230;" cx="165.045" cy="99.186" r="36.056"/><path style="fill:#7A5436;" d="M129.154,95.733c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C144.353,65.025,130.744,78.748,129.154,95.733z"/><path style="fill:#C98A2E;" d="M57.139,310.109c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13C53.272,213.243,67.5,207.35,82.635,207.35s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C67.685,308.098,62.411,310.109,57.139,310.109z"/><circle style="fill:#674230;" cx="82.631" cy="264.015" r="36.056"/><path style="fill:#7A5436;" d="M46.739,260.562c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.93,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C61.939,229.854,48.33,243.577,46.739,260.562z"/><path style="fill:#C98A2E;" d="M129.252,413.127c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.918-2.919-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C139.798,411.116,134.524,413.127,129.252,413.127z"/><circle style="fill:#674230;" cx="154.743" cy="367.033" r="36.056"/><path style="fill:#7A5436;" d="M118.852,363.58c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.984-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C134.051,332.872,120.443,346.595,118.852,363.58z"/><path style="fill:#C98A2E;" d="M242.572,485.24c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595c15.135,0,29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C253.118,483.229,247.844,485.24,242.572,485.24z"/><circle style="fill:#674230;" cx="268.063" cy="439.146" r="36.056"/><path style="fill:#7A5436;" d="M232.172,435.692c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.984-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C247.371,404.985,233.762,418.708,232.172,435.692z"/><path style="fill:#C98A2E;" d="M263.175,196.929c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C273.721,194.918,268.448,196.929,263.175,196.929z"/><circle style="fill:#674230;" cx="288.667" cy="150.829" r="36.056"/><path style="fill:#7A5436;" d="M252.776,147.382c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C267.975,116.674,254.366,130.397,252.776,147.382z"/><path style="fill:#C98A2E;" d="M386.797,382.222c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C397.343,380.211,392.069,382.222,386.797,382.222z"/><circle style="fill:#674230;" cx="412.289" cy="336.127" r="36.056"/><path style="fill:#7A5436;" d="M376.397,332.674c-0.013,0.139-0.025,0.277-0.036,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.984-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C391.597,301.967,377.988,315.69,376.397,332.674z"/><path style="fill:#C98A2E;" d="M376.495,186.488c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.918-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C387.041,184.477,381.768,186.488,376.495,186.488z"/><circle style="fill:#674230;" cx="401.987" cy="140.393" r="36.056"/><path style="fill:#7A5436;" d="M366.095,136.94c-0.013,0.139-0.025,0.277-0.036,0.416c-0.983,11.93,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C381.295,106.232,367.686,119.955,366.095,136.94z"/><path style="fill:#C98A2E;" d="M221.968,310.109c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.918-2.919-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C232.514,308.098,227.24,310.109,221.968,310.109z"/><circle style="fill:#674230;" cx="247.46" cy="264.015" r="36.056"/><path style="fill:#7A5436;" d="M211.568,260.562c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.93,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C226.768,229.854,213.159,243.577,211.568,260.562z"/><g><circle style="fill:#AD712C;" cx="129.803" cy="294.632" r="7.726"/><circle style="fill:#AD712C;" cx="181.312" cy="294.632" r="7.726"/><circle style="fill:#AD712C;" cx="155.557" cy="248.274" r="7.726"/><circle style="fill:#AD712C;" cx="62.841" cy="340.99" r="7.726"/><circle style="fill:#AD712C;" cx="165.859" cy="454.31" r="7.726"/><circle style="fill:#AD712C;" cx="196.765" cy="413.103" r="7.726"/><circle style="fill:#AD712C;" cx="248.274" cy="351.292" r="7.726"/><circle style="fill:#AD712C;" cx="330.688" cy="320.386" r="7.726"/><circle style="fill:#AD712C;" cx="310.085" cy="340.99" r="7.726"/><circle style="fill:#AD712C;" cx="340.99" cy="371.895" r="7.726"/><circle style="fill:#AD712C;" cx="340.99" cy="433.706" r="7.726"/><circle style="fill:#AD712C;" cx="454.31" cy="217.368" r="7.726"/><circle style="fill:#AD712C;" cx="423.404" cy="423.404" r="7.726"/><circle style="fill:#AD712C;" cx="268.877" cy="31.936" r="7.726"/><circle style="fill:#AD712C;" cx="83.445" cy="124.652" r="7.726"/><circle style="fill:#AD712C;" cx="42.237" cy="186.463" r="7.726"/><circle style="fill:#AD712C;" cx="160.708" cy="201.915" r="7.726"/><circle style="fill:#AD712C;" cx="191.614" cy="186.463" r="7.726"/><circle style="fill:#AD712C;" cx="160.708" cy="171.01" r="7.726"/><circle style="fill:#AD712C;" cx="304.934" cy="248.274" r="7.726"/><circle style="fill:#AD712C;" cx="237.972" cy="93.746" r="7.726"/><circle style="fill:#AD712C;" cx="335.839" cy="186.463" r="7.726"/><circle style="fill:#AD712C;" cx="351.292" cy="232.821" r="7.726"/><circle style="fill:#AD712C;" cx="382.197" cy="232.821" r="7.726"/><circle style="fill:#AD712C;" cx="382.197" cy="263.726" r="7.726"/><circle style="fill:#AD712C;" cx="325.537" cy="78.294" r="7.726"/><circle style="fill:#AD712C;" cx="356.443" cy="62.841" r="7.726"/></svg><span>*/}));
+				span.innerHTML = header[0].firstChild.textContent.replace("🍪", multiline(function(){/*<span title="Cookies"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><circle style="fill:#D5A150;" cx="256" cy="256" r="256"/><path style="fill:#AD712C;" d="M415.237,55.557c34.771,43.71,55.556,99.043,55.556,159.236c0,141.385-114.615,256-256,256c-60.193,0-115.527-20.785-159.237-55.556C102.456,474.194,174.808,512,256,512c141.385,0,256-114.615,256-256C512,174.809,474.194,102.456,415.237,55.557z"/><path style="fill:#C98A2E;" d="M139.553,145.28c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595c15.135,0,29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C150.099,143.269,144.826,145.28,139.553,145.28z"/><circle style="fill:#674230;" cx="165.045" cy="99.186" r="36.056"/><path style="fill:#7A5436;" d="M129.154,95.733c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C144.353,65.025,130.744,78.748,129.154,95.733z"/><path style="fill:#C98A2E;" d="M57.139,310.109c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13C53.272,213.243,67.5,207.35,82.635,207.35s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C67.685,308.098,62.411,310.109,57.139,310.109z"/><circle style="fill:#674230;" cx="82.631" cy="264.015" r="36.056"/><path style="fill:#7A5436;" d="M46.739,260.562c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.93,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C61.939,229.854,48.33,243.577,46.739,260.562z"/><path style="fill:#C98A2E;" d="M129.252,413.127c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.918-2.919-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C139.798,411.116,134.524,413.127,129.252,413.127z"/><circle style="fill:#674230;" cx="154.743" cy="367.033" r="36.056"/><path style="fill:#7A5436;" d="M118.852,363.58c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.984-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C134.051,332.872,120.443,346.595,118.852,363.58z"/><path style="fill:#C98A2E;" d="M242.572,485.24c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595c15.135,0,29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C253.118,483.229,247.844,485.24,242.572,485.24z"/><circle style="fill:#674230;" cx="268.063" cy="439.146" r="36.056"/><path style="fill:#7A5436;" d="M232.172,435.692c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.984-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C247.371,404.985,233.762,418.708,232.172,435.692z"/><path style="fill:#C98A2E;" d="M263.175,196.929c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C273.721,194.918,268.448,196.929,263.175,196.929z"/><circle style="fill:#674230;" cx="288.667" cy="150.829" r="36.056"/><path style="fill:#7A5436;" d="M252.776,147.382c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C267.975,116.674,254.366,130.397,252.776,147.382z"/><path style="fill:#C98A2E;" d="M386.797,382.222c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C397.343,380.211,392.069,382.222,386.797,382.222z"/><circle style="fill:#674230;" cx="412.289" cy="336.127" r="36.056"/><path style="fill:#7A5436;" d="M376.397,332.674c-0.013,0.139-0.025,0.277-0.036,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.984-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C391.597,301.967,377.988,315.69,376.397,332.674z"/><path style="fill:#C98A2E;" d="M376.495,186.488c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.918-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C387.041,184.477,381.768,186.488,376.495,186.488z"/><circle style="fill:#674230;" cx="401.987" cy="140.393" r="36.056"/><path style="fill:#7A5436;" d="M366.095,136.94c-0.013,0.139-0.025,0.277-0.036,0.416c-0.983,11.93,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C381.295,106.232,367.686,119.955,366.095,136.94z"/><path style="fill:#C98A2E;" d="M221.968,310.109c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.918-2.919-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C232.514,308.098,227.24,310.109,221.968,310.109z"/><circle style="fill:#674230;" cx="247.46" cy="264.015" r="36.056"/><path style="fill:#7A5436;" d="M211.568,260.562c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.93,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C226.768,229.854,213.159,243.577,211.568,260.562z"/><g><circle style="fill:#AD712C;" cx="129.803" cy="294.632" r="7.726"/><circle style="fill:#AD712C;" cx="181.312" cy="294.632" r="7.726"/><circle style="fill:#AD712C;" cx="155.557" cy="248.274" r="7.726"/><circle style="fill:#AD712C;" cx="62.841" cy="340.99" r="7.726"/><circle style="fill:#AD712C;" cx="165.859" cy="454.31" r="7.726"/><circle style="fill:#AD712C;" cx="196.765" cy="413.103" r="7.726"/><circle style="fill:#AD712C;" cx="248.274" cy="351.292" r="7.726"/><circle style="fill:#AD712C;" cx="330.688" cy="320.386" r="7.726"/><circle style="fill:#AD712C;" cx="310.085" cy="340.99" r="7.726"/><circle style="fill:#AD712C;" cx="340.99" cy="371.895" r="7.726"/><circle style="fill:#AD712C;" cx="340.99" cy="433.706" r="7.726"/><circle style="fill:#AD712C;" cx="454.31" cy="217.368" r="7.726"/><circle style="fill:#AD712C;" cx="423.404" cy="423.404" r="7.726"/><circle style="fill:#AD712C;" cx="268.877" cy="31.936" r="7.726"/><circle style="fill:#AD712C;" cx="83.445" cy="124.652" r="7.726"/><circle style="fill:#AD712C;" cx="42.237" cy="186.463" r="7.726"/><circle style="fill:#AD712C;" cx="160.708" cy="201.915" r="7.726"/><circle style="fill:#AD712C;" cx="191.614" cy="186.463" r="7.726"/><circle style="fill:#AD712C;" cx="160.708" cy="171.01" r="7.726"/><circle style="fill:#AD712C;" cx="304.934" cy="248.274" r="7.726"/><circle style="fill:#AD712C;" cx="237.972" cy="93.746" r="7.726"/><circle style="fill:#AD712C;" cx="335.839" cy="186.463" r="7.726"/><circle style="fill:#AD712C;" cx="351.292" cy="232.821" r="7.726"/><circle style="fill:#AD712C;" cx="382.197" cy="232.821" r="7.726"/><circle style="fill:#AD712C;" cx="382.197" cy="263.726" r="7.726"/><circle style="fill:#AD712C;" cx="325.537" cy="78.294" r="7.726"/><circle style="fill:#AD712C;" cx="356.443" cy="62.841" r="7.726"/></svg><span>*/}));
 				header[0].replaceChild(span, header[0].firstChild);
 			}
 			let content = $("#account-popup-content").find("div.content");
@@ -6966,16 +7202,16 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 	<div id="changesLogBox">
 		<div id="changesLogHead" class="header">
 			<div class="back" title="Back">
-				<svg style="max-width:1.2em;max-height:1.2em;" viewBox="0 0 24 24">
+				<svg viewBox="0 0 24 24">
 					<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
 				</svg>
 			</div>
 			<h4>Airdates.tv enhancer v# Changes Log</h4>
 			<div class="close" title="Close">
-				<svg style="max-width:1.2em;max-height:1.2em;" viewBox="0 0 24 24">
+				<svg viewBox="0 0 24 24">
 					<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
 				</svg>
-				<svg style="max-width:1.2em;max-height:1.2em;" viewBox="0 0 24 24">
+				<svg viewBox="0 0 24 24">
 					<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
 				</svg>
 			</div>
