@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.46.2
+// @version     1.47
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,8 +17,11 @@
 
 
 var changesLogText = multiline(function(){/*
+1.47 (2018-10-19)
+	+ links regex now applied to the entire url, but only if MONKEY_REGEXP or MONKEY_N_REGEXP tags were not used
+	! MagnetDL links included unnecessary / at the end search keyword
 1.46.2 (2018-10-19)
-	! horizontal scrollbar shown when links manager is overlowing
+	! horizontal scrollbar shown when links manager is overflowing
 	! submit button not disabled after new link was submitted
 1.46.1 (2018-10-19)
 	! issues after a link was created and deleted without page refresh
@@ -29,7 +32,7 @@ var changesLogText = multiline(function(){/*
 	! in older browsers show details would not open on first click and episode offset would fail
 	! MagnetDL links
 1.45.3 (2018-10-02)
-	! track today not working when 1st of the month is monday
+	! track today not working when 1st of the month is Monday
 1.45.2 (2018-09-29)
 	! missing comments reload button in some browsers
 	! black comments reload icon in dark theme
@@ -5390,9 +5393,10 @@ log(err);
 				title = div._title && div._title._titleOrig ? div._title._titleOrig : el.children("div.title").text();
 
 		title = title.replace("?", "").replace(/[0-9]+-[0-9]+-[0-9]+/, "");
-	//				MONKEY = encodeURIComponent( title ),
 		let _MONKEY = title.replace(/ E[0-9]+/g, "") || "",
 				_MONKEY_N = title.replace( /\s*S[0-9]+E[0-9]+$/g, '' ) || "",
+				_WIKI_TITLE = el.data("series-source"),
+				_MONKEY_ID = el.data("series-id"),
 				regexp = getRegexp(engine.regexp, undefined, true),
 				MONKEY_REGEXP = _MONKEY,
 				MONKEY_N_REGEXP = _MONKEY_N;
@@ -5411,8 +5415,8 @@ log(err);
 
 		let MONKEY = encodeURIComponent( _MONKEY ),
 				MONKEY_N = encodeURIComponent( _MONKEY_N ),
-				WIKI_TITLE = encodeURIComponent( el.data("series-source") ),
-				MONKEY_ID = encodeURIComponent( el.data("series-id") ),
+				WIKI_TITLE = encodeURIComponent( _WIKI_TITLE ),
+				MONKEY_ID = encodeURIComponent( _MONKEY_ID ),
 				href = engine.href
 							.replace( "MONKEY_ID", MONKEY_ID )
 							.replace( "MONKEY_N_REGEXP", MONKEY_N_REGEXP )
@@ -5421,6 +5425,15 @@ log(err);
 							.replace( "MONKEY", MONKEY )
 							.replace( "{WIKI_TITLE}", WIKI_TITLE );
 
+		if (regexp.length && engine.href.indexOf("MONKEY_N_REGEXP") == -1 && engine.href.indexOf("MONKEY_REGEXP") == -1)
+		{
+			
+			for(let i = 0; i < regexp.length; i++)
+			{
+				href = href.replace(regexp[i][0], regexp[i][1]);
+			}
+		}
+		
 		return {
 			href: fixLink(href, engine),
 			title: title,
@@ -5572,12 +5585,14 @@ log(err);
 				var e = $( $.parseHTML($( "#detailsTemplate" ).html()) ).appendTo( $entry );
 				
 				let _MONKEY = $entry.children("div.title").text(),
-						_MONKEY_N = _MONKEY.replace( /S[0-9]+E[0-9]+$/g, '' );
+						_MONKEY_N = _MONKEY.replace( /S[0-9]+E[0-9]+$/g, '' ),
+						_WIKI_TITLE = $entry.data("series-source"),
+						_MONKEY_ID = $entry.data("series-id");
 
 				var MONKEY = encodeURIComponent( _MONKEY ); //.replace( /[^A-Za-z0-9 -]/g, '' ) );
 				var MONKEY_N = encodeURIComponent( _MONKEY_N );
-				var MONKEY_ID = encodeURIComponent( $entry.data("series-id") );
-				var WIKI_TITLE = encodeURIComponent( $entry.data("series-source") );
+				var MONKEY_ID = encodeURIComponent( _MONKEY_ID );
+				var WIKI_TITLE = encodeURIComponent( _WIKI_TITLE );
 
 				$.each( engs, function( i, engine ){
 					let regexp = getRegexp(engine.regexp, undefined, true),
@@ -5610,6 +5625,14 @@ log(err);
 										.replace( "MONKEY", MONKEY )
 										.replace( "{WIKI_TITLE}", WIKI_TITLE );
 
+					if (regexp.length && engine.href.indexOf("MONKEY_N_REGEXP") == -1 && engine.href.indexOf("MONKEY_REGEXP") == -1)
+					{
+						
+						for(let i = 0; i < regexp.length; i++)
+						{
+							href = href.replace(regexp[i][0], regexp[i][1]);
+						}
+					}
 					a.attr( "href", href )
 						.addClass(engine.cls||"")
 						.text( engine.name );
@@ -5871,7 +5894,7 @@ log(err);
 				return "/" + b[0] + "/" + b;
 			});
 */
-			link = link.replace(/\/[a-z]\/\/?([^\/]*\/?)$/, "/search/?q=$1&m=1&x=0&y=0");
+			link = link.replace(/\/[a-z]\/\/?([^\/]*)\/?$/, "/search/?q=$1&m=1&x=0&y=0");
 		}
 
 		return link;
