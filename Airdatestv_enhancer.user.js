@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.47
+// @version     1.48
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,10 @@
 
 
 var changesLogText = multiline(function(){/*
+1.48 (2018-11-03)
+	+ ability add custom shows
+	+ text shadow on highlighted (rainbow) search results
+	! in some cases script totally failed, due to work around for SVG images showing too large while page is still loading.
 1.47 (2018-10-19)
 	+ links regex now applied to the entire url, but only if MONKEY_REGEXP or MONKEY_N_REGEXP tags were not used
 	! MagnetDL links included unnecessary / at the end search keyword
@@ -221,11 +225,16 @@ let log = console.log.bind(console),
 		blankFunc = function(){};
 
 /*work around for some SVG pictures shown huge before page is fully loaded*/
-(function(style)
+(function loop()
 {
-	document.getElementsByTagName("head")[0].appendChild(style);
+	let head = document.getElementsByTagName("head");
+	if (!head.length)
+		return setTimeout(loop);
+
+	let style = document.createElement("style");
+	head[0].appendChild(style);
 	style.innerHTML = "svg{max-width:1.2em;max-height:1.2em;}";
-})(document.createElement("style"));
+})();
 
 if (!isFrame)
 {
@@ -1232,6 +1241,7 @@ a
 
 #account-popup-content,
 #settings-popup .content,
+#manage-cushows-popup-content,
 #manage-links-popup-content,
 #changesLogBox
 {
@@ -1241,12 +1251,13 @@ a
 #searchResults a
 {
 	color: rgb(210, 210, 210);
-	fill: rgb(210,210, 210);
+	fill: rgb(210, 210, 210);
 }
 
 svg,
 #account-popup-content .content a,
 #settings-popup .content a,
+#manage-cushows-popup-content a,
 #manage-links-popup-content a,
 #changesLogBox
 {
@@ -1254,6 +1265,10 @@ svg,
 	fill: rgb(210,210, 210) !important;
 }
 
+#cushows-list > div:hover,
+#cushows-list > div:hover *,
+#cushows-list > div.edit,
+#cushows-list > div.edit *,
 #manage-links-popup .content > div.dragging:not(.hide),
 #manage-links-popup .content > div.dragging:not(.hide) *,
 #manage-links-popup .content:not(.dragging) > div:hover,
@@ -1263,6 +1278,7 @@ svg,
 	fill: rgb(76, 76, 76) !important;
 }
 
+#cushows-list > div:hover,
 #manage-links-popup .content > div.dragging:not(.hide),
 #manage-links-popup .content:not(.dragging) > div:hover
 {
@@ -1364,6 +1380,14 @@ div.entry
 {
 	color: #b9b2b2;
 }
+#cushows-list > div.edit
+{
+	color: black;
+	fill: black;
+	background-color: #90FF90;
+	font-weight: bold;
+}
+
 /*
 END DARK THEME
 *//*
@@ -2030,7 +2054,7 @@ END DARK THEME
 			</div>
 			<div>
 				<label></label>
-				<div>
+				<div class="action">
 					<input id="engine-submit" type="submit" value="Submit">
 					<input id="engine-reset" type="reset" value="Clear">
 				</div>
@@ -2056,8 +2080,6 @@ END DARK THEME
 				engResHidden = $('<div id="engine-hidden" class="entry" data-series-id="1234" data-series-source="List of Monsuno episodes" data-date="20120223"><div class="title">Monsuno S01E01</div></div>').appendTo(popup),
 				engRegexp = $("#engine-regexp"),
 				engRegexpReplace = $("#engine-regexp-replace"),
-				prevTarget = null,
-				prevVal = null,
 				entry = $("div.entry");
 
 		if (entry.length)
@@ -2076,8 +2098,6 @@ END DARK THEME
 			clearTimeout(change.timer);
 			change.timer = setTimeout(function()
 			{
-				prevVal = e.target.value;
-				prevTarget = e.target;
 				engResHidden.find(".details").remove();
 				let txt = engRegexp.val().trim(),
 						reg = getRegexp(txt, engRegexpReplace.val().trim()),
@@ -2155,7 +2175,6 @@ END DARK THEME
 		{
 			clearTimeout(change.timer);
 			engRes.html("");
-			prevVal = null;
 			setTimeout(buttonsUpdate);
 		});
 		buttonsUpdate();
@@ -2523,7 +2542,7 @@ END DARK THEME
 				clone.remove();
 				let editBox = $('<span class="editBox"></span>').appendTo(div);
 				$('<span class="edit" title="Edit"><svg viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path></svg></span>').appendTo(editBox).click(function(e)
-				{
+ 				{
 					engId.val((getHost(engine.href) == engine.host) ? "" : engine.host);
 					engName.val(engine.name);
 					engUrl.val(engine.href.replace(/http:\/\//i, ""));
@@ -3026,6 +3045,8 @@ END DARK THEME
 		$("#leaveArchive").text(ym>ymToday?"Leave future":"Leave archive");
 
 		let whenDone = function(){
+			// insert custom shows
+			customShows();
 			// set title
 			$("#archive-current").text((!!match&&match.length==3)?ym2str(ym):"Go waste your time");
 			// highlight today with a happy yellow background
@@ -3224,7 +3245,6 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 			}, true);
 			day.inited = true;
 		}
-
 		entries.each(function(i, entry)
 		{
 			let id = entry.getAttribute("data-series-id");
@@ -3767,6 +3787,7 @@ div.entry,
 	cursor: pointer;
 }
 
+.tools .edit  svg,
 .showhide0 > svg,
 .showhide1 > svg
 {
@@ -3886,8 +3907,26 @@ body.collapseMulti div.day:not(.expand):not(.opened) div.entry.multif div.title:
 	top: 0;
 	width: 3px;
 }
+
+div.entry.custom div.title:after
+{
+	content: "";
+	background-color: lightgreen;
+	border-left: 1px solid white;
+}
+
+div.entry.custom div.title:after
+{
+	position: absolute;
+	height: 100%;
+	right: -1px;
+	top: 0;
+	width: 3px;
+}
+
 /*Account popup*//*
 #settings-popup .content h4,
+#manage-cushows-popup .content h4,
 #manage-links-popup .content h4,
 #account-popup-content .content h4
 {
@@ -3915,6 +3954,7 @@ div.moreOpt:not([opened]) > div
 	display: none;
 }
 #settings-popup .content,
+#manage-cushows-popup .content,
 #manage-links-popup .content,
 #account-popup-content .content
 {
@@ -3964,6 +4004,7 @@ div.moreOpt:not([opened]) > div
 }
 
 #settings-popup,
+#manage-cushows-popup,
 #manage-links-popup
 {
 	position: absolute;
@@ -3975,6 +4016,7 @@ div.moreOpt:not([opened]) > div
 }
 #account-popup-content,
 #settings-popup-content,
+#manage-cushows-popup-content,
 #manage-links-popup-content
 {
 	position: absolute;
@@ -4023,19 +4065,24 @@ div:not(#account-popup-content) > .header
 	height: 1.5em;
 }
 #settings-popup .content,
+#manage-cushows-popup .content,
 #manage-links-popup .content,
+#cushows-edit,
 #engine-edit
 {
 	padding: 3px 10px;
 	overflow: auto;
 	max-height: 30.7em;
 }
+
+#cushows-edit,
 #engine-edit
 {
 	overflow: inherit;
 	border-top: 1px dotted;
 	padding-top: 0.5em;
 }
+#cushows-edit > div,
 #engine-edit > div,
 #manage-links-popup .content > div
 {
@@ -4043,6 +4090,7 @@ div:not(#account-popup-content) > .header
 	white-space: nowrap;
 	height: 100%;
 }
+#cushows-edit > div > *,
 #engine-edit > div > *,
 #manage-links-popup .content > div > *
 {
@@ -4061,14 +4109,18 @@ body.edge #manage-links-popup .content > div > img
 {
 	margin-bottom: -2px !important;
 }
-.editBox > .edit,
-.editBox > .del
+.editBox > span
 {
 	cursor: pointer;
 	padding: 3px;
 	display: inline-block;
 	height: 1em;
 }
+.editBox > span:hover
+{
+	outline: 1px dotted #FF9090;
+}
+#cushows-list > div:hover,
 #manage-links-popup .content > div.dragging:not(.hide),
 #manage-links-popup .content:not(.dragging) > div:hover
 {
@@ -4102,6 +4154,7 @@ body.edge #manage-links-popup .content > div > img
 {
 	outline: 1px dashed grey;
 }
+#cushows-edit > div > label,
 #engine-edit > div > label
 {
 	text-align: right;
@@ -4111,6 +4164,8 @@ body.edge #manage-links-popup .content > div > img
 	vertical-align: top;
 	padding-top: 0.3em;
 }
+#cushows-edit > div > div,
+#cushows-edit > div > span,
 #engine-edit > div > div
 {
 	width: 100%;
@@ -4125,6 +4180,8 @@ body.ff #engine-edit > div > div.engine-url
 {
 	padding-right: 2.0em;
 }
+#cushows-edit > div > div > input,
+#cushows-edit > div > div > textarea,
 #engine-edit > div > div > input
 {
 	width: 100%;
@@ -4177,8 +4234,8 @@ body.edge #engine-edit > div > div > select
 	margin: 0 4px 0 0;
 }
 
-#engine-submit,
-#engine-reset
+#engine-edit .action > input,
+#cushows-edit .action > input
 {
 	font-size: 90%;
 	display: inline-block !important;
@@ -4218,6 +4275,8 @@ div.reset > span
 	vertical-align: bottom;
 	font-size: 1.3em;
 }
+#cushows-list > div.update,
+#manage-cushows-popup-content .content > div.update,
 #manage-links-popup-content .content > div.update
 {
 	-webkit-transition:background-color 0.4s ease-in;
@@ -5099,6 +5158,106 @@ disqus notificaiton badge
 	display: none;
 }
 
+#manage-cushows-popup .content
+{
+	padding: 0 5px;
+}
+#cushows-list
+{
+	margin: 5px 0;
+}
+#cushows-edit textarea
+{
+	font-size: 0.9em;
+}
+
+#cushows-edit
+{
+ border-top: 1px dotted
+}
+
+#cushows-edit > div
+{
+	display: table-row;
+}
+
+#cushows-edit > div > *
+{
+	display: table-cell;	
+}
+
+#cushows-edit textarea
+{
+	white-space: pre;
+	overflow: auto;
+	vertical-align: top;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	position: relative;
+}
+
+
+#cushows-season,
+#cushows-episode,
+#cushows-num,
+#cushows-days
+{
+	width: 3em;
+}
+
+#cushows-date
+{
+	width: 6em;
+}
+
+#cushows-edit > div.info
+{
+	font-style: italic;
+	font-size: 0.9em;
+	color: grey;
+}
+#cushows-edit > div > span
+{
+	max-width: unset;
+	margin-right: 3em;
+	display: block;
+}
+
+#cushows-list > div
+{
+	padding-left: 5px;
+	padding-right: 5px;
+	cursor: default;
+}
+
+#cushows-list > div > span
+{
+	display: table-cell;
+}
+
+#cushows-list > div > span:nth-child(1)
+{
+	width: 100%;
+}
+#cushows-list > div.edit
+{
+	color: black;
+	fill: black;
+	background-color: #90FF90;
+	font-weight: bold;
+}
+
+.entry:not(.custom) .edit
+{
+	display: none;
+}
+
+.searchResult .title
+{
+	color: black;
+	text-shadow: 0 1px 2px white, 0 -1px 2px white, 1px 0 2px white, -1px 0 2px white, 1px 1px 2px white, -1px -1px 2px white, -1px 1px 2px white, 1px -1px 2px white;
+}
 @keyframes rotate-loading {
  0% {
 	transform:rotate(0)
@@ -5453,7 +5612,6 @@ log(err);
 	{
 		if (showMyShows.box || showMyHidden.box)
 			return
-
 		let entries = $("#searchResults").find("div.entry");
 		entries.each(watched.attach);
 		setTimeout(function()
@@ -5473,6 +5631,7 @@ log(err);
 			let id = this.getAttribute("data-series-id"),
 					wiki = DB.info[id] ? DB.info[id][1] : $('div.entry[data-series-id="' + id + '"]').attr("data-series-source"),
 					title = $(this).find(".description > b:first-child");
+
 			if (wiki)
 			{
 				wikiTitle(title, wiki)
@@ -5480,12 +5639,23 @@ log(err);
 			else
 			{
 				let obj = $("<div/>");
+				DB.infoAdd(id);
+				if (id > customShows.id)
+				{
+					DB.infoAdd(id);
+					if (DB.info[id] && DB.info[id][1])
+						wikiTitle(title, DB.info[id][1]);
+
+					return;
+				}
+
+				
 				obj.load("/s?"+$.param({q:"info:" + id}), function(e, t, r)
 				{
 					if (t == "error")
 						return;
 
-					let wiki = obj.find(".entry").attr("data-series-source");
+					wiki = obj.find(".entry").attr("data-series-source");
 					if (wiki)
 						wikiTitle(title, wiki);
 				})
@@ -5725,7 +5895,7 @@ log(err);
 			}, false);
 			showHideBox.appendChild(showHideObj);
 			$entry.find(".engines > .tools").last().append(showHideBox);
-
+			
 			let epNumFixBox = document.createElement("div"),
 					epNumFixInputSeason = document.createElement("input"),
 					epNumFixInputEpisode = document.createElement("input"),
@@ -5836,6 +6006,23 @@ log(err);
 				epNumFixBox.appendChild(box);
 				showHideBox.parentNode.insertBefore(epNumFixBox, showHideBox.nextSibling);
 			}
+
+			let editBox = document.createElement("div"),
+					editObj = document.createElement("a"),
+					editIcon = document.createElement("span");
+			
+			editIcon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path></svg>Edit';
+			editObj.appendChild(editIcon);
+			editBox.appendChild(editObj);
+			editBox.className = "edit";
+			editObj.href = "#";
+			editObj.addEventListener("click", function(e)
+			{
+				e.stopPropagation();
+				e.preventDefault();
+				customShows.show(showId);
+			}, false);
+			showHideBox.parentNode.insertBefore(editBox, showHideBox.nextSibling);
 		}
 		if (_engs)
 			return;
@@ -5902,7 +6089,6 @@ log(err);
 
 	function showHideLoad()
 	{
-
 		if (showHideLoad.inited)
 			return;
 
@@ -5977,6 +6163,780 @@ log(err);
 			return false;
 		});
 	} //showHideLoad()
+
+
+
+
+
+
+
+	//BEGIN custom shows
+	function customShows()
+	{
+		if (!customShows.inited)
+			customShows.init();
+
+		let list = customShows.listDate,
+				days = document.querySelector(".days"),
+				entry = document.createElement("div"),
+				title = document.createElement("div");
+
+		entry.className = "entry custom";
+		title.className = "title";
+		entry.appendChild(title);
+		for(let i in list)
+		{
+			let day = days.querySelector('[data-date="' + i + '"]');
+//log(day);
+			if (!day)
+				continue;
+
+			let added = false;
+			loopData:
+			for(let n = 0; n < list[i].length; n++)
+			{
+				let data = list[i][n],
+						id = data.id - customShows.id;
+
+				data.name = customShows._list.l[id][0];
+				data.wiki = customShows._list.l[id][2];
+				let name = data.name + " " + (data.season ? "S" + pad2(data.season) : "") + "E" + pad2(data.episode),
+						_entries = day.querySelectorAll('[data-series-id="' + data.id + '"]'),
+						_entry = null,
+						titleDiv = null;
+
+				for(let e = 0; e < _entries.length; e++)
+				{
+					
+					if (_entries[e]._title && _entries[e]._title._titleDefault == name)
+					{
+						_entry = _entries[e];
+						continue loopData;
+					}
+					titleDiv =  _entries[e].querySelector('div.title');
+					if (titleDiv && titleDiv.innerText == name)
+						continue loopData;
+				}
+
+
+				entry = entry.cloneNode(true);
+				title = entry.firstChild;
+				title.innerText = name;
+				entry.setAttribute("data-series-id", data.id);
+				entry.setAttribute("data-series-source", data.wiki || "");
+				entry.classList.toggle("season-premiere", data.episode == 1 && data.season > 1);
+				entry.classList.toggle("series-premiere", data.season == 1 && data.episode == 1);
+				day.appendChild(entry);
+				added = true;
+			}
+			if (added)
+			{
+				//sort by name;
+				Array.prototype.slice
+					.call(day.querySelectorAll(".entry"))
+					.map(function (a)
+					{
+						return day.removeChild(a);
+					})
+					.sort(function (a, b)
+					{
+						return a.children[0].innerText.toLowerCase().localeCompare(b.children[0].innerText.toLowerCase());
+					})
+					.forEach(function (a)
+					{
+						day.appendChild(a);
+					});
+			}
+	
+		}
+	}//customShows()
+	customShows.d2y = function(date)
+	{
+		return "" + ~~(date/10000);
+	}
+	customShows.d2m = function(date)
+	{
+		return ("0" + ~~((date / 100) % 100)).slice(-2);
+	}
+	customShows.d2d = function(date)
+	{
+		return ("0" + ~~(date % 100)).slice(-2);
+	}
+/*
+	customShows.__list = {
+		i: 4, //next ID
+		l: {
+				1: [
+						"a Test",	// name
+						[
+							[
+								"S01E01",	// start episode #
+								20181101,	// start date
+								2, 			// total number of episodes
+								7,				// interval in days between episodes
+							],
+							[
+								"S02E01",	// start episode #
+								20181101,	// start date
+								2, 			// total number of episodes
+								7,				// interval in days between episodes
+							]
+						],
+						"" //wiki
+				],
+				2: [
+						"Test2", // name
+						[
+							[
+								"S01E01",	// start episode #
+								20181116,	// start date
+								4, 			// total number of episodes
+								0,				// interval in days between episodes
+							]
+						],
+						"" //wiki
+				],
+				3: [
+						"bBad Blood", // name
+						[
+							[
+								"S02E01",	// start episode #
+								20181101,	// start date
+								2, 			// total number of episodes
+								0,				// interval in days between episodes
+							],
+							[
+								"S02E03",	// start episode #
+								20181108,	// start date
+								2, 			// total number of episodes
+								7,				// interval in days between episodes
+							]
+						],
+						"test blod" //wiki
+				],
+			}
+	};
+*/
+	customShows.id = 1000000;
+	customShows.init = function(_list)
+	{
+		customShows._list = _list || ls("customShows")  || {i:1,l:{}};
+		customShows.list = {};
+		customShows.listDate = {};
+		let list = customShows._list.l;
+
+		for(let i in list)
+		{
+			let name = list[i][0],
+					id = ~~i,
+					data = list[i][1],
+					wiki = list[i][2];
+			for(let n = 0; n < data.length; n++)
+			{
+				let ep = data[n][0],
+						date = data[n][1],
+						num = data[n][2],
+						days = data[n][3],
+						_date = new Date(0),
+						epArray = /(s([0-9]+))?e([0-9]+)/gi.exec(ep),
+						season = ~~epArray[2],
+						episode = ~~epArray[3];
+
+				_date.setFullYear(this.d2y(date), this.d2m(date)-1, this.d2d(date));
+				_date.setHours(0);
+				for (let e = 0; e < num; e++)
+				{
+					let newDate = "" + _date.getFullYear() + pad2(_date.getMonth()+1) + pad2(_date.getDate()),
+							newId = id + customShows.id;
+					if (!customShows.list[newId])
+						customShows.list[newId] = [];
+
+					customShows.list[newId][customShows.list[newId].length] = {
+						date: newDate,
+						season: season,
+						episode: episode
+					}
+					if (!customShows.listDate[newDate])
+						customShows.listDate[newDate] = [];
+
+					customShows.listDate[newDate][customShows.listDate[newDate].length] = {
+						id: newId,
+						season: season,
+						episode: episode
+					}
+					_date.setDate(_date.getDate() + days);
+					episode++;
+				}
+			}
+		}
+		customShows.inited = true;
+	}//customShows.init()
+
+	customShows.save = function()
+	{
+		ls("customShows", customShows._list);
+	}
+
+	customShows.remove = function(id)
+	{
+		delete customShows._list.l[id];
+
+		$('[data-series-id="' + (id + customShows.id) + '"]').each(function()
+		{
+			if (this.hasAttribute("opened"))
+				this.parentNode.classList.toggle("opened", false);
+		}).remove();
+		$('#cush_' + id).remove();
+		assignColor(id + customShows.id, "FFFFFF", true);
+		showHide(id + customShows.id, 0);
+		customShows.save();
+		customShows.init(customShows._list);
+		if ($("#searchbar").hasClass("active"))
+		{
+			let s = $("#searchBecauseNoOneChecks"),
+					v = s.val();
+			s.val("").trigger("change").val(v).trigger("change");
+		}
+
+	}//customShows.remove()
+
+	customShows.search = function(_id, name)
+	{
+		let searchResults = $("#searchResults");
+		if (name)
+		{
+			let html = "";
+			name = ("" + name).toLowerCase();
+			for(let i in customShows._list.l)
+			{
+				let data = customShows._list.l[i],
+						id = ~~i + customShows.id;
+				if (data[0].toLowerCase().indexOf(name) == -1)
+					continue;
+				let ep = {},
+						today = new Date(),
+						last = null,
+						next = null;
+
+				today = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+				for(let n = 0; n < customShows.list[id].length; n++)
+				{
+					ep = customShows.list[id][n];
+					let date = ~~ep.date;
+					if (date <= today)
+					{
+						last = date;
+					}
+					else if (date > today)
+					{
+						next = date;
+						break;
+					}
+					
+				}
+				html += '<li data-series-id="' + id + '">' +
+								'<span class="color picker picker-light"></span> ' +
+								'<span class="description"><b>' + data[0] + '</b><br>' +
+								(last ? "Last aired" : "Next show") +
+								': <a class="archive-link" href="/archive/' + 
+								customShows.d2y(ep.date) + "-" + customShows.d2m(ep.date) + "#" + customShows.d2d(ep.date) +
+								'">' + customShows.d2y(ep.date) + "-" + customShows.d2m(ep.date) + "-" + customShows.d2d(ep.date) + "</a><br>" +
+								'Indexed: <a href="javascript:search(\'info:' + id + '\');">' + customShows.list[id].length + ' episode' + (customShows.list[id].length > 1 ? "s" : "") + '</a><br>' +
+								'</span></li>';
+								
+			}
+			if (html)
+			{
+				//sort by name;
+				let p = document.getElementById("resultsBecauseNoOneChecks");
+				if (p.innerText.indexOf("No results") != -1)
+					p.innerHTML = "";
+
+				p.innerHTML += html;
+				Array.prototype.slice
+					.call(p.children)
+					.map(function (a)
+					{
+						return p.removeChild(a);
+					})
+					.sort(function (a, b)
+					{
+						return a.innerText.toLowerCase().trim().localeCompare(b.innerText.toLowerCase().trim());
+					})
+					.forEach(function (a)
+					{
+						p.appendChild(a);
+					});
+			}
+			return;
+		}
+		let id = ~~_id - customShows.id,
+				data = customShows.list[_id];
+
+		searchResults.html("");
+		if (!data)
+			return searchResults.html("Show doesn't exist");
+
+		data.name = customShows._list.l[id][0];
+		data.wiki = customShows._list.l[id][2];
+		let html = '<b>' + data.name + ' (all episodes)</b><br>';
+		for(let i = 0; i < data.length; i++)
+		{
+			html +=	'<div class="entry custom' + (!i ? " separating" : "") + '" ' +
+							'data-series-id="' + _id + '" ' +
+							'data-series-source="' + data.wiki + '" ' +
+							'data-date="' + data[i].date + '">' +
+							'<div class="title"><div class="tiny-date">' + customShows.d2y(data[i].date) + "-" + customShows.d2m(data[i].date) + "-" + customShows.d2d(data[i].date) + '</div>' +
+							data.name + " " + (data[i].season ? "S" + pad2(data[i].season) : "" ) + "E" + pad2(data[i].episode) +
+							'</div></div>';
+		}
+		html += "<br>Your added custom show<br><br>";
+		searchResults.html(html);
+		markSearchResults();
+	}//customShow.search()
+
+
+
+	customShows.show = function(id)
+	{
+		if (!customShows.div)
+			customShows.manager();
+
+		let div = $(customShows.div);
+		hidePopups()
+		div.show();
+		setPopup(true);
+		if (id)
+		{
+			let obj = $("#cush_" + (~~id - customShows.id));
+			let p = obj[0].parentElement.parentElement.getBoundingClientRect(),
+					el = obj[0].getBoundingClientRect();
+			if (p.bottom < el.bottom)
+			{
+				obj[0].parentElement.parentElement.scrollTop = obj[0].parentElement.parentElement.scrollTop + (el.top - p.bottom) + el.height + 5;
+			}
+			if (el.top < p.top)
+			{
+				obj[0].parentElement.parentElement.scrollTop = obj[0].parentElement.parentElement.scrollTop + (el.bottom - p.top) - el.height - 5;
+			}
+			obj.trigger("click");
+		}
+	}//customShows.show()
+	
+	customShows.hide = function()
+	{
+		$(customShows.div).hide();
+		setPopup(false);
+	}
+
+	customShows.manager = function customShowsManager(callback)
+	{
+		if (customShows.div)
+			return callback ? callback() : true;
+
+		let html = multiline(function(){/*
+	<div id="manage-cushows-popup">
+		<div id="manage-cushows-popup-content">
+			<div class="header">
+				<div class="back" title="Back">
+					<svg viewBox="0 0 24 24">
+						<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
+					</svg>
+				</div>
+				<h4>Custom shows</h4>
+				<div class="close" title="Close">
+					<svg viewBox="0 0 24 24">
+						<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
+					</svg>
+					<svg viewBox="0 0 24 24">
+						<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
+					</svg>
+				</div>
+			</div>
+			<div class="content"></div>
+		</div>
+	</div>
+			*/});//html
+
+		let popup = $(html).appendTo("body");
+		customShows.div = popup[0];
+		$(popup).find("[id^=account]").each(function()
+		{
+			this.id = this.id.replace("account", "manage-cushows");
+		});
+
+		let content = $(popup).find(".content").html("");
+		html = multiline(function(){/*
+	<form id="cushows-form">
+		<div id="cushows-edit">
+			<div>
+				<label>Name:</label>
+				<div>
+					<input id="cushows-name" placeholder="Name of the show">
+				</div>
+			</div>
+			<div>
+				<label>Wiki URL:</label>
+				<div>
+					<input id="cushows-wiki" placeholder="&lt;optional&gt;">
+				</div>
+			</div>
+			<div>
+				<label>Episodes:</label>
+				<div>
+					<textarea id="cushows-data" title="One entry per line" placeholder="S01E01 | YYYYMMDD | NUM EPISODES | INTERVAL IN DAYS"></textarea>
+				</div>
+			</div>
+			<div class="info">
+				<label></label>
+				<span>Separate entries with a new line</span>
+			</div>
+			<div class="info">
+				<label>Format:</label>
+				<span>S[0-9]E[0-9] | YYYYMMDD | NUM OF EPISODES | INTERVAL IN DAYS</span>
+			</div>
+			<div class="info">
+				<label>Example:</label>
+				<div id="cushows-example"></div>
+			</div>
+			<div>
+				<label></label>
+				<div class="action">
+					<input id="cushows-submit" type="submit" value="Submit">
+					<input id="cushows-reset" type="reset" value="Clear">
+				</div>
+			</div>
+		</div>
+	</form>
+		*/});//html
+
+		$(html).appendTo(content.parent());
+
+		let cushName = $("#cushows-name"),
+				cushWiki = $("#cushows-wiki"),
+				cushData = $("#cushows-data"),
+				cushForm = $("#cushows-form"),
+				cushSubmit = $("#cushows-submit"),
+				cushReset = $("#cushows-reset"),
+				editId = null,
+				today = new Date(),
+				cushDiv = document.createElement("div");
+
+		cushDiv.id = "cushows-list";
+		today = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+//		$("#cushows-example").html("S" + pad2(rand(0, 99)) + "E" + pad2(rand(0, 99)) + " | " + rand(2000, (new Date()).getFullYear() + 1) + pad2(rand(1, 12)) + pad2(rand(1, 31)) + " | " + rand(0, 22) + " | " + (rand(0, 1) ? 0 : 7));
+		$("#cushows-example").html("S" + pad2(rand(0, 99)) + "E" + pad2(rand(0, 99)) + " | " + today + " | " + rand(0, 22) + " | " + (rand(0, 1) ? 0 : 7));
+		function change(e)
+		{
+			clearTimeout(change.timer);
+			change.timer = setTimeout(function()
+			{
+				let error = false,
+						data = cushData.val().trim().split("\n");
+				for(let i = 0; i < data.length; i++)
+				{
+					data[i] = data[i].replace(/\s*\|\s*/g, "|").trim();
+					if (data[i] && !data[i].match(/^S[0-9]{1,2}E[0-9]{1,2}\|[0-9]{8}\|[0-9]+\|[0-9]+$/i))
+					{
+						error = true;
+						break;
+					}
+				}
+				cushData.toggleClass("error", error);
+				buttonsUpdate();
+			
+			}, 300);
+		}//change()
+
+		function buttonsUpdate()
+		{
+			cushSubmit.prop("disabled", !cushName.val().trim() || !cushData.val().trim() || cushData.hasClass("error"));
+			cushReset.prop("disabled", !(cushName.val().trim() + cushData.val() + cushWiki.val()));
+		}
+
+		function sortShows()
+		{
+			Array.prototype.slice
+				.call(cushDiv.children)
+				.map(function (a)
+				{
+					return cushDiv.removeChild(a);
+				})
+				.sort(function (a, b)
+				{
+					return a.innerText.toLowerCase().trim().localeCompare(b.innerText.toLowerCase().trim());
+				})
+				.forEach(function (a)
+				{
+					cushDiv.appendChild(a);
+				});
+		}
+		cushName.on("input change", change);
+		cushWiki.on("input change", change);
+		cushData.on("input change", change);
+		cushReset.click(function(e)
+		{
+			clearTimeout(change.timer);
+			editId = null;
+			cushData.toggleClass("error", false);
+			edit();
+			setTimeout(buttonsUpdate);
+		});
+		buttonsUpdate();
+		function flash(obj, color, scroll)
+		{
+			if (!obj[0].parentElement)
+				return;
+
+			let p = obj[0].parentElement.parentElement.getBoundingClientRect(),
+					el = obj[0].getBoundingClientRect();
+			if (typeof(scroll) == "undefined")
+				scroll = true;
+
+			if (scroll)
+			{
+				if (p.bottom < el.bottom)
+				{
+					obj[0].parentElement.parentElement.scrollTop = obj[0].parentElement.parentElement.scrollTop + (el.top - p.bottom) + el.height + 6;
+				}
+				if (el.top < p.top)
+				{
+					obj[0].parentElement.parentElement.scrollTop = obj[0].parentElement.parentElement.scrollTop + (el.bottom - p.top) - el.height - 3;
+				}
+			}
+
+			obj.toggleClass("update", false);
+			obj.css("background-color", color ? color : "#90FF90");
+			setTimeout(function()
+			{
+				obj.toggleClass("update", true);
+				setTimeout(function()
+				{
+					obj.toggleClass("update", false);
+				}, 1000);
+				obj.removeAttr("style");
+			}, 100);
+		}
+		cushForm.on("submit", function(e)
+		{
+			e.preventDefault();
+			let data = cushData.val().trim().split("\n"),
+					ep = [],
+					wiki = cushWiki.val().trim();
+
+			for(let i = 0; i < data.length; i++)
+			{
+				data[i] = data[i].replace(/\s*\|\s*/g, "|").trim();
+				if (!data[i] || (data[i] && !data[i].match(/^S[0-9]{1,2}E[0-9]{1,2}\|[0-9]{8}\|[0-9]+\|[0-9]+$/i)))
+					return;
+
+				let d = data[i].split("|");
+				d[0] = d[0].replace(/s([0-9]+)e([0-9]+)/i, function(a,b,c)
+				{
+					return "S" + pad2(b) + "E" + pad2(c)
+				});
+				d[1] = ~~d[1];
+				d[2] = ~~d[2];
+				d[3] = ~~d[3];
+				ep[ep.length] = d;
+			}
+			wiki = wiki.replace(new RegExp("\/*?(#.*)?$", ""), "").split("/"); //UEstudio shows everything as comment below this line
+			wiki = wiki[wiki.length-1];
+			data = [
+				cushName.val().trim(),
+				ep,
+				wiki || "",
+			];
+			let oldEditId = editId;
+			for(let i in customShows._list.l)
+			{
+				if (editId != i && customShows._list.l[i][0].toLowerCase() == data[0].toLowerCase())
+				{
+					editId = i;
+					data[1] = [].concat(customShows._list.l[i][1], data[1]);
+					if (!data[2])
+						data[2] = customShows._list.l[i][2];
+
+						customShows.remove(oldEditId);
+
+					break;
+				}
+			}
+			let isEdit = (editId),
+					id = editId || customShows._list.i++;
+
+			data[1].sort();
+			let cache = {},
+					array = [];
+			for(let i = 0; i < data[1].length; i++)
+			{
+				let str = JSON.stringify(data[1][i]);
+				if (!cache[str])
+					array[array.length] = data[1][i];
+
+				cache[str] = true;
+			}
+			data[1] = array;
+			customShows._list.l[id] = data;
+			let obj = null;
+			if (editId)
+			{
+				obj = $("#cush_" + id);
+				obj.children().first().text(data[0]);
+			}
+			else
+			{
+				obj = customShowsCreate(id, callback);
+				cushDiv.appendChild(obj);
+				obj = $(obj);
+			}
+			sortShows();
+			flash(obj, "yellow", true);
+			if (isEdit)
+			{
+				$('[data-series-id="' + (id + customShows.id) + '"]').each(function()
+				{
+					if (this.hasAttribute("opened"))
+						this.parentNode.classList.toggle("opened", false);
+				}).remove();
+			}
+			cushReset.trigger("click");
+			customShows.init(customShows._list);
+			customShows.save();
+			customShows();
+			
+			$('div[data-series-id="' + (id + customShows.id) + '"]').each(function()
+			{
+				delete this.parentNode.list;
+			})
+			showPast(function()
+			{
+				let obj = $('div[data-series-id="' + (id + customShows.id) + '"]');
+	//adding watched checkboxes
+				obj.each(watched.attach);
+	//collapse multiple entries of the same series in one day
+				obj.parent().each(collapseMulti);
+			});
+			showHideLoad();
+			if ($("#searchbar").hasClass("active"))
+			{
+				let s = $("#searchBecauseNoOneChecks"),
+						v = s.val();
+				s.val("").trigger("change").val(v).trigger("change");
+			}
+		});//cushForm.submit()
+		function edit(id)
+		{
+			id = id || editId;
+			for(let i = 0; i < cushDiv.children.length; i++)
+			{
+				cushDiv.children[i].classList.toggle("edit", (cushDiv.children[i].id == "cush_" + id));
+			}
+		}
+		function customShowsCreate(id, callback)
+		{
+			let data = {
+						get name()
+						{
+							return customShows._list.l[id][0];
+						},
+						get l()
+						{
+							return customShows._list.l[id][1];
+						},
+						get wiki()
+						{
+							return customShows._list.l[id][2];
+						}
+					},
+					entry = document.createElement("div"),
+					editBox = document.createElement("span");
+			entry.innerHTML = '<span>' + data.name + '</span>';
+			entry.appendChild(editBox);
+			editBox.className = "editBox";
+//EDIT
+//			$('<span class="edit" title="Edit"><svg viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path></svg></span>').appendTo(editBox).click(function(e)
+			$(entry).click(function(e)
+			{
+				e.stopPropagation();
+				e.preventDefault();
+				editId = id;
+				edit(id);
+				cushName.val(data.name);
+				cushWiki.val(data.wiki);
+				let d = [];
+				for(let i = 0; i < data.l.length; i++)
+				{
+					d[d.length] = data.l[i].join(" | ");
+				}
+				cushData.val(d.join("\n") + "\n");
+				cushName.trigger("change");
+			});
+//SEARCH
+			$('<span class="search" title="Search"><svg viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg></span>').appendTo(editBox).click(function(e)
+			{
+				e.stopPropagation();
+				e.preventDefault();
+				search("info:" + (id + customShows.id));
+			});
+
+//DELETE
+			$('<span class="del" title="Delete"><svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"></path></svg></span>').appendTo(editBox).click(function(e)
+			{
+				e.stopPropagation();
+				e.preventDefault();
+				customShows.remove(id);
+				if (editId == id)
+					editId = null;
+
+				edit();
+			});
+			entry.id = "cush_" + id;
+			let d = [];
+			for(let i = 0; i < data.l.length; i++)
+			{
+				d[d.length] = data.l[i].join("|");
+			}
+//			dataInput.value = d.join("\n");
+			if (callback)
+			{
+				callback();
+			}
+			return entry;
+		}//customShowsCreate();
+
+		let list = customShows._list.l,
+				n = Object.keys(list).length;
+		function finished()
+		{
+			if (!--n)
+				callback();
+
+		}
+		content.append(cushDiv);
+		for(let i in list)
+		{
+			cushDiv.appendChild(customShowsCreate(~~i, callback ? finished : null));
+		};
+		if (!n)
+			callback();
+
+		sortShows();
+
+	//	setTimeout(enginesRestore,100);
+	}//customShows.manager()
+
+
+
+	//END custom shows
+
+
+
+
+
+
+
+
 	DB.viewing = DB.username != DB.loggedInUsername;
 	let ul = $("#menu").find("ul");
 	if (DB.viewing)
@@ -6012,6 +6972,7 @@ px)
 	body.userViewer #menu li .nu{ min-width: 15px; }
 	body.userViewer #account-popup,
 	body.userViewer #settings-popup,
+	body.userViewer #manage-cushows-popup,
 	body.userViewer #manage-links-popup
 	{ top: 80px; }
 }
@@ -6031,6 +6992,7 @@ px)
 	body:not(.userViewer) #menu li .nu{ min-width: 15px; }
 	body:not(.userViewer) #account-popup,
 	body:not(.userViewer) #settings-popup,
+	body:not(.userViewer) #manage-cushows-popup-popup,
 	body:not(.userViewer) #manage-links-popup
 	{ top: 80px; }
 }
@@ -6170,6 +7132,7 @@ px)
 			$("div.day").each(collapseMulti);
 		});
 */
+	customShows();
 	showHideLoad();
 
 	//list of user's shows
@@ -6213,6 +7176,12 @@ px)
 
 	DB.infoGet = function(id)
 	{
+		if (id > customShows.id)
+		{
+			id = id - customShows.id;
+			return [customShows._list.l[id][0], customShows._list.l[id][2]]
+		}
+
 		let entry = $('div.days div[data-series-id="' + id + '"]').first()[0];
 		if (entry)
 			return [DB.infoNameClean(entry), entry.getAttribute("data-series-source")];
@@ -6220,11 +7189,14 @@ px)
 		return null;
 	};
 
-	DB.infoLoad = function(id, deleteOnError)
+	DB.infoLoad = function(id, deleteOnError, callback)
 	{
 		let obj = document.createElement("div");
 		if (DB.infoChecked[id] && Date.now() - 3600000 < DB.infoChecked[id][0]) //1 hour
 			return
+
+		if (id > customShows.id)
+			return DB.infoAdd(id);
 
 		$(obj).load("/s?"+$.param({q:"info:" + id}), function(e, t, r)
 		{
@@ -6278,6 +7250,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 	{
 		if (!DB.infoLoaded)
 			return setTimeout(showMyShows, 100);
+
 		$(".entry").removeClass("searchResult");
 		$("#searchStatus").css("visibility","hidden");
 		let list = [],
@@ -6489,6 +7462,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 
 			Settings.hide();
 			customLinks.hide();
+			customShows.hide();
 			changesLog.hide();
 			setPopup($("#account-popup").is( ":visible" ), true);
 		});
@@ -6613,6 +7587,27 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			parent.appendChild(span);
 
 			span = span.cloneNode(true);
+			span.className = "";
+			delete span.className;
+			a = span.lastChild;
+			i = span.firstChild;
+			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M2,6V8H14V6H2M2,10V12H14V10H2M20.04,10.13C19.9,10.13 19.76,10.19 19.65,10.3L18.65,11.3L20.7,13.35L21.7,12.35C21.92,12.14 21.92,11.79 21.7,11.58L20.42,10.3C20.31,10.19 20.18,10.13 20.04,10.13M18.07,11.88L12,17.94V20H14.06L20.12,13.93L18.07,11.88M2,14V16H10V14H2Z" /></svg>';
+			a.href = '#';
+			a.id = "manage-cushows-open";
+			a.addEventListener("click", function(e)
+			{
+				e.preventDefault();
+				customShows.manager(function()
+				{
+					customShows.show();
+					$("#account-popup").toggle(false);
+				});
+
+			}, false);
+			a.textContent = "Custom shows";
+			parent.appendChild(span);
+
+			span = span.cloneNode(true);
 			a = span.lastChild;
 			i = span.firstChild;
 			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z" /></svg>';
@@ -6725,7 +7720,6 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 */
 		if ($( "#searchBecauseNoOneChecks" ).length)
 		{
-
 			let lastQ = "",
 					searchTimer = null,
 					events = ["change", "search", "keyup", "input"],
@@ -6749,8 +7743,8 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 
 								if (isCustomSearch(e,q))
 									return;
-
 								$("#searchResults").load("/s?"+$.param({q:q}), function(){
+									customShows.search("", q);
 									lastQ = q;
 									$(" #searchStatus").css("visibility","hidden");
 									$(me).change();
@@ -6782,9 +7776,11 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 					isCustomSearch = function(e, val)
 					{
 						let q = val.trim(),
-								r = false;
+								r = false,
+								id = q.match(/^info:([0-9]+)/);
 
-						if (q == "info:myshows" || q.match(/^info:([a-zA-Z]+|$)/))
+						id = id ? id[1] : 0;
+						if (id > customShows.id || q == "info:myshows" || q.match(/^info:([a-zA-Z]+|$)/))
 						{
 							lastQ = q;
 							e.preventDefault();
@@ -6798,6 +7794,10 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 							{
 								showMyShows(e);
 								lastQ = null;
+							}
+							else if (id > customShows.id)
+							{
+								customShows.search(id);
 							}
 							else
 							{
@@ -6849,6 +7849,14 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			if (index != -1)
 			{
 				newFuncString = string.substr(0, index) + 'if (isCustomSearch(e,q)) return;\n' + string.substr(index);
+				string = newFuncString;
+			}
+			line = "lastQ = q;";
+			index = string.indexOf(line);
+			if (index != -1)
+			{
+				newFuncString = string.substr(0, index) + 'customShows.search("", q);\n' + string.substr(index);
+				string = newFuncString;
 			}
 			if (newFuncString)
 			{
@@ -7086,6 +8094,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		else if ($("body").hasClass("popup"))
 		{
 			customLinks.hide();
+			customShows.hide();
 			Settings.hide();
 			changesLog.hide();
 			$("#account-popup").toggle(false);
@@ -7122,11 +8131,22 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		}
 		else if (p)
 			return;
+
 		p = target.parents("#manage-links-popup").get().length;
 		if (e.target.id != "manage-links-open" && (p == 0 || (p && close)))
 		{
 			hide[hide.length] = customLinks.hide;
 			if (window.hashChanged.hashSearch && location.hash == "#linksmanager")
+				removeHash();
+		}
+		else if (p)
+			return;
+
+		p = target.parents("#manage-cushows-popup").get().length;
+		if (e.target.id != "manage-cushows-open" && (p == 0 || (p && close)))
+		{
+			hide[hide.length] = customShows.hide;
+			if (window.hashChanged.hashSearch && location.hash == "#customshows")
 				removeHash();
 		}
 		else if (p)
@@ -7292,6 +8312,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 	$("body").on("click", ".back", function()
 	{
 		customLinks.hide();
+		customShows.hide();
 		Settings.hide();
 		changesLog.hide();
 		setPopup(true);
@@ -7645,6 +8666,14 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			customLinks.manager(function()
 			{
 				customLinks.show(true);
+			});
+		}
+		else if (hash == "#customshows")
+		{
+			hashSearch = true;
+			customShows.manager(function()
+			{
+				customShows.show();
 			});
 		}
 		if (remove && hash == location.hash)
