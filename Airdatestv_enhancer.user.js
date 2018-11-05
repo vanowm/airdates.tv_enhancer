@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.50
+// @version     1.51
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,17 @@
 
 
 var changesLogText = multiline(function(){/*
+1.51 (2018-11-04)
+	+ new show episode data fields are now can be separated by any character(s) that is not 0-9, date also may be spited as separate year, month and day
+	+ visual aid in the custom shows list highlighting affected item after submitting data
+	+ more explanation about episode data format
+	+ Custom shows form changes label on submit button to reflect if a show being edited or a new show will be created
+	+ arrow keys in custom shows list would select for editing next/prev show
+	* new show episodes data fields are now showing evenly spaced
+	! text-shadow on titles highlighted by search would affect new/returning tags, producing unreadable text
+	! clicking "Show all episodes" from "My Shows" list would not properly display list of episodes
+	! missing "Edit" link in for custom shows in "My shows" list
+	! white icon in show's details in search results
 1.50 (2018-11-03)
 	+ backup/restore custom shows
 1.49 (2018-11-03)
@@ -378,6 +389,27 @@ function receiveMessage(event)
 		self[event.data.return](event.data.val);
 	}
 }
+
+function cloneObj(obj)
+{
+	let r = [];
+	if (Array.isArray(obj))
+	{
+		for (let i = 0; i < obj.length; i++)
+		{
+			r[i] = typeof(obj[i]) == "object" ? cloneObj(obj[i]) : obj[i];
+		}
+	}
+	else
+	{
+		for (let i in obj)
+		{
+			r[i] = typeof(obj[i]) == "object" ? cloneObj(obj[i]) : obj[i];
+		}
+	}
+	return r;
+}
+
 window.addEventListener("message", receiveMessage, false);
 let func = function(event)
 {
@@ -1292,10 +1324,11 @@ svg,
 	fill: rgb(210,210, 210) !important;
 }
 
+.close:hover,
+.back:hover,
+.back:hover svg,
 #cushows-list > div:hover,
 #cushows-list > div:hover *,
-#cushows-list > div.edit,
-#cushows-list > div.edit *,
 #manage-links-popup .content > div.dragging:not(.hide),
 #manage-links-popup .content > div.dragging:not(.hide) *,
 #manage-links-popup .content:not(.dragging) > div:hover,
@@ -1407,12 +1440,15 @@ div.entry
 {
 	color: #b9b2b2;
 }
+
+#cushows-list > div.updated,
+#cushows-list > div.new
+{
+	outline-width: 1px;
+}
 #cushows-list > div.edit
 {
-	color: black;
-	fill: black;
-	background-color: #90FF90;
-	font-weight: bold;
+	outline: 1px solid white;
 }
 
 /*
@@ -1577,9 +1613,11 @@ END DARK THEME
 		return str;
 	}
 
-	function pad(t)
+	function pad(t, s, n)
 	{
-		return "" + t < 10 ? "0" + t : t;
+		n = n || 2;
+		s = String(s || "0").repeat(n);
+		return (s + t).substr(-n);
 	}
 
 	function dateTimestamp()
@@ -3077,7 +3115,7 @@ END DARK THEME
 			// set title
 			$("#archive-current").text((!!match&&match.length==3)?ym2str(ym):"Go waste your time");
 			// highlight today with a happy yellow background
-			$( "div.day[data-date='" + today.getFullYear() + pad2( today.getMonth() + 1 ) + pad2( today.getDate() ) + "']" ).addClass( "today" ).attr( "id", "today" );
+			$( "div.day[data-date='" + today.getFullYear() + pad( today.getMonth() + 1 ) + pad( today.getDate() ) + "']" ).addClass( "today" ).attr( "id", "today" );
 			markSearchResults();
 
 			var $hl = $(highlightSelector||".does-not-exist-and-never-will");
@@ -3487,7 +3525,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 	// hide all past days
 		let	d = new Date();
 
-		_today = $("div.day[data-date='" + d.getFullYear() + pad2((new Date()).getMonth() + 1) + pad2((new Date()).getDate()) + "']");
+		_today = $("div.day[data-date='" + d.getFullYear() + pad((new Date()).getMonth() + 1) + pad((new Date()).getDate()) + "']");
 
 		if (!_today || $(".archive").length)
 		{
@@ -3514,7 +3552,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 		for (let n = 0; n < div.length; n++)
 		{
 			let d = new Date(y, m - n - 1);
-			$(div[n]).load("/_archive/" + d.getFullYear() + "-" + pad2(d.getMonth() + 1), pastLoadDone);
+			$(div[n]).load("/_archive/" + d.getFullYear() + "-" + pad(d.getMonth() + 1), pastLoadDone);
 		}
 		function pastLoadDone()
 		{
@@ -4185,19 +4223,18 @@ body.edge #manage-links-popup .content > div > img
 #engine-edit > div > label
 {
 	text-align: right;
+	min-width: 5.5em;
 }
 #engine-edit > div:last-child > label
 {
 	vertical-align: top;
 	padding-top: 0.3em;
 }
-#cushows-edit > div > div,
-#cushows-edit > div > span,
 #engine-edit > div > div
 {
 	width: 100%;
 	padding: 0.1em 0.5em;
-	max-width: 15em;
+	max-width: 20em;
 }
 #engine-edit > div > div.engine-url
 {
@@ -4843,6 +4880,7 @@ body:not(.popup) div.entry[opened]
 	-webkit-box-shadow: 0 4px 4px -2px grey;
 	-moz-box-shadow: 0 4px 4px -2px grey;
 	box-shadow: 0 4px 4px -2px grey;
+	color: black;
 }
 .promptbox > .fade
 {
@@ -5189,10 +5227,25 @@ disqus notificaiton badge
 {
 	padding: 0 5px;
 }
+
+#cushows-edit > div > div,
+#cushows-edit > div > span
+{
+	width: 20em;
+	padding: 0.1em 0.5em;
+	max-width: 20em;
+}
+
 #cushows-list
 {
 	margin: 5px 0;
 }
+
+#cushows-edit > .data > label
+{
+	vertical-align: top
+}
+
 #cushows-edit textarea
 {
 	font-size: 0.9em;
@@ -5208,22 +5261,21 @@ disqus notificaiton badge
 	display: table-row;
 }
 
-#cushows-edit > div > *
-{
-	display: table-cell;	
-}
-
 #cushows-edit textarea
 {
 	white-space: pre;
 	overflow: auto;
 	vertical-align: top;
 	height: 100%;
+	min-height: 10em;
 	margin: 0;
-	padding: 0;
-	position: relative;
+	padding: 0 2px 0 0;
 }
 
+body.ff #cushows-edit textarea
+{
+	padding: 2px;
+}
 
 #cushows-season,
 #cushows-episode,
@@ -5238,9 +5290,20 @@ disqus notificaiton badge
 	width: 6em;
 }
 
+#cushows-edit:not(.help)  #cushows-help > .expand,
+#cushows-edit.help  #cushows-help > .collapse,
+#cushows-edit:not(.help) > div.info
+{
+	display: none;
+}
+#cushows-edit #cushows-help
+{
+	cursor: pointer;
+}
+
+#cushows-edit #cushows-help,
 #cushows-edit > div.info
 {
-	font-style: italic;
 	font-size: 0.9em;
 	color: grey;
 }
@@ -5261,18 +5324,15 @@ disqus notificaiton badge
 #cushows-list > div > span
 {
 	display: table-cell;
+	vertical-align: middle;
 }
 
 #cushows-list > div > span:nth-child(1)
 {
 	width: 100%;
-}
-#cushows-list > div.edit
-{
-	color: black;
-	fill: black;
-	background-color: #90FF90;
-	font-weight: bold;
+	max-width: 20em;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .entry:not(.custom) .edit
@@ -5280,11 +5340,55 @@ disqus notificaiton badge
 	display: none;
 }
 
-.searchResult .title
+.searchResult .title span
 {
 	color: black;
 	text-shadow: 0 1px 2px white, 0 -1px 2px white, 1px 0 2px white, -1px 0 2px white, 1px 1px 2px white, -1px -1px 2px white, -1px 1px 2px white, 1px -1px 2px white;
 }
+
+#cushows-edit .info.format
+{
+	vertical-align: top;
+}
+#cushows-edit .table
+{
+	display: table;
+}
+#cushows-edit .table > div
+{
+	display: table-row;
+}
+#cushows-edit .table > div > span
+{
+	display: table-cell;
+	padding: 2px;
+}
+#cushows-edit .table > div > span:nth-child(1)
+{
+	text-align: right;
+}
+#cushows-list > div.updated
+{
+	outline: 2px dotted #90FF90;
+}
+#cushows-list > div.new
+{
+	outline: 2px dotted #FF9090;
+}
+
+#cushows-list > div.edit
+{
+	outline: 2px solid black;
+	font-weight: bold;
+}
+
+#cushows-edit .action
+{
+	margin: 0.5em 0 0.3em;
+	display: inline-block;
+}
+
+
 @keyframes rotate-loading {
  0% {
 	transform:rotate(0)
@@ -5766,12 +5870,14 @@ log(err);
 				$entry = $(obj).parent(),
 				details = $entry.find(".details");
 
+		$entry.attr("color", $entry.css("color") == "rgb(0, 0, 0)" ? "black" : "white");
 		if (!details.length )
 		{
 			if( $entry.children( "div.details" ).length == 0 )
 			{
 				var engs = _engs || window.engines,
 						inited = false;
+
 				if (!_engs)
 				{
 					if($entry.parents(".calendar").get().length>0)
@@ -6227,7 +6333,7 @@ log(err);
 
 				data.name = customShows._list.l[id][0];
 				data.wiki = customShows._list.l[id][2];
-				let name = data.name + " " + (data.season ? "S" + pad2(data.season) : "") + "E" + pad2(data.episode),
+				let name = data.name + " " + (data.season ? "S" + pad(data.season) : "") + "E" + pad(data.episode),
 						_entries = day.querySelectorAll('[data-series-id="' + data.id + '"]'),
 						_entry = null,
 						titleDiv = null;
@@ -6250,6 +6356,7 @@ log(err);
 				title = entry.firstChild;
 				title.innerText = name;
 				entry.setAttribute("data-series-id", data.id);
+//				entry.setAttribute("color", $(entry).css("color") == "rgb(0, 0, 0)" ? "black" : "white");
 				entry.setAttribute("data-series-source", data.wiki || "");
 				entry.classList.toggle("season-premiere", data.episode == 1 && data.season > 1);
 				entry.classList.toggle("series-premiere", data.season == 1 && data.episode == 1);
@@ -6297,13 +6404,15 @@ log(err);
 						"a Test",	// name
 						[
 							[
-								"S01E01",	// start episode #
+								1,	// season
+								1,  //episode
 								20181101,	// start date
 								2, 			// total number of episodes
 								7,				// interval in days between episodes
 							],
 							[
-								"S02E01",	// start episode #
+								2,	// season
+								1,  //episode
 								20181101,	// start date
 								2, 			// total number of episodes
 								7,				// interval in days between episodes
@@ -6315,7 +6424,8 @@ log(err);
 						"Test2", // name
 						[
 							[
-								"S01E01",	// start episode #
+								1,	// season
+								1,  //episode
 								20181116,	// start date
 								4, 			// total number of episodes
 								0,				// interval in days between episodes
@@ -6327,13 +6437,15 @@ log(err);
 						"bBad Blood", // name
 						[
 							[
-								"S02E01",	// start episode #
+								2,	// season
+								1,  //episode
 								20181101,	// start date
 								2, 			// total number of episodes
 								0,				// interval in days between episodes
 							],
 							[
-								"S02E03",	// start episode #
+								2,	// season
+								3,  //episode
 								20181108,	// start date
 								2, 			// total number of episodes
 								7,				// interval in days between episodes
@@ -6350,7 +6462,9 @@ log(err);
 		customShows._list = _list || ls("customShows") || {i:1,l:{}};
 		customShows.list = {};
 		customShows.listDate = {};
-		let list = customShows._list.l;
+		customShows.listNames = {};
+		let list = customShows._list.l,
+				upgraded = false;
 
 		for(let i in list)
 		{
@@ -6358,22 +6472,31 @@ log(err);
 					id = ~~i,
 					data = list[i][1],
 					wiki = list[i][2];
+
 			for(let n = 0; n < data.length; n++)
 			{
-				let ep = data[n][0],
-						date = data[n][1],
-						num = data[n][2],
-						days = data[n][3],
-						_date = new Date(0),
-						epArray = /(s([0-9]+))?e([0-9]+)/gi.exec(ep),
-						season = ~~epArray[2],
-						episode = ~~epArray[3];
+				if (data[n].length < 5) //old version
+				{
+					let epArray = /(s([0-9]+))?e([0-9]+)/gi.exec(data[n][0]),
+							season = ~~epArray[2],
+							episode = ~~epArray[3];
+
+					data[n].splice(0, 0, season);
+					data[n][1] = episode;
+					upgraded = true;
+				}
+				let season = data[n][0],
+						episode = data[n][1],
+						date = data[n][2],
+						num = data[n][3],
+						days = data[n][4],
+						_date = new Date(0);
 
 				_date.setFullYear(this.d2y(date), this.d2m(date)-1, this.d2d(date));
 				_date.setHours(0);
 				for (let e = 0; e < num; e++)
 				{
-					let newDate = "" + _date.getFullYear() + pad2(_date.getMonth()+1) + pad2(_date.getDate()),
+					let newDate = "" + _date.getFullYear() + pad(_date.getMonth()+1) + pad(_date.getDate()),
 							newId = id + customShows.id;
 					if (!customShows.list[newId])
 						customShows.list[newId] = [];
@@ -6395,8 +6518,11 @@ log(err);
 					episode++;
 				}
 			}
+			customShows.listNames[name.toLowerCase()] = i;
 		}
 		customShows.inited = true;
+		if (upgraded)
+			customShows.save();
 	}//customShows.init()
 
 	customShows.save = function()
@@ -6514,7 +6640,7 @@ log(err);
 							'data-series-source="' + data.wiki + '" ' +
 							'data-date="' + data[i].date + '">' +
 							'<div class="title"><div class="tiny-date">' + customShows.d2y(data[i].date) + "-" + customShows.d2m(data[i].date) + "-" + customShows.d2d(data[i].date) + '</div>' +
-							data.name + " " + (data[i].season ? "S" + pad2(data[i].season) : "" ) + "E" + pad2(data[i].episode) +
+							data.name + " " + (data[i].season ? "S" + pad(data[i].season) : "" ) + "E" + pad(data[i].episode) +
 							'</div></div>';
 		}
 		html += "<br>Your added custom show<br><br>";
@@ -6536,20 +6662,29 @@ log(err);
 		if (id)
 		{
 			let obj = $("#cush_" + (~~id - customShows.id));
-			let p = obj[0].parentElement.parentElement.getBoundingClientRect(),
-					el = obj[0].getBoundingClientRect();
-			if (p.bottom < el.bottom)
-			{
-				obj[0].parentElement.parentElement.scrollTop = obj[0].parentElement.parentElement.scrollTop + (el.top - p.bottom) + el.height + 5;
-			}
-			if (el.top < p.top)
-			{
-				obj[0].parentElement.parentElement.scrollTop = obj[0].parentElement.parentElement.scrollTop + (el.bottom - p.top) - el.height - 5;
-			}
+			scrollIntoView(obj[0], obj[0].parentElement.parentElement, 5, 5);
 			obj.trigger("click");
+			customShows.div.scrollIntoView(false);
 		}
 	}//customShows.show()
 	
+	function scrollIntoView(el, p, offsetTop, offsetBot)
+	{
+		let pRect = p.getBoundingClientRect(),
+				elRect = el.getBoundingClientRect();
+
+		offsetTop = ~~offsetTop;
+		offsetBot = ~~offsetBot;
+
+		if (pRect.bottom < elRect.bottom)
+		{
+			p.scrollTop = p.scrollTop + (elRect.top - pRect.bottom) + elRect.height + offsetBot;
+		}
+		if (elRect.top < pRect.top)
+		{
+			p.scrollTop = p.scrollTop + (elRect.bottom - pRect.top) - elRect.height - offsetTop;
+		}
+	}
 	customShows.hide = function()
 	{
 		$(customShows.div).hide();
@@ -6608,19 +6743,35 @@ log(err);
 					<input id="cushows-wiki" placeholder="&lt;optional&gt;">
 				</div>
 			</div>
-			<div>
+			<div class="data">
 				<label>Episodes:</label>
 				<div>
-					<textarea id="cushows-data" title="One entry per line" placeholder="S01E01 | YYYYMMDD | NUM EPISODES | INTERVAL IN DAYS"></textarea>
+					<textarea id="cushows-data" title="One entry per line" placeholder="S0E0 | YYYYMMDD | n | i"></textarea>
 				</div>
 			</div>
-			<div class="info">
+			<div>
 				<label></label>
-				<span>Separate entries with a new line</span>
+				<span id="cushows-help">Separate entries with a new line. <span class="collapse">&#x25B2; More info</span><span class="expand">&#x25BC; Less info</span></span>
 			</div>
 			<div class="info">
 				<label>Format:</label>
-				<span>S[0-9]E[0-9] | YYYYMMDD | NUM OF EPISODES | INTERVAL IN DAYS</span>
+				<span><b>S</b><i>0</i><b>E</b><i>0</i> | <i>YYYYMMDD</i> | <i>n</i> | <i>i</i></span>
+			</div>
+			<div class="info">
+				<label><b>S</b><i>0</i><b>E</b><i>0</i></label> 
+				<span>= Season + Episode number (leading zero optional)</span>
+			</div>
+			<div class="info">
+				<label><i>YYYYMMDD</i></label> 
+				<span>= Date the episode starts (can be YYYY-MM-DD)</span>
+			</div>
+			<div class="info">
+				<label><i>n</i></label> 
+				<span>= Number of episodes (1+)</span>
+			</div>
+			<div class="info">
+				<label><i>i</i></label> 
+				<span>= Interval between episodes (in days) (0+)</span>
 			</div>
 			<div class="info">
 				<label>Example:</label>
@@ -6638,7 +6789,6 @@ log(err);
 		*/});//html
 
 		$(html).appendTo(content.parent());
-
 		let cushName = $("#cushows-name"),
 				cushWiki = $("#cushows-wiki"),
 				cushData = $("#cushows-data"),
@@ -6646,13 +6796,78 @@ log(err);
 				cushSubmit = $("#cushows-submit"),
 				cushReset = $("#cushows-reset"),
 				editId = null,
-				today = new Date(),
-				cushDiv = document.createElement("div");
+				_today = new Date(),
+				cushDiv = document.createElement("div"),
+				dataRegex = /^([^0-9]*([0-9]+)[^0-9]+([0-9]+))[^0-9]+((([0-9]{4})[^0-9]+([0-9]{1,2})[^0-9]+([0-9]{1,2}))|(([0-9]{4})[^0-9]*([0-9]{2})[^0-9]*([0-9]{2}))|(([0-9]{4})[^0-9]*([0-9]{1,2})[^0-9]+([0-9]{1,2})))[^0-9]+([0-9]+)[^0-9]+([0-9]+)[^0-9]*$/;
 
 		cushDiv.id = "cushows-list";
+		cushDiv.setAttribute("tabindex", 0);
+		cushDiv.addEventListener("keypress", function(e)
+		{
+			let obj = null;
+			if (e.code == "ArrowUp")
+			{
+				e.preventDefault();
+				e.stopPropagation();
+				obj = $(cushDiv).find(".edit").prev();
+			}
+			else if (e.code == "ArrowDown")
+			{
+				e.preventDefault();
+				e.stopPropagation();
+				obj = $(cushDiv).find(".edit").next();
+			}
+			else if (e.code == "ArrowLeft")
+			{
+				e.preventDefault();
+				e.stopPropagation();
+				obj = $(cushDiv).find(".edit").parent().children().first();
+			}
+			else if (e.code == "ArrowRight")
+			{
+				e.preventDefault();
+				e.stopPropagation();
+				obj = $(cushDiv).find(".edit").parent().children().last();
+			}
+			if (obj && obj[0])
+			{
+				obj.click();
+				scrollIntoView(obj[0], obj[0].parentElement.parentElement, 5, 5);
+			}
+		}, true);
 		today = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-//		$("#cushows-example").html("S" + pad2(rand(0, 99)) + "E" + pad2(rand(0, 99)) + " | " + rand(2000, (new Date()).getFullYear() + 1) + pad2(rand(1, 12)) + pad2(rand(1, 31)) + " | " + rand(0, 22) + " | " + (rand(0, 1) ? 0 : 7));
-		$("#cushows-example").html("S" + pad2(rand(0, 99)) + "E" + pad2(rand(0, 99)) + " | " + today + " | " + rand(0, 22) + " | " + (rand(0, 1) ? 0 : 7));
+		$("#cushows-help").click(function(e)
+		{
+			$("#cushows-edit").toggleClass("help");
+		});
+		$("#cushows-example").click(function(e)
+		{
+			let t = new Date(),
+					sel, range,
+					el = this;
+
+			t = new Date(t.getTime() - (86400000 * rand(-2, 2)));
+			this.innerHTML = "S" + pad(rand(0, 15)) + "E" + pad(rand(0, 22)) + " | " + t.getFullYear() + "-" + pad(t.getMonth() + 1) + "-" + pad(t.getDate()) + " | " + rand(0, 22) + " | " + (rand(0, 1) ? (rand(0, 2) ? 7 : 1) : 0);
+
+			if (e.isTrigger)
+				return;
+
+			try
+			{
+			  sel = window.getSelection();
+			  if (sel.toString() == '')
+			  {
+					window.setTimeout(function()
+					{
+						range = document.createRange(); //range object
+						range.selectNodeContents(el); //sets Range
+						sel.removeAllRanges(); //remove all ranges from selection
+						sel.addRange(range);//add Range to a Selection.
+					}, 1);
+			  }
+			}
+			catch(e){};
+		}).trigger("click");
 		function change(e)
 		{
 			clearTimeout(change.timer);
@@ -6660,10 +6875,11 @@ log(err);
 			{
 				let error = false,
 						data = cushData.val().trim().split("\n");
+
 				for(let i = 0; i < data.length; i++)
 				{
-					data[i] = data[i].replace(/\s*\|\s*/g, "|").trim();
-					if (data[i] && !data[i].match(/^S[0-9]{1,2}E[0-9]{1,2}\|[0-9]{8}\|[0-9]+\|[0-9]+$/i))
+					let d = data[i].trim().match(dataRegex);
+					if (!d || ~~d[17] < 1)
 					{
 						error = true;
 						break;
@@ -6677,8 +6893,10 @@ log(err);
 
 		function buttonsUpdate()
 		{
-			cushSubmit.prop("disabled", !cushName.val().trim() || !cushData.val().trim() || cushData.hasClass("error"));
-			cushReset.prop("disabled", !(cushName.val().trim() + cushData.val() + cushWiki.val()));
+			let name = cushName.val().trim().toLowerCase();
+			cushSubmit.prop("disabled", !name || !cushData.val().trim() || cushData.hasClass("error"));
+			cushReset.prop("disabled", !(name + cushData.val() + cushWiki.val()));
+			cushSubmit.val(editId || customShows.listNames[name]? "Update" : "Add new");
 		}
 
 		function sortShows()
@@ -6715,22 +6933,14 @@ log(err);
 			if (!obj[0].parentElement)
 				return;
 
-			let p = obj[0].parentElement.parentElement.getBoundingClientRect(),
-					el = obj[0].getBoundingClientRect();
 			if (typeof(scroll) == "undefined")
 				scroll = true;
 
 			if (scroll)
 			{
-				if (p.bottom < el.bottom)
-				{
-					obj[0].parentElement.parentElement.scrollTop = obj[0].parentElement.parentElement.scrollTop + (el.top - p.bottom) + el.height + 6;
-				}
-				if (el.top < p.top)
-				{
-					obj[0].parentElement.parentElement.scrollTop = obj[0].parentElement.parentElement.scrollTop + (el.bottom - p.top) - el.height - 3;
-				}
+				scrollIntoView(obj[0], obj[0].parentElement.parentElement, 3, 6);
 			}
+
 
 			obj.toggleClass("update", false);
 			obj.css("background-color", color ? color : "#90FF90");
@@ -6744,6 +6954,7 @@ log(err);
 				obj.removeAttr("style");
 			}, 100);
 		}
+
 		cushForm.on("submit", function(e)
 		{
 			e.preventDefault();
@@ -6753,19 +6964,27 @@ log(err);
 
 			for(let i = 0; i < data.length; i++)
 			{
-				data[i] = data[i].replace(/\s*\|\s*/g, "|").trim();
-				if (!data[i] || (data[i] && !data[i].match(/^S[0-9]{1,2}E[0-9]{1,2}\|[0-9]{8}\|[0-9]+\|[0-9]+$/i)))
+				let a = [],
+						r = data[i].match(dataRegex);
+
+				if (!r)
 					return;
 
-				let d = data[i].split("|");
-				d[0] = d[0].replace(/s([0-9]+)e([0-9]+)/i, function(a,b,c)
-				{
-					return "S" + pad2(b) + "E" + pad2(c)
-				});
-				d[1] = ~~d[1];
-				d[2] = ~~d[2];
-				d[3] = ~~d[3];
-				ep[ep.length] = d;
+				a[0] = ~~r[2];
+				a[1] = ~~r[3];
+				let y = r[6] || r[10] || r[14],
+						m = r[7] || r[11] || r[15],
+						d = r[8] || r[12] || r[16];
+
+				a[2] = y ? y + pad(m) + pad(d) : r[4];
+
+				a[2] = ~~a[2];
+				a[3] = ~~r[17];
+				a[4] = ~~r[18];
+				if (a[3] < 1)
+					return;
+
+				ep[ep.length] = a;
 			}
 			wiki = wiki.replace(new RegExp("\/*?(#.*)?$", ""), "").split("/"); //UEstudio shows everything as comment below this line
 			wiki = wiki[wiki.length-1];
@@ -6774,27 +6993,32 @@ log(err);
 				ep,
 				wiki || "",
 			];
-			let oldEditId = editId;
-			for(let i in customShows._list.l)
+			let oldEditId = editId,
+					name = data[0].toLowerCase();
+
+			if (name in customShows.listNames && editId != customShows.listNames[name])
 			{
-				if (editId != i && customShows._list.l[i][0].toLowerCase() == data[0].toLowerCase())
-				{
-					editId = i;
-					data[1] = [].concat(customShows._list.l[i][1], data[1]);
-					if (!data[2])
-						data[2] = customShows._list.l[i][2];
+				editId = customShows.listNames[name];
+				data[1] = [].concat(customShows._list.l[editId][1], data[1]);
+				if (!data[2])
+					data[2] = customShows._list.l[editId][2];
 
-						customShows.remove(oldEditId);
-
-					break;
-				}
+				if (oldEditId != editId)
+					customShows.remove(oldEditId);
 			}
 			let isEdit = (editId),
-					id = editId || customShows._list.i++;
+					id = editId || customShows._list.i++,
+					seen = {};
 
-			data[1].sort();
+			//remove duplicates
+			data[1] = data[1].sort().filter(function(item)
+			{
+				var k = JSON.stringify(item);
+				return k in seen ? false : (seen[k] = true);
+			})
 			let cache = {},
 					array = [];
+
 			for(let i = 0; i < data[1].length; i++)
 			{
 				let str = JSON.stringify(data[1][i]);
@@ -6811,11 +7035,14 @@ log(err);
 				DB.infoSave();
 			}
 			customShows._list.l[id] = data;
-			let obj = null;
+			let obj = null,
+					type = "new";
+
 			if (editId)
 			{
 				obj = $("#cush_" + id);
 				obj.children().first().text(data[0]);
+				type = "updated";
 			}
 			else
 			{
@@ -6823,6 +7050,10 @@ log(err);
 				cushDiv.appendChild(obj);
 				obj = $(obj);
 			}
+			$("#" + cushDiv.id).children().toggleClass("new updated", false);
+			obj.toggleClass(type, true);
+			obj.attr("title", data[0]);
+
 			sortShows();
 			flash(obj, "yellow", true);
 			if (isEdit)
@@ -6833,7 +7064,6 @@ log(err);
 						this.parentNode.classList.toggle("opened", false);
 				}).remove();
 			}
-			cushReset.trigger("click");
 			customShows.init(customShows._list);
 			customShows.save();
 			customShows();
@@ -6859,6 +7089,8 @@ log(err);
 						v = s.val();
 				s.val("").trigger("change").val(v).trigger("change");
 			}
+//			obj.trigger("click");
+			cushReset.trigger("click");
 		});//cushForm.submit()
 		function edit(id)
 		{
@@ -6887,6 +7119,7 @@ log(err);
 					entry = document.createElement("div"),
 					editBox = document.createElement("span");
 			entry.innerHTML = '<span>' + data.name + '</span>';
+			entry.title = data.name;
 			entry.appendChild(editBox);
 			editBox.className = "editBox";
 //EDIT
@@ -6899,10 +7132,46 @@ log(err);
 				edit(id);
 				cushName.val(data.name);
 				cushWiki.val(data.wiki);
-				let d = [];
-				for(let i = 0; i < data.l.length; i++)
+				let d = [],
+						len = [],
+						_data = cloneObj(data.l).sort(function(a,b)
+						{
+							let r = 0;
+							for(let i = 0; i < a.length; i++)
+							{
+								if (a[i] != b[i])
+									return a[i] - b[i];
+							}
+							return r;
+						});
+
+				for(let i = 0; i < _data.length; i++)
 				{
-					d[d.length] = data.l[i].join(" | ");
+					_data[i] = cloneObj(_data[i]);
+					_data[i][0] = "S" + _data[i][0];
+					_data[i][1] = "E" + _data[i][1];
+					_data[i][2] = ("" + _data[i][2]).replace(/([0-9]{4})([0-9]{2})([0-9]{2})/, "$1-$2-$3");
+					for(let n = 0; n < _data[i].length; n++)
+					{
+						len[n] = Math.max(~~len[n], ("" + _data[i][n]).length);
+					}
+				}
+				for(let i = 0; i < _data.length; i++)
+				{
+					for(let n = 0; n < _data[i].length; n++)
+					{
+						if (("" + _data[i][n]).length < len[n])
+						{
+							if (n < 3)
+							{
+								_data[i][n] = _data[i][n] + pad(" ", " ", len[n] - _data[i][n].length);
+							}
+							else
+								_data[i][n] = pad(_data[i][n], " ", len[n]);
+						}
+					}
+					_data[i][0] += " " + _data[i].splice(1,1);
+					d[d.length] = _data[i].join(" | ");
 				}
 				cushData.val(d.join("\n") + "\n");
 				cushName.trigger("change");
@@ -7392,8 +7661,11 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 				entry = entry.cloneNode(true);
 				title = entry.firstChild;
 				entry.setAttribute("data-series-id", id);
-				entry.setAttribute("color", $(entry).css("color") == "rgb(0, 0, 0)" ? "black" : "white");
+//				entry.setAttribute("color", $(entry).css("color") == "rgb(0, 0, 0)" ? "black" : "white");
 				entry.setAttribute("data-series-source", info[id][1]);
+
+				entry.classList.toggle("custom", (~~id > customShows.id));
+
 				title.textContent = info[id][0];
 				if (title.textContent === "ZZZZZZZZZZZZZ")
 				{
@@ -7462,6 +7734,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			entry = entry.cloneNode(true);
 			title = entry.firstChild;
 			entry.setAttribute("data-series-id", id);
+//			entry.setAttribute("color", $(entry).css("color") == "rgb(0, 0, 0)" ? "black" : "white");
 			entry.setAttribute("data-series-source", DB.info[id][1]);
 			title.textContent = DB.info[id][0];
 			showMyHidden.box.appendChild(entry);
@@ -7835,6 +8108,8 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 							}
 							else if (id > customShows.id)
 							{
+								showMyShows.box = null;
+								showMyHidden.box = null;
 								customShows.search(id);
 							}
 							else
@@ -7872,6 +8147,8 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 	*/
 						if (r)
 						{
+							$("#searchResults").show();
+							$( "#searchbar" ).addClass( "active" );
 							$(" #searchStatus").css("visibility","hidden");
 						}
 						return r;
@@ -8605,7 +8882,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		todayChange.day = t;
 		ymToday = (today.getYear()+1900)*12 + today.getMonth();
 		let todayOld = $("#today"),
-				dataDate = today.getFullYear() + pad2( today.getMonth() + 1 ) + pad2( today.getDate() );
+				dataDate = today.getFullYear() + pad( today.getMonth() + 1 ) + pad( today.getDate() );
 
 		_today = todayOld.parent().find('.day[data-date="' + dataDate + '"]').find('div.day[data-date="' + dataDate + '"]');
 		if (dataDate != todayOld.attr("data-date"))
