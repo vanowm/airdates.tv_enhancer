@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.51.1
+// @version     1.52
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,8 +17,12 @@
 
 
 var changesLogText = multiline(function(){/*
+1.52 (2018-11-05)
+	+ when editing a custom show and name changed to unique, it's now possible add it as a new show or update existing
+	+ "More info" state in custom show editor is now remembered
+	* any field that prevent custom show from submitting is now highlighted
 1.51.1 (2018-11-05)
-	! custom shows not shown at past weeks
+	! custom shows not shown in past weeks
 1.51 (2018-11-04)
 	+ new show episode data fields are now can be separated by any character(s) that is not 0-9, date also may be spited as separate year, month and day
 	+ visual aid in the custom shows list highlighting affected item after submitting data
@@ -525,6 +529,7 @@ let func = function(event)
 			theme: "",
 			lastColor: "",
 			lastColors: [],
+			cushowsHelp: false,
 /*			colorsCustom: {
 				"807fff": {name: ""},
 				"ff7fff": {name: ""},
@@ -4300,14 +4305,6 @@ body.edge #engine-edit > div > div > select
 	margin: 0 4px 0 0;
 }
 
-#engine-edit .action > input,
-#cushows-edit .action > input
-{
-	font-size: 90%;
-	display: inline-block !important;
-	width: 48% !important;
-	float: left;
-}
 body.ff #engine-reset
 {
 	margin-right: -0.6em;
@@ -4367,9 +4364,12 @@ body.ff #engine-edit #engine-regexp-replace
 {
 	width: 30%;
 }
+input.error,
 textarea.error
 {
-	background-color: #FF9090;
+	box-shadow: 0 0 8px 2px #FF9090;
+	-webkit-box-shadow: 0 0 8px 2px #FF9090;
+	-moz-box-shadow: 0 0 8px 2px #FF9090;
 }
 
 #engine-edit textarea
@@ -5230,12 +5230,14 @@ disqus notificaiton badge
 	padding: 0 5px;
 }
 
-#cushows-edit > div > div,
+#cushows-edit > div > div
+{
+	padding: 0.1em 0 0.1em 0.5em;
+}
 #cushows-edit > div > span
 {
 	width: 20em;
-	padding: 0.1em 0.5em;
-	max-width: 20em;
+	padding: 0.1em 0 0.1em 0.5em;
 }
 
 #cushows-list
@@ -5384,13 +5386,25 @@ body.ff #cushows-edit textarea
 	font-weight: bold;
 }
 
+#engine-edit .action,
 #cushows-edit .action
 {
 	margin: 0.5em 0 0.3em;
-	display: inline-block;
+	display: inline-flex;
+	width: 100%;
 }
 
+.break
+{
+	white-space: pre-line;
+}
 
+#engine-edit .action > input,
+#cushows-edit .action > input
+{
+	font-size: 90%;
+	float: left;
+}
 @keyframes rotate-loading {
  0% {
 	transform:rotate(0)
@@ -6776,13 +6790,18 @@ log(err);
 				<span>= Interval between episodes (in days) (0+)</span>
 			</div>
 			<div class="info">
+				<label></label>
+				<span class="break"><i>Any non-numerical characters (space, coma, slash, letters, etc) can be used as fields separator</i></span>
+			</div>
+			<div class="info">
 				<label>Example:</label>
 				<div id="cushows-example"></div>
 			</div>
 			<div>
 				<label></label>
 				<div class="action">
-					<input id="cushows-submit" type="submit" value="Submit">
+					<input id="cushows-submitupdate" type="submit" value="Update">
+					<input id="cushows-submit" type="submit" value="Add new">
 					<input id="cushows-reset" type="reset" value="Clear">
 				</div>
 			</div>
@@ -6796,6 +6815,7 @@ log(err);
 				cushData = $("#cushows-data"),
 				cushForm = $("#cushows-form"),
 				cushSubmit = $("#cushows-submit"),
+				cushSubmitUpdate = $("#cushows-submitupdate"),
 				cushReset = $("#cushows-reset"),
 				editId = null,
 				_today = new Date(),
@@ -6838,9 +6858,11 @@ log(err);
 			}
 		}, true);
 		today = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+		$("#cushows-edit").toggleClass("help", Settings.prefs.cushowsHelp);
 		$("#cushows-help").click(function(e)
 		{
-			$("#cushows-edit").toggleClass("help");
+			Settings.pref("cushowsHelp", !Settings.pref("cushowsHelp"));
+			$("#cushows-edit").toggleClass("help", Settings.prefs.cushowsHelp);
 		});
 		$("#cushows-example").click(function(e)
 		{
@@ -6849,7 +6871,7 @@ log(err);
 					el = this;
 
 			t = new Date(t.getTime() - (86400000 * rand(-2, 2)));
-			this.innerHTML = "S" + pad(rand(0, 15)) + "E" + pad(rand(0, 22)) + " | " + t.getFullYear() + "-" + pad(t.getMonth() + 1) + "-" + pad(t.getDate()) + " | " + rand(0, 22) + " | " + (rand(0, 1) ? (rand(0, 2) ? 7 : 1) : 0);
+			this.innerHTML = "S" + pad(rand(0, 15)) + "E" + pad(rand(0, 22)) + " | " + t.getFullYear() + "-" + pad(t.getMonth() + 1) + "-" + pad(t.getDate()) + " | " + rand(1, 22) + " | " + (rand(0, 1) ? (rand(0, 2) ? 7 : 1) : 0);
 
 			if (e.isTrigger)
 				return;
@@ -6876,29 +6898,48 @@ log(err);
 			change.timer = setTimeout(function()
 			{
 				let error = false,
-						data = cushData.val().trim().split("\n");
+						name = cushName.val().trim(),
+						data = cushData.val().trim();
 
-				for(let i = 0; i < data.length; i++)
+				if (data.length)
 				{
-					let d = data[i].trim().match(dataRegex);
-					if (!d || ~~d[17] < 1)
+					data = data.split("\n");
+					for(let i = 0; i < data.length; i++)
 					{
-						error = true;
-						break;
+						data[i] = data[i].trim();
+						let d = data[i].match(dataRegex);
+						if (data[i].length && (!d || ~~d[17] < 1))
+						{
+							error = true;
+							break;
+						}
 					}
 				}
-				cushData.toggleClass("error", error);
+				cushName.toggleClass("error", !name.length && data.length ? true : false);
+				cushData.toggleClass("error", error || (name.length && !data.length) ? true : false);
 				buttonsUpdate();
-			
-			}, 300);
+			}, 0);
 		}//change()
 
 		function buttonsUpdate()
 		{
-			let name = cushName.val().trim().toLowerCase();
-			cushSubmit.prop("disabled", !name || !cushData.val().trim() || cushData.hasClass("error"));
+			let name = cushName.val().trim().toLowerCase(),
+					add = customShows.listNames[name] || !name || !cushData.val().trim() || cushData.hasClass("error"),
+					update = (!editId && !customShows.listNames[name]) || !name || !cushData.val().trim() || cushData.hasClass("error");
+
+			cushSubmit.prop("disabled", add);
+			cushSubmitUpdate.prop("disabled", update);
 			cushReset.prop("disabled", !(name + cushData.val() + cushWiki.val()));
-			cushSubmit.val(editId || customShows.listNames[name]? "Update" : "Add new");
+
+			if (add && !update)
+				cushSubmit.hide();
+			else
+				cushSubmit.show();
+
+			if (update)
+				cushSubmitUpdate.hide();
+			else
+				cushSubmitUpdate.show();
 		}
 
 		function sortShows()
@@ -6960,6 +7001,9 @@ log(err);
 		cushForm.on("submit", function(e)
 		{
 			e.preventDefault();
+			if (e.originalEvent.explicitOriginalTarget == cushSubmit[0] && editId)
+				editId = null;
+
 			let data = cushData.val().trim().split("\n"),
 					ep = [],
 					wiki = cushWiki.val().trim();
@@ -7173,7 +7217,7 @@ log(err);
 						}
 					}
 					_data[i][0] += " " + _data[i].splice(1,1);
-					d[d.length] = _data[i].join(" | ");
+					d[d.length] = _data[i].join(" ¦ ");
 				}
 				cushData.val(d.join("\n") + "\n");
 				cushName.trigger("change");
