@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.52
+// @version     1.53
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,13 @@
 
 
 var changesLogText = multiline(function(){/*
+1.53 (2018-11-06)
+	+ colors in custom shows list
+	+ clicking "Edit" on custom show from details dropdown automatically highlights the episode data line
+	* if custom show name matches any existing custom shows, it automatically highlighted and currently selected one shows as crossed off (because it would be merged with the matched one)
+	* season/episode number is no longer restricted to max 99
+	! collapse multiple didn't work on added/updated shows without page refresh
+	! some icons in details dropdown were black on dark background
 1.52 (2018-11-05)
 	+ when editing a custom show and name changed to unique, it's now possible add it as a new show or update existing
 	+ "More info" state in custom show editor is now remembered
@@ -1297,7 +1304,7 @@ a
 
 .title:hover
 {
-	background: rgb(210,210, 210) !important;
+	background: #D2D2D2 !important;
 }
 
 #searchbar
@@ -1316,8 +1323,8 @@ a
 
 #searchResults a
 {
-	color: rgb(210, 210, 210);
-	fill: rgb(210, 210, 210);
+	color: #D2D2D2;
+	fill: #D2D2D2;
 }
 
 svg,
@@ -1327,15 +1334,17 @@ svg,
 #manage-links-popup-content a,
 #changesLogBox
 {
-	color: rgb(210, 210, 210) !important;
-	fill: rgb(210,210, 210) !important;
+	color: #D2D2D2 !important;
+	fill: #D2D2D2 !important;
 }
 
 .close:hover,
 .back:hover,
 .back:hover svg,
-#cushows-list > div:hover,
-#cushows-list > div:hover *,
+#cushows-list:not(.opened) > li:hover,
+#cushows-list:not(.opened) > li:hover *,
+#cushows-list.opened > li.opened,
+#cushows-list.opened > li.opened *,
 #manage-links-popup .content > div.dragging:not(.hide),
 #manage-links-popup .content > div.dragging:not(.hide) *,
 #manage-links-popup .content:not(.dragging) > div:hover,
@@ -1345,16 +1354,16 @@ svg,
 	fill: rgb(76, 76, 76) !important;
 }
 
-#cushows-list > div:hover,
+#cushows-list:not(.opened) > li:hover,
+#cushows-list.opened > li.opened,
 #manage-links-popup .content > div.dragging:not(.hide),
 #manage-links-popup .content:not(.dragging) > div:hover
 {
-	background-color: rgb(210, 210, 210);
-	outline: 1px dotted grey;
+	background-color: #D2D2D2;
+	border: 1px dotted grey;
 }
 
 
-div.entry[color="white"] svg,
 div.entry:not([color]) svg
 {
 	fill: white !important;
@@ -1448,16 +1457,24 @@ div.entry
 	color: #b9b2b2;
 }
 
-#cushows-list > div.updated,
-#cushows-list > div.new
+#cushows-list > li.updated,
+#cushows-list > li.new
 {
-	outline-width: 1px;
+	border-width: 1px;
 }
-#cushows-list > div.edit
+#cushows-list > li.edit
 {
-	outline: 1px solid white;
+	border: 1px solid white;
+}
+#cushows-list > li.selected:not(.edit)
+{
+	border: 1px dotted white;
 }
 
+#cushows-list > li.edit.delete:before
+{
+	background-color: #D2D2D2;
+}
 /*
 END DARK THEME
 *//*
@@ -1623,6 +1640,7 @@ END DARK THEME
 	function pad(t, s, n)
 	{
 		n = n || 2;
+		n = Math.max(n, ~~(("" + t).length));
 		s = String(s || "0").repeat(n);
 		return (s + t).substr(-n);
 	}
@@ -1987,6 +2005,9 @@ END DARK THEME
 		let title = $(entry).find(".title")[0],
 				text = "",
 				div = null;
+
+		if (!title)
+			return;
 
 		for(let i = 0; i < title.childNodes.length; i++)
 		{
@@ -3869,11 +3890,11 @@ div.entry,
 	max-width: unset;
 	max-height: unset;
 }
-div.entry[color="white"] .showhide0 > svg,
-div.entry[color="white"] .showhide1 > svg
+div.entry[color="white"]
 {
 	fill: white;
 }
+
 div.details > span.engines > br + div.tools
 {
 	margin-top: 0.3em;
@@ -4183,16 +4204,20 @@ body.edge #manage-links-popup .content > div > img
 }
 .editBox > span
 {
-	cursor: pointer;
 	padding: 3px;
 	display: inline-block;
 	height: 1em;
 }
-.editBox > span:hover
+#cushows-list:not(.opened) .editBox
+{
+	cursor: pointer;
+}
+#cushows-list:not(.opened) .editBox > span:hover
 {
 	outline: 1px dotted #FF9090;
 }
-#cushows-list > div:hover,
+#cushows-list:not(.opened) > li:hover,
+#cushows-list.opened > li.opened,
 #manage-links-popup .content > div.dragging:not(.hide),
 #manage-links-popup .content:not(.dragging) > div:hover
 {
@@ -4338,7 +4363,7 @@ div.reset > span
 	vertical-align: bottom;
 	font-size: 1.3em;
 }
-#cushows-list > div.update,
+#cushows-list > li.update,
 #manage-cushows-popup-content .content > div.update,
 #manage-links-popup-content .content > div.update
 {
@@ -4364,12 +4389,13 @@ body.ff #engine-edit #engine-regexp-replace
 {
 	width: 30%;
 }
+
 input.error,
 textarea.error
 {
-	box-shadow: 0 0 8px 2px #FF9090;
-	-webkit-box-shadow: 0 0 8px 2px #FF9090;
-	-moz-box-shadow: 0 0 8px 2px #FF9090;
+	box-shadow: 0 0 8px 1px #FF9090;
+	-webkit-box-shadow: 0 0 8px 1px #FF9090;
+	-moz-box-shadow: 0 0 8px 1px #FF9090;
 }
 
 #engine-edit textarea
@@ -4624,6 +4650,12 @@ div[id*="-popup"]
 {
 	white-space: nowrap;
 }
+
+.cp-color-picker
+{
+	z-index: 9999;
+}
+
 #changesLogBox,
 div[id*="-popup"],
 body:not(.popup) .cp-color-picker
@@ -5271,7 +5303,9 @@ disqus notificaiton badge
 	overflow: auto;
 	vertical-align: top;
 	height: 100%;
-	min-height: 10em;
+	min-height: 3em;
+	height: 5em;
+	min-width: 20em;
 	margin: 0;
 	padding: 0 2px 0 0;
 }
@@ -5318,25 +5352,37 @@ body.ff #cushows-edit textarea
 	display: block;
 }
 
-#cushows-list > div
+#cushows-list > li
 {
 	padding-left: 5px;
 	padding-right: 5px;
 	cursor: default;
+	border: 1px solid transparent;
+	display: block;
 }
 
-#cushows-list > div > span
+#cushows-list > li > span
 {
-	display: table-cell;
-	vertical-align: middle;
 }
 
-#cushows-list > div > span:nth-child(1)
+#cushows-list > li > :nth-child(1)
+{
+	width: 10px;
+	border: 1px solid black;
+	float: unset;
+	margin: 0;
+	vertical-align: text-top;
+}
+
+#cushows-list > li > :nth-child(2)
 {
 	width: 100%;
-	max-width: 20em;
+	max-width: 21.5em;
 	overflow: hidden;
 	text-overflow: ellipsis;
+	display: inline-block;
+	margin-left: 4px;
+	vertical-align: text-top;
 }
 
 .entry:not(.custom) .edit
@@ -5371,19 +5417,34 @@ body.ff #cushows-edit textarea
 {
 	text-align: right;
 }
-#cushows-list > div.updated
+#cushows-list > li.updated
 {
-	outline: 2px dotted #90FF90;
+	border: 1px dotted #90FF90;
 }
-#cushows-list > div.new
+#cushows-list > li.new
 {
-	outline: 2px dotted #FF9090;
+	border: 1px dotted #FF9090;
 }
 
-#cushows-list > div.edit
+#cushows-list > li.edit
 {
-	outline: 2px solid black;
+	border: 1px solid black;
 	font-weight: bold;
+}
+
+#cushows-list > li.selected:not(.edit)
+{
+	border: 1px dotted black;
+}
+
+#cushows-list > li.edit.delete:before
+{
+ 	content: '';
+  background: black;
+  width: 100%;
+  transform: translateY(0.7em);
+  height: 1px;
+  float: left;
 }
 
 #engine-edit .action,
@@ -5404,6 +5465,24 @@ body.ff #cushows-edit textarea
 {
 	font-size: 90%;
 	float: left;
+}
+
+#cushows-list .color > .colors
+{
+	display: none;
+	position: relative;
+	padding: 0.5em;
+	margin: 0;
+	top: 1.3em;
+	left: -0.6em;
+	background-color: white;
+	border: 1px solid black;
+	z-index: 1;
+	cursor: default;
+}
+#cushows-list li.opened > .color > .colors
+{
+	display: inline-block;
 }
 @keyframes rotate-loading {
  0% {
@@ -5813,6 +5892,7 @@ log(err);
 
 	$("body").on("click", 'div.entry div.title>input[type="checkbox"]', function(e)
 	{
+log("hide");
 		e.stopPropagation();
 		hidePopups();
 	});
@@ -6022,7 +6102,8 @@ log(err);
 
 			let showHideBox = document.createElement("div"),
 					showHideObj = document.createElement("a"),
-					showId = $(obj.parentNode).attr("data-series-id"),
+					entry = obj.parentNode,
+					showId = entry.getAttribute("data-series-id"),
 					show = document.createElement("span"),
 					hide = document.createElement("span");
 
@@ -6159,7 +6240,7 @@ log(err);
 			let editBox = document.createElement("div"),
 					editObj = document.createElement("a"),
 					editIcon = document.createElement("span");
-			
+
 			editIcon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path></svg>Edit';
 			editObj.appendChild(editIcon);
 			editBox.appendChild(editObj);
@@ -6169,7 +6250,7 @@ log(err);
 			{
 				e.stopPropagation();
 				e.preventDefault();
-				customShows.show(showId);
+				customShows.show(showId, entry._cushowId);
 			}, false);
 			showHideBox.parentNode.insertBefore(editBox, showHideBox.nextSibling);
 		}
@@ -6376,6 +6457,7 @@ log(err);
 				entry.setAttribute("data-series-source", data.wiki || "");
 				entry.classList.toggle("season-premiere", data.episode == 1 && data.season > 1);
 				entry.classList.toggle("series-premiere", data.season == 1 && data.episode == 1);
+				entry._cushowId = data.d;
 				day.appendChild(entry);
 				added = true;
 			}
@@ -6520,7 +6602,8 @@ log(err);
 					customShows.list[newId][customShows.list[newId].length] = {
 						date: newDate,
 						season: season,
-						episode: episode
+						episode: episode,
+						d: data[n]
 					}
 					if (!customShows.listDate[newDate])
 						customShows.listDate[newDate] = [];
@@ -6528,7 +6611,8 @@ log(err);
 					customShows.listDate[newDate][customShows.listDate[newDate].length] = {
 						id: newId,
 						season: season,
-						episode: episode
+						episode: episode,
+						d: data[n]
 					}
 					_date.setDate(_date.getDate() + days);
 					episode++;
@@ -6554,8 +6638,13 @@ log(err);
 		{
 			if (this.hasAttribute("opened"))
 				this.parentNode.classList.toggle("opened", false);
+
 		}).remove();
-		$('#cush_' + id).remove();
+		let obj = $('#cush_' + id);
+		if (obj.hasClass("opened"))
+			obj.parent().toggleClass("opened", false);
+
+		obj.remove();
 		assignColor(id + customShows.id, "FFFFFF", true);
 		showHide(id + customShows.id, 0);
 		customShows.save();
@@ -6666,7 +6755,7 @@ log(err);
 
 
 
-	customShows.show = function(id)
+	customShows.show = function(id, dataId)
 	{
 		if (!customShows.div)
 			customShows.manager();
@@ -6678,9 +6767,34 @@ log(err);
 		if (id)
 		{
 			let obj = $("#cush_" + (~~id - customShows.id));
-			scrollIntoView(obj[0], obj[0].parentElement.parentElement, 5, 5);
 			obj.trigger("click");
+			scrollIntoView(obj[0], obj[0].parentElement.parentElement, 5, 5);
 			customShows.div.scrollIntoView(false);
+			let _data = $("#cushows-data");
+					data = _data[0]._data;
+			if (dataId && data)
+			{
+				for (let i = 0; i < data.length; i++)
+				{
+					if (isEqual(data[i], dataId))
+					{
+						let t = _data[0],
+								fullText = t.value,
+								val = fullText.split("\n"),
+								s = val.slice(0, i).join("\n").length + (i ? 1 : 0),
+								e = val.slice(i, i+1).join("\n").length + 1;
+
+						t.focus();
+						t.scrollTop = 0;
+						t.value = fullText.substring(0, s+e);
+						t.scrollTop = t.scrollHeight;
+						t.value = fullText;
+
+						t.setSelectionRange(s, s+e);
+						break;
+					}
+				}
+			}
 		}
 	}//customShows.show()
 	
@@ -6771,11 +6885,11 @@ log(err);
 			</div>
 			<div class="info">
 				<label>Format:</label>
-				<span><b>S</b><i>0</i><b>E</b><i>0</i> | <i>YYYYMMDD</i> | <i>n</i> | <i>i</i></span>
+				<span><i>S0E0</i> | <i>YYYYMMDD</i> | <i>n</i> | <i>i</i></span>
 			</div>
 			<div class="info">
-				<label><b>S</b><i>0</i><b>E</b><i>0</i></label> 
-				<span>= Season + Episode number (leading zero optional)</span>
+				<label><i>S0E0</i></label> 
+				<span>= Season + Episode number</span>
 			</div>
 			<div class="info">
 				<label><i>YYYYMMDD</i></label> 
@@ -6800,8 +6914,8 @@ log(err);
 			<div>
 				<label></label>
 				<div class="action">
-					<input id="cushows-submitupdate" type="submit" value="Update">
-					<input id="cushows-submit" type="submit" value="Add new">
+					<input id="cushows-submitupdate" type="submit" name="update" value="Update">
+					<input id="cushows-submit" type="submit" name="add" value="Add new">
 					<input id="cushows-reset" type="reset" value="Clear">
 				</div>
 			</div>
@@ -6819,37 +6933,37 @@ log(err);
 				cushReset = $("#cushows-reset"),
 				editId = null,
 				_today = new Date(),
-				cushDiv = document.createElement("div"),
+				cushBox = document.createElement("div"),
 				dataRegex = /^([^0-9]*([0-9]+)[^0-9]+([0-9]+))[^0-9]+((([0-9]{4})[^0-9]+([0-9]{1,2})[^0-9]+([0-9]{1,2}))|(([0-9]{4})[^0-9]*([0-9]{2})[^0-9]*([0-9]{2}))|(([0-9]{4})[^0-9]*([0-9]{1,2})[^0-9]+([0-9]{1,2})))[^0-9]+([0-9]+)[^0-9]+([0-9]+)[^0-9]*$/;
 
-		cushDiv.id = "cushows-list";
-		cushDiv.setAttribute("tabindex", 0);
-		cushDiv.addEventListener("keypress", function(e)
+		cushBox.id = "cushows-list";
+		cushBox.setAttribute("tabindex", 0);
+		cushBox.addEventListener("keypress", function(e)
 		{
 			let obj = null;
 			if (e.code == "ArrowUp")
 			{
 				e.preventDefault();
 				e.stopPropagation();
-				obj = $(cushDiv).find(".edit").prev();
+				obj = $(cushBox).find(".edit").prev();
 			}
 			else if (e.code == "ArrowDown")
 			{
 				e.preventDefault();
 				e.stopPropagation();
-				obj = $(cushDiv).find(".edit").next();
+				obj = $(cushBox).find(".edit").next();
 			}
 			else if (e.code == "ArrowLeft")
 			{
 				e.preventDefault();
 				e.stopPropagation();
-				obj = $(cushDiv).find(".edit").parent().children().first();
+				obj = $(cushBox).find(".edit").parent().children().first();
 			}
 			else if (e.code == "ArrowRight")
 			{
 				e.preventDefault();
 				e.stopPropagation();
-				obj = $(cushDiv).find(".edit").parent().children().last();
+				obj = $(cushBox).find(".edit").parent().children().last();
 			}
 			if (obj && obj[0])
 			{
@@ -6927,6 +7041,9 @@ log(err);
 					add = customShows.listNames[name] || !name || !cushData.val().trim() || cushData.hasClass("error"),
 					update = (!editId && !customShows.listNames[name]) || !name || !cushData.val().trim() || cushData.hasClass("error");
 
+//if (editId && customShows.listNames[name])
+			edit(customShows.listNames[name] || editId, true, "selected");
+			edit(editId && customShows.listNames[name] && customShows.listNames[name] != editId ? editId : -1, false, "delete");
 			cushSubmit.prop("disabled", add);
 			cushSubmitUpdate.prop("disabled", update);
 			cushReset.prop("disabled", !(name + cushData.val() + cushWiki.val()));
@@ -6945,10 +7062,10 @@ log(err);
 		function sortShows()
 		{
 			Array.prototype.slice
-				.call(cushDiv.children)
+				.call(cushBox.children)
 				.map(function (a)
 				{
-					return cushDiv.removeChild(a);
+					return cushBox.removeChild(a);
 				})
 				.sort(function (a, b)
 				{
@@ -6956,7 +7073,7 @@ log(err);
 				})
 				.forEach(function (a)
 				{
-					cushDiv.appendChild(a);
+					cushBox.appendChild(a);
 				});
 		}
 		cushName.on("input change", change);
@@ -7001,7 +7118,7 @@ log(err);
 		cushForm.on("submit", function(e)
 		{
 			e.preventDefault();
-			if (e.originalEvent.explicitOriginalTarget == cushSubmit[0] && editId)
+			if (editId && document.activeElement == cushSubmit[0])
 				editId = null;
 
 			let data = cushData.val().trim().split("\n"),
@@ -7087,16 +7204,16 @@ log(err);
 			if (editId)
 			{
 				obj = $("#cush_" + id);
-				obj.children().first().text(data[0]);
+				obj.children(".name").text(data[0]);
 				type = "updated";
 			}
 			else
 			{
 				obj = customShowsCreate(id, callback);
-				cushDiv.appendChild(obj);
+				cushBox.appendChild(obj);
 				obj = $(obj);
 			}
-			$("#" + cushDiv.id).children().toggleClass("new updated", false);
+			$("#" + cushBox.id).children().toggleClass("new updated", false);
 			obj.toggleClass(type, true);
 			obj.attr("title", data[0]);
 
@@ -7104,7 +7221,7 @@ log(err);
 			flash(obj, "yellow", true);
 			if (isEdit)
 			{
-				$('[data-series-id="' + (id + customShows.id) + '"]').each(function()
+				$('[data-series-id="' + (id + customShows.id) + '"]:not(.colorbox)').each(function()
 				{
 					if (this.hasAttribute("opened"))
 						this.parentNode.classList.toggle("opened", false);
@@ -7126,7 +7243,10 @@ log(err);
 	//adding watched checkboxes
 				obj.each(watched.attach);
 	//collapse multiple entries of the same series in one day
-				obj.parent().each(collapseMulti);
+				obj.parent().each(function(i)
+				{
+					collapseMulti(i, this, true);
+				});
 			});
 			showHideLoad();
 			if ($("#searchbar").hasClass("active"))
@@ -7135,17 +7255,25 @@ log(err);
 						v = s.val();
 				s.val("").trigger("change").val(v).trigger("change");
 			}
-//			obj.trigger("click");
-			cushReset.trigger("click");
+			obj.trigger("click");
+//			cushReset.trigger("click");
 		});//cushForm.submit()
-		function edit(id)
+		function edit(id, scroll, className)
 		{
 			id = id || editId;
-			for(let i = 0; i < cushDiv.children.length; i++)
+			className = className || "edit"
+			for(let i = 0; i < cushBox.children.length; i++)
+				cushBox.children[i].classList.toggle(className, (cushBox.children[i].id == "cush_" + id));
+
+			if (scroll)
 			{
-				cushDiv.children[i].classList.toggle("edit", (cushDiv.children[i].id == "cush_" + id));
+				let obj = document.getElementById("cush_" + id);
+				if (obj)
+					scrollIntoView(obj, obj.parentElement.parentElement, 3, 6);
+
 			}
 		}
+		let colorsBox = $( "#detailsTemplate" ).find(".colors").first().clone();
 		function customShowsCreate(id, callback)
 		{
 			let data = {
@@ -7162,16 +7290,41 @@ log(err);
 							return customShows._list.l[id][2];
 						}
 					},
-					entry = document.createElement("div"),
-					editBox = document.createElement("span");
-			entry.innerHTML = '<span>' + data.name + '</span>';
+					entry = document.createElement("li"),
+					editBox = document.createElement("span"),
+					colorPicker = document.createElement("div"),
+					nameBox = document.createElement("span"),
+					colorBox = colorsBox[0].cloneNode(true);
+
+			nameBox.className = "name";
+			nameBox.textContent = data.name;
+			colorPicker.appendChild(colorBox);
+			colorPicker.className = "color entry colorbox";
+			colorPicker.setAttribute("data-series-id", id + customShows.id);
 			entry.title = data.name;
+			entry.appendChild(colorPicker);
+			entry.appendChild(nameBox);
 			entry.appendChild(editBox);
 			editBox.className = "editBox";
 //EDIT
 //			$('<span class="edit" title="Edit"><svg viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path></svg></span>').appendTo(editBox).click(function(e)
 			$(entry).click(function(e)
 			{
+				if (e.target.classList.contains("colorbox") || (entry.classList.contains("opened") && !$(e.target).parents('.colorbox').get().length))
+				{
+					$(cushBox).find(':not([id="cush_' + id +'"]).opened').toggleClass("opened", false);
+					e.target.parentNode.classList.toggle("opened");
+					let opened = e.target.parentNode.classList.contains("opened");
+					document.body.classList.toggle("colorpicker", opened);
+					e.target.parentNode.parentNode.classList.toggle("opened", opened);
+					e.stopPropagation();
+					e.preventDefault();
+					return;
+				}
+
+				if (document.body.classList.contains("colorpicker"))
+					return;
+
 				e.stopPropagation();
 				e.preventDefault();
 				editId = id;
@@ -7191,6 +7344,7 @@ log(err);
 							return r;
 						});
 
+				cushData[0]._data = cloneObj(_data);
 				for(let i = 0; i < _data.length; i++)
 				{
 					_data[i] = cloneObj(_data[i]);
@@ -7225,6 +7379,9 @@ log(err);
 //SEARCH
 			$('<span class="search" title="Search"><svg viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg></span>').appendTo(editBox).click(function(e)
 			{
+				if (cushBox.classList.contains("opened"))
+					return;
+
 				e.stopPropagation();
 				e.preventDefault();
 				search("info:" + (id + customShows.id));
@@ -7233,6 +7390,9 @@ log(err);
 //DELETE
 			$('<span class="del" title="Delete"><svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"></path></svg></span>').appendTo(editBox).click(function(e)
 			{
+				if (cushBox.classList.contains("opened"))
+					return;
+
 				e.stopPropagation();
 				e.preventDefault();
 				if (cushReset.prop("disabled"))
@@ -7266,10 +7426,10 @@ log(err);
 				callback();
 
 		}
-		content.append(cushDiv);
+		content.append(cushBox);
 		for(let i in list)
 		{
-			cushDiv.appendChild(customShowsCreate(~~i, callback ? finished : null));
+			cushBox.appendChild(customShowsCreate(~~i, callback ? finished : null));
 		};
 		if (!n)
 			callback();
@@ -8467,19 +8627,26 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			hidePopups();
 
 	});
+//close popups when clicked outside
 	$(document.body).on( "click touchstart", function(e)
 	{
 		if (e.isTrigger || e.target.isTrigger)
 			return;
-
 		if (!$("body").hasClass("popup") || $("body").hasClass("prompt") || (e.target.className.indexOf && e.target.className.indexOf("undoBar") != -1))
 			return;
 
 		let target = $(e.target),
 				close = target.hasClass("close") || target.parents(".close").get().length,
-				p = target.parents("#account-popup").get().length,
+				p = target.parents(".cp-color-picker").get().length,
 				hide = [];
 
+		if (p)
+			return;
+
+		if (document.body.classList.contains("colorpicker") && !target.parents("li.opened").get().length)
+			return $("li.opened").find("div.entry.color").click();
+
+		p = target.parents("#account-popup").get().length;
 		if (p)
 			return;
 
