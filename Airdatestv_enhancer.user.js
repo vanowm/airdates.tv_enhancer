@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.54
+// @version     1.54.1
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,8 @@
 
 
 var changesLogText = multiline(function(){/*
+1.54.1 (2018-11-07)
+	! incorrect number of weeks shown in search results
 1.54 (2018-11-07)
 	+ option to limit how many weeks to show (past weeks are included into the count)
 	* increased number of past weeks to 5
@@ -3673,20 +3675,20 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 
 		days.each(function(i, o)
 		{
-			if ($(this).is(_today))
+			let $this = $(this);
+			if ($this.is(_today))
 			{
-				$(this).addClass("today").attr("id", "today").attr("today", "true");
+				$this.addClass("today").attr("id", "today").attr("today", "true");
 				stop = true;
 			}
 			if (stop)
 			{
-				$(this).removeClass("past");
+				$this.removeClass("past");
 			}
 			else
 			{
-				$(this).addClass("past");
+				$this.addClass("past");
 			}
-			this.classList.toggle("week" + (Math.ceil((i+1) / 7)), true);
 		});
 
 		let week = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
@@ -3703,7 +3705,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 				prev = prev.prev();
 			}
 		}
-		//remove more then 4 weeks worth of days.
+		//remove more then 5 weeks worth of days.
 		for(let i = 0; i < 34 && prev; i++)
 		{
 			prev = prev.prev();
@@ -3717,13 +3719,18 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 						if (found)
 							return;
 
-						if ($(this).is(prev))
+						let $this = $(this);
+						if ($this.is(prev))
 							found = true;
 						else
-							$(this).remove();
+							$this.remove();
 					};
 			days.each(func);
 		}
+		$("div.days").children().each(function(i)
+		{
+			this.setAttribute("week", (Math.ceil((i+1) / 7)))
+		});
 		let	daysPast = $('div.past'),
 				daysCount = Math.round((days.length) / 7) + 1,
 				weeks = ~~Settings.pref("weeksPast"),
@@ -3962,7 +3969,7 @@ div.details > span.engines > div.tools > *
 {
 	margin: 0.2em;
 }
-body:not(.archive) div.day[class*=" week"],
+body:not(.archive) div.day[week],
 body:not(.archive) div.day.past,
 .showhide0,
 span[checked] > .checkoff,
@@ -3974,26 +3981,26 @@ div.calendar.showReturn div.entry:not(.season-premiere):not(.searchResult)
 	display: none;
 }
 
-body:not(.archive) div.showWeek1 div.week1,
-body:not(.archive) div.showWeek2 div.week2,
-body:not(.archive) div.showWeek3 div.week3,
-body:not(.archive) div.showWeek4 div.week4,
-body:not(.archive) div.showWeek5 div.week5,
-body:not(.archive) div.showWeek6 div.week6,
-body:not(.archive) div.showWeek7 div.week7,
-body:not(.archive) div.showWeek8 div.week8,
-body:not(.archive) div.showWeek9 div.week9,
-body:not(.archive) div.showWeek10 div.week10,
-body:not(.archive) div.showWeek11 div.week11,
-body:not(.archive) div.showWeek12 div.week12,
-body:not(.archive) div.showWeek13 div.week13,
-body:not(.archive) div.showWeek14 div.week14,
-body:not(.archive) div.showWeek15 div.week15,
-body:not(.archive) div.showWeek16 div.week16,
-body:not(.archive) div.showWeek17 div.week17,
-body:not(.archive) div.showWeek18 div.week18,
-body:not(.archive) div.showWeek19 div.week19,
-body:not(.archive) div.showWeek19 div.week20,
+body:not(.archive) div.showWeek1 div[week="1"],
+body:not(.archive) div.showWeek2 div[week="2"],
+body:not(.archive) div.showWeek3 div[week="3"],
+body:not(.archive) div.showWeek4 div[week="4"],
+body:not(.archive) div.showWeek5 div[week="5"],
+body:not(.archive) div.showWeek6 div[week="6"],
+body:not(.archive) div.showWeek7 div[week="7"],
+body:not(.archive) div.showWeek8 div[week="8"],
+body:not(.archive) div.showWeek9 div[week="9"],
+body:not(.archive) div.showWeek10 div[week="10"],
+body:not(.archive) div.showWeek11 div[week="11"],
+body:not(.archive) div.showWeek12 div[week="12"],
+body:not(.archive) div.showWeek13 div[week="13"],
+body:not(.archive) div.showWeek14 div[week="14"],
+body:not(.archive) div.showWeek15 div[week="15"],
+body:not(.archive) div.showWeek16 div[week="16"],
+body:not(.archive) div.showWeek17 div[week="17"],
+body:not(.archive) div.showWeek18 div[week="18"],
+body:not(.archive) div.showWeek19 div[week="19"],
+body:not(.archive) div.showWeek19 div[week="20"],
 
 body:not(.archive) div.showPast1 div.past1,
 body:not(.archive) div.showPast2 div.past2,
