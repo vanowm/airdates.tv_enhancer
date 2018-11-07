@@ -17,6 +17,8 @@
 
 
 var changesLogText = multiline(function(){/*
+1.54.2 (2018-11-07)
+	! number of weeks ignored if number of past weeks changed immediately after number of weeks changed from "All" to any number
 1.54.1 (2018-11-07)
 	! incorrect number of weeks shown in search results
 1.54 (2018-11-07)
@@ -3734,7 +3736,6 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 		let	daysPast = $('div.past'),
 				daysCount = Math.round((days.length) / 7) + 1,
 				weeks = ~~Settings.pref("weeksPast"),
-				weeksMax = ~~Settings.pref("weeks") || daysCount,
 				weeksPastMax = Math.round((daysPast.length) / 7);//how many past weeks do we have available?
 
 		if (isNaN(weeks))
@@ -3747,8 +3748,10 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 		function showWeeks()
 		{
 
+			let weeksMax = ~~Settings.pref("weeks") || daysCount;
+
 			//get week numbers from dropdown
-			let weeks = parseInt($("#pastWeeks").val());
+			let weeks = ~~$("#pastWeeks").val();
 
 			//just some sanity check
 			if (weeks * 7 > daysPast.length)
