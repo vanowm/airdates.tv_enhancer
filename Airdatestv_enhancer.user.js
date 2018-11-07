@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.53.2
+// @version     1.54
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,9 @@
 
 
 var changesLogText = multiline(function(){/*
+1.54 (2018-11-07)
+	+ option to limit how many weeks to show (past weeks are included into the count)
+	* increased number of past weeks to 5
 1.53.2 (2018-11-06)
 	! disqus trolls script didn't work
 1.53.1 (2018-11-06)
@@ -24,10 +27,10 @@ var changesLogText = multiline(function(){/*
 1.53 (2018-11-06)
 	+ colors in custom shows list
 	+ clicking "Edit" on custom show from details dropdown automatically highlights the episode data line
-	* if custom show name matches any existing custom shows, it automatically highlighted and currently selected one shows as crossed off (because it would be merged with the matched one)
-	* season/episode number is no longer restricted to max 99
 	! collapse multiple didn't work on added/updated shows without page refresh
 	! some icons in details dropdown were black on dark background
+	* if custom show name matches any existing custom shows, it automatically highlighted and currently selected one shows as crossed off (because it would be merged with the matched one)
+	* season/episode number is no longer restricted to max 99
 1.52 (2018-11-05)
 	+ when editing a custom show and name changed to unique, it's now possible add it as a new show or update existing
 	+ "More info" state in custom show editor is now remembered
@@ -40,11 +43,11 @@ var changesLogText = multiline(function(){/*
 	+ more explanation about episode data format
 	+ Custom shows form changes label on submit button to reflect if a show being edited or a new show will be created
 	+ arrow keys in custom shows list would select for editing next/prev show
-	* new show episodes data fields are now showing evenly spaced
 	! text-shadow on titles highlighted by search would affect new/returning tags, producing unreadable text
 	! clicking "Show all episodes" from "My Shows" list would not properly display list of episodes
 	! missing "Edit" link in for custom shows in "My shows" list
 	! white icon in show's details in search results
+	* new show episodes data fields are now showing evenly spaced
 1.50 (2018-11-03)
 	+ backup/restore custom shows
 1.49 (2018-11-03)
@@ -85,8 +88,8 @@ var changesLogText = multiline(function(){/*
 	! loading icon when clicked at disqus notification badge would hide prematurely before notification window opened.
 	! disqus badge routine start multiple timers
 1.44.1 (2018-07-15)
-	* tweaked the look of notification badge
 	! dark theme looked bad in archive
+	* tweaked the look of notification badge
 1.44 (2018-07-15)
 	+ discus message notification badge on top of the page
 	+ colorpicker set to last used color if current show has no assigned color
@@ -106,8 +109,8 @@ var changesLogText = multiline(function(){/*
 1.40.2 (2018-07-13)
 	* better support for dark themes
 1.40.1 (2018-07-10)
-	* opened show border now obeys color of the text
 	! on small screens sundays would move underneath of saturday
+	* opened show border now obeys color of the text
 1.40 (2018-07-09)
 	+ episode season number offset
 1.39 (2018-07-09)
@@ -206,16 +209,16 @@ var changesLogText = multiline(function(){/*
 1.29 (2018-02-12)
 	+ ESC key closes popups
 	+ show/hide this show icon
-	* links with long names are longer "wrap"
-	* significally improved performance of Links manager
-	* faster opening/closing show animation
-	* selectable links in show details are now separate from other links
-	* links manager popup now has limited max size
 	! when number of visible links different from default, opening a show would make the animation jump
 	! long text wrapped in popup windows
 	! clicking on edit link icon in Links Manager, would not display correct lin in the "Result" row
 	! "reset sort" link in Links Manager would take whole row
 	! MS Edge would not initialize properly
+	* links with long names are longer "wrap"
+	* significally improved performance of Links manager
+	* faster opening/closing show animation
+	* selectable links in show details are now separate from other links
+	* links manager popup now has limited max size
 1.28.4 (2018-02-07)
 	+ random series as example in links manager
 	! editing/adding a link while a show opened would produce incorrect links in the opened show until page refresh
@@ -496,7 +499,7 @@ let func = function(event)
 		sn: "showNew",
 		sr: "showReturn",
 		cm: "collapseMulti",
-		w: "weeks",
+		w: "weeksPast",
 		wa: "enableWatched",
 		middleClick: "middleClick"
 	};
@@ -528,7 +531,8 @@ let func = function(event)
 			showNew: 0,
 			showReturn: 0,
 			middleClick: [],
-			weeks: 0,
+			weeks: 0, //total number of weeks to show
+			weeksPast: 0, //number of past weeks
 			sortBy: 0,
 			version: "",
 			noChangesLog: 0,
@@ -583,6 +587,12 @@ let func = function(event)
 			this.prefs = ls("settings") || Object.assign({}, this.prefsDef);
 			if (typeof(this.prefs) != "object")
 				this.prefs = Object.assign({}, this.prefsDef);
+
+			if ("weeks" in this.prefs && !("weeksPast" in this.prefs))
+			{
+				this.prefs.weeksPast = this.prefs.weeks;
+				this.prefs.weeks = this.prefsDef.weeks;
+			}
 
 			//add any missing settings
 			for(let i in this.prefsDef)
@@ -700,7 +710,7 @@ let func = function(event)
 				</svg>
 			</div>
 		</div>
-		<div class="content">
+		<div class="content settings">
 		</div>
 	</div>
 </div>
@@ -712,7 +722,6 @@ let func = function(event)
 					i = document.createElement("span"),
 					span = document.createElement("div");
 
-			content.toggleClass("settings", true);
 			span.appendChild(i);
 			span.appendChild(a);
 
@@ -729,6 +738,43 @@ let func = function(event)
 			content.append(opt);
 			opt = createCheckbox("todayChange", "Track today", this.prefs.todayChange ? true : false, this.callback, ['Automatically change "today" at midnight'], "");
 			content.append(opt);
+
+			opt = $(multiline(function(){/*
+<span id="weeksBox">Show 
+	<select id="weeks">
+		<option value="">All</option>
+		<option value="1">1</option>
+		<option value="2">2</option>
+		<option value="3">3</option>
+		<option value="4">4</option>
+		<option value="5">5</option>
+		<option value="6">6</option>
+		<option value="7">7</option>
+		<option value="8">8</option>
+		<option value="9">9</option>
+		<option value="10">10</option>
+		<option value="11">11</option>
+		<option value="12">12</option>
+		<option value="13">13</option>
+		<option value="14">14</option>
+		<option value="15">15</option>
+		<option value="16">16</option>
+		<option value="17">17</option>
+	</select> weeks
+</span>
+			*/}));
+			opt.appendTo(content)
+				.find("#weeks")
+				.val(Settings.pref("weeks"))
+				.on("input", function(evt)
+				{
+					this.nextSibling.textContent = " week" + ((this.value == 1) ? "" : "s");
+					Settings.pref("weeks", ~~this.value);
+					if (!evt.isTrigger)
+						pastLoaded();
+				})
+				.trigger("input");
+
 			opt = $(multiline(function(){/*
 <span>Theme <select id="theme">
 </select></span>
@@ -759,6 +805,7 @@ let func = function(event)
 					Settings.themes.load(evt.target.value);
 				})
 				.trigger("change");
+
 			opt = $(multiline(function(){/*
 <span id="timeOffsetBox">
 	Time offset <input id="timeOffset" type="number" min="-24" max="24"> hours
@@ -3581,7 +3628,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 			div.push(document.createElement("div"));
 
 		let c = div.length;
-		for (let n = 0; n < div.length; n++)
+		for (let n = 0; n < c; n++)
 		{
 			let d = new Date(y, m - n - 1);
 			$(div[n]).load("/_archive/" + d.getFullYear() + "-" + pad(d.getMonth() + 1), pastLoadDone);
@@ -3621,9 +3668,10 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 	function pastLoaded()
 	{
 		let	hasLoaded = $("#pastWeeks").length,
-				stop = false;
+				stop = false,
+				days = $("div.days").children();
 
-		$("div.days").children().each(function(i, o)
+		days.each(function(i, o)
 		{
 			if ($(this).is(_today))
 			{
@@ -3638,6 +3686,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 			{
 				$(this).addClass("past");
 			}
+			this.classList.toggle("week" + (Math.ceil((i+1) / 7)), true);
 		});
 
 		let week = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
@@ -3655,13 +3704,14 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 			}
 		}
 		//remove more then 4 weeks worth of days.
-		for(let i = 0; i < 27 && prev; i++)
+		for(let i = 0; i < 34 && prev; i++)
 		{
 			prev = prev.prev();
 		}
 		if (prev)
 		{
 			let found = false,
+					days = $("div.days").children(),
 					func = function(i, o)
 					{
 						if (found)
@@ -3672,17 +3722,19 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 						else
 							$(this).remove();
 					};
-			$("div.days").children().each(func);
+			days.each(func);
 		}
 		let	daysPast = $('div.past'),
-				weeks = parseInt(Settings.pref("weeks")),
-				weeksMax = Math.round((daysPast.length) / 7);//how many past weeks do we have available?
+				daysCount = Math.round((days.length) / 7) + 1,
+				weeks = ~~Settings.pref("weeksPast"),
+				weeksMax = ~~Settings.pref("weeks") || daysCount,
+				weeksPastMax = Math.round((daysPast.length) / 7);//how many past weeks do we have available?
 
 		if (isNaN(weeks))
-			weeks = readCookieRaw("p") == "1" ? weeksMax : 0;
+			weeks = readCookieRaw("p") == "1" ? weeksPastMax : 0;
 
-		if (weeks > weeksMax)
-			weeks = weeksMax;
+		if (weeks > weeksPastMax)
+			weeks = weeksPastMax;
 
 		//main function that shows/hides past days
 		function showWeeks()
@@ -3693,21 +3745,28 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 
 			//just some sanity check
 			if (weeks * 7 > daysPast.length)
-				weeks = weeksMax;
+				weeks = weeksPastMax;
 
 			if (weeks < 1)
 				weeks = 0;
 
-			for(let i = weeksMax; i > 0; i--)
-				$( "div.calendar" ).toggleClass("showPast" + i, (weeks >= i));
+			let startWeek = weeksPastMax-weeks;
+			for(let i = weeksPastMax, shown = 1; i > 0; i--)
+			{
+				$( "div.calendar" ).toggleClass("showPast" + i, (weeks >= i && shown++ <= weeksMax));
 
-			Settings.pref("weeks", weeks);
+			}
+			for(let i = 1, shown = 1; i < daysCount; i++)
+			{
+				$( "div.calendar" ).toggleClass("showWeek" + i, i > startWeek && shown++ <= weeksMax);
+			}
+			Settings.pref("weeksPast", weeks);
 		}
 		//add new class pastNN to each past day, where NN is a week number.
 		let func = function(i)
 		{
 			this.className = this.className.replace(/ ?past[0-9]+/, '');
-			this.classList.toggle("past" + (Math.ceil((daysPast.length - i) / 7 % (weeksMax + 1))), true);
+			this.classList.toggle("past" + (Math.ceil((daysPast.length - i) / 7 % (weeksPastMax + 1))), true);
 		};
 		daysPast.each(func);
 
@@ -3717,7 +3776,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 			let dropdown = document.createElement("select");
 			dropdown.id = "pastWeeks";
 
-			for(let i = 0; i <= weeksMax; i++)
+			for(let i = 0; i <= weeksPastMax; i++)
 			{
 				let option = document.createElement("option");
 				option.value = i;
@@ -3777,18 +3836,6 @@ body.userViewer .clearColors,
 body.userViewer .colors
 {
 	display: none !important;
-}
-div.showPast1 div.past1,
-div.showPast2 div.past2,
-div.showPast3 div.past3,
-div.showPast4 div.past4,
-div.showPast5 div.past5,
-div.showPast6 div.past6,
-div.showPast7 div.past7,
-div.showPast8 div.past8,
-div.showPast9 div.past9
-{
-	display: block;
 }
 
 /*
@@ -3915,7 +3962,8 @@ div.details > span.engines > div.tools > *
 {
 	margin: 0.2em;
 }
-body:not(.archive) .past,
+body:not(.archive) div.day[class*=" week"],
+body:not(.archive) div.day.past,
 .showhide0,
 span[checked] > .checkoff,
 span:not([checked]) > .checkon,
@@ -3924,6 +3972,40 @@ div.calendar.showNew div.entry:not(.series-premiere):not(.searchResult),
 div.calendar.showReturn div.entry:not(.season-premiere):not(.searchResult)
 {
 	display: none;
+}
+
+body:not(.archive) div.showWeek1 div.week1,
+body:not(.archive) div.showWeek2 div.week2,
+body:not(.archive) div.showWeek3 div.week3,
+body:not(.archive) div.showWeek4 div.week4,
+body:not(.archive) div.showWeek5 div.week5,
+body:not(.archive) div.showWeek6 div.week6,
+body:not(.archive) div.showWeek7 div.week7,
+body:not(.archive) div.showWeek8 div.week8,
+body:not(.archive) div.showWeek9 div.week9,
+body:not(.archive) div.showWeek10 div.week10,
+body:not(.archive) div.showWeek11 div.week11,
+body:not(.archive) div.showWeek12 div.week12,
+body:not(.archive) div.showWeek13 div.week13,
+body:not(.archive) div.showWeek14 div.week14,
+body:not(.archive) div.showWeek15 div.week15,
+body:not(.archive) div.showWeek16 div.week16,
+body:not(.archive) div.showWeek17 div.week17,
+body:not(.archive) div.showWeek18 div.week18,
+body:not(.archive) div.showWeek19 div.week19,
+body:not(.archive) div.showWeek19 div.week20,
+
+body:not(.archive) div.showPast1 div.past1,
+body:not(.archive) div.showPast2 div.past2,
+body:not(.archive) div.showPast3 div.past3,
+body:not(.archive) div.showPast4 div.past4,
+body:not(.archive) div.showPast5 div.past5,
+body:not(.archive) div.showPast6 div.past6,
+body:not(.archive) div.showPast7 div.past7,
+body:not(.archive) div.showPast8 div.past8,
+body:not(.archive) div.showPast9 div.past9
+{
+	display: block;
 }
 
 
@@ -6980,7 +7062,7 @@ log("hide");
 		$("#cushows-edit").toggleClass("help", Settings.prefs.cushowsHelp);
 		$("#cushows-help").click(function(e)
 		{
-			Settings.pref("cushowsHelp", !Settings.pref("cushowsHelp"));
+			Settings.pref("cushowsHelp", !Settings.pref("cushowsHelp") ? 1 : 0);
 			$("#cushows-edit").toggleClass("help", Settings.prefs.cushowsHelp);
 		});
 		$("#cushows-example").click(function(e)
@@ -8649,7 +8731,11 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			return;
 
 		if (document.body.classList.contains("colorpicker") && !target.parents("li.opened").get().length)
+		{
+			e.stopPropagation();
+			e.preventDefault();
 			return $("li.opened").find("div.entry.color").click();
+		}
 
 		p = target.parents("#account-popup").get().length;
 		if (p)
@@ -8696,6 +8782,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		else if (p)
 			return;
 
+		
 		for(let i = 0; i < hide.length; i++)
 			hide[i]();
 
