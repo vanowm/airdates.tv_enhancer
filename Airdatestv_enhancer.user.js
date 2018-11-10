@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.55
+// @version     1.55.1
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,9 @@
 
 
 var changesLogText = multiline(function(){/*
+1.55.1 (2018-11-10)
+	! search by name failed find custom shows
+	* custom shows no longer displayed as duplicate if original show with exact same name + season + episode already exists in the same day
 1.55 (2018-11-10)
 	+ tooltips on quick color pick
 	+ option to change displayed number of custom colors
@@ -755,7 +758,7 @@ let func = function(event)
 			content.append(opt);
 
 			opt = $(multiline(function(){/*
-<span id="weeksBox">Show 
+<span id="weeksBox">Show number of weeks: 
 	<select id="weeks">
 		<option value="">Default</option>
 		<option value="1">1</option>
@@ -775,7 +778,7 @@ let func = function(event)
 		<option value="15">15</option>
 		<option value="16">16</option>
 		<option value="17">17</option>
-	</select> weeks
+	</select>
 </span>
 			*/}))
 				.appendTo(content)
@@ -783,7 +786,7 @@ let func = function(event)
 				.val(Settings.pref("weeks"))
 				.on("input", function(evt)
 				{
-					this.nextSibling.textContent = " week" + ((this.value == 1) ? "" : "s");
+//					this.nextSibling.textContent = " week" + ((this.value == 1) ? "" : "s");
 					Settings.pref("weeks", ~~this.value);
 					if (!evt.isTrigger)
 						pastLoaded();
@@ -800,6 +803,8 @@ let func = function(event)
 				.val(Settings.pref("lastColorsShow"))
 				.on("input", function(evt)
 				{
+					this.nextSibling.textContent = " last custom color" + ((this.value == 1) ? "" : "s");
+
 					let s = this.selectionStart,
 							e = this.selectionEnd,
 							val = Math.min(100, Math.max(0, ~~this.value.replace(/[^0-9\-]/g, "")));
@@ -818,7 +823,7 @@ let func = function(event)
 				.trigger("input");
 
 			opt = $(multiline(function(){/*
-<span>Theme <select id="theme"></select></span>
+<span>Theme: <select id="theme"></select></span>
 			*/}))
 				.appendTo(content)
 				.find("select")
@@ -849,7 +854,7 @@ let func = function(event)
 
 			opt = $(multiline(function(){/*
 <span id="timeOffsetBox">
-	Time offset <input id="timeOffset" type="number" min="-24" max="24"> hours
+	Time offset: <input id="timeOffset" type="number" min="-24" max="24"> hours
 </span>
 			*/}))
 				.appendTo(content)
@@ -857,6 +862,7 @@ let func = function(event)
 				.val(Settings.pref("timeOffset"))
 				.on("input", function(evt)
 				{
+					this.nextSibling.textContent = " hour" + ((this.value == 1) ? "" : "s");
 					let s = this.selectionStart,
 							e = this.selectionEnd;
 					timeOffset = Math.min(24, Math.max(-24, Number(this.value.replace(/[^0-9\-]/g, ""))));
@@ -2163,6 +2169,7 @@ END DARK THEME
 		{
 			entry._title = titleSpan;
 			entry._title._titleDefault = titleSpan.textContent;
+			entry.setAttribute("data-title", titleSpan.textContent);
 		}
 		entry._title.textContent = episodeNumberFix(id, entry._title.textContent);
 		watched.update(entry, input.checked);
@@ -6632,6 +6639,17 @@ log("hide");
 		entry.className = "entry custom";
 		title.className = "title";
 		entry.appendChild(title);
+
+//adding title attribute so we can avoid duplicate entries with custom names
+		let i = -1,
+				_entries = document.querySelectorAll(".days > .day > .entry");
+
+		while(++i < _entries.length)
+		{
+			if (!_entries[i]._title)
+				_entries[i].setAttribute("data-title", _entries[i].textContent.trim());
+		}
+
 		for(let i in list)
 		{
 			let day = days.querySelector('[data-date="' + i + '"]');
@@ -6649,23 +6667,28 @@ log("hide");
 				data.name = customShows._list.l[id][0];
 				data.wiki = customShows._list.l[id][2];
 				let name = data.name + " " + (data.season ? "S" + pad(data.season) : "") + "E" + pad(data.episode),
-						_entries = day.querySelectorAll('[data-series-id="' + data.id + '"]'),
+//						_entries = day.querySelectorAll('[data-series-id="' + data.id + '"]'),
+						_entries = day.querySelectorAll('[data-title="' + name + '"], [data-series-id="' + data.id + '"]'),
 						_entry = null,
 						titleDiv = null;
-
 				for(let e = 0; e < _entries.length; e++)
 				{
-					
-					if (_entries[e]._title && _entries[e]._title._titleDefault == name)
+//					if (_entries[e]._title && _entries[e]._title._titleDefault == name)
+					if (_entries[e].getAttribute("data-series-id") != data.id || (_entries[e]._title && _entries[e]._title._titleDefault == name))
 					{
 						_entry = _entries[e];
 						continue loopData;
 					}
-					titleDiv =  _entries[e].querySelector('div.title');
-					if (titleDiv && titleDiv.innerText == name)
-						continue loopData;
-				}
 
+					titleDiv =  _entries[e].querySelector('div.title');
+					if (titleDiv && titleDiv.innerText.trim() == name)
+					{
+						if (_entries[e].getAttribute("data-series-id") != data.id) //will never be true
+							_entries[e].parentNode.removeChild(_entries[e]);
+						else
+							continue loopData;
+					}
+				}
 
 				entry = entry.cloneNode(true);
 				title = entry.firstChild;
@@ -6931,7 +6954,6 @@ log("hide");
 					p.innerHTML = "";
 
 				p.innerHTML += html;
-				p.
 				Array.prototype.slice
 					.call(p.children)
 					.map(function (a)
