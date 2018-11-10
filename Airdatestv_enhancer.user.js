@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.54.2
+// @version     1.55
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,16 @@
 
 
 var changesLogText = multiline(function(){/*
+1.55 (2018-11-10)
+	+ tooltips on quick color pick
+	+ option to change displayed number of custom colors
+	+ when editing a custom show, if name changed to an existing show, the submit button label changes to "Merge", the name in the list changes color to red and the show it will be merged with changes to green
+	! color box of a last in the list custom show would display outside of the area, requiring user to scroll
+	! clicking edit link on custom show from search results would not highlight line in episodes data
+	! when colors box opened in custom shows popup, escape button closes the color box instead of whole custom shows popup
+	! clicking outside of color box in "Custom shows" could activate other actions on clicked element
+	* increased number of custom colors to remember from 7 to 100
+	* when color box in "Custom shows" list is opened, popup around of it fades and hovering cursor over other elements on the page no longer trigger anything
 1.54.2 (2018-11-07)
 	! number of weeks ignored if number of past weeks changed immediately after number of weeks changed from "All" to any number
 1.54.1 (2018-11-07)
@@ -548,6 +558,7 @@ let func = function(event)
 			theme: "",
 			lastColor: "",
 			lastColors: [],
+			lastColorsShow: 7, //number of last colors to show
 			cushowsHelp: false,
 /*			colorsCustom: {
 				"807fff": {name: ""},
@@ -746,7 +757,7 @@ let func = function(event)
 			opt = $(multiline(function(){/*
 <span id="weeksBox">Show 
 	<select id="weeks">
-		<option value="">All</option>
+		<option value="">Default</option>
 		<option value="1">1</option>
 		<option value="2">2</option>
 		<option value="3">3</option>
@@ -766,8 +777,8 @@ let func = function(event)
 		<option value="17">17</option>
 	</select> weeks
 </span>
-			*/}));
-			opt.appendTo(content)
+			*/}))
+				.appendTo(content)
 				.find("#weeks")
 				.val(Settings.pref("weeks"))
 				.on("input", function(evt)
@@ -780,10 +791,36 @@ let func = function(event)
 				.trigger("input");
 
 			opt = $(multiline(function(){/*
-<span>Theme <select id="theme">
-</select></span>
-			*/}));
-			opt.appendTo(content)
+<span id="lastColorsShowBox">
+	Show <input id="lastColorsShow" type="number" min="0" max="100"> last custom colors
+</span>
+			*/}))
+				.appendTo(content)
+				.find("input")
+				.val(Settings.pref("lastColorsShow"))
+				.on("input", function(evt)
+				{
+					let s = this.selectionStart,
+							e = this.selectionEnd,
+							val = Math.min(100, Math.max(0, ~~this.value.replace(/[^0-9\-]/g, "")));
+					this.value = val;
+
+					if (e !== null)
+						this.selectionEnd = e;
+					if (s !== null)
+						this.selectionStart = s;
+
+					Settings.pref("lastColorsShow", val);
+
+					if (!evt.isTrigger)
+						Settings.colors.init();
+				})
+				.trigger("input");
+
+			opt = $(multiline(function(){/*
+<span>Theme <select id="theme"></select></span>
+			*/}))
+				.appendTo(content)
 				.find("select")
 				.each(function(i, el)
 				{
@@ -814,8 +851,8 @@ let func = function(event)
 <span id="timeOffsetBox">
 	Time offset <input id="timeOffset" type="number" min="-24" max="24"> hours
 </span>
-			*/}));
-			opt.appendTo(content)
+			*/}))
+				.appendTo(content)
 				.find("#timeOffset")
 				.val(Settings.pref("timeOffset"))
 				.on("input", function(evt)
@@ -858,8 +895,8 @@ let func = function(event)
 	</div>
 	<span id="animSpeedVal"></span>
 </div>
-				*/}));
-				opt.appendTo(content)
+				*/}))
+					.appendTo(content)
 					.find("#animSpeed")
 					.val(10-Settings.pref("animSpeed"))
 					.on("input", function(e)
@@ -1228,7 +1265,7 @@ let func = function(event)
 		colors:
 		{
 			default: [], //list of predefined colors
-			max: 7, //max colors to remember
+			max: 100, //max num of colors to remember
 			inited: false,
 			add: function add(color, save)
 			{
@@ -1260,7 +1297,17 @@ let func = function(event)
 				{
 					css += ".soft_cust" + i + "{background-color:#" + colors[colors.length - i - 1] + ";display:inline-block}\n";
 				}
+				let max = Math.min(Settings.prefs.lastColorsShow, Settings.prefs.lastColors.length),
+						max2 = Math.max(max, 7);
+
+				css += '#cushows-list.opened>li.opened{margin-bottom:' + ((Math.ceil(max/20) + 1) * 14 + 15) + 'px;}#cushows-list.opened>li.opened .colors{width:' + 
+								Math.min(308, max2 * 16 -2 + Math.ceil((max2 - 1) / 3) - ((max2 + 2) % 3 ? 1 : 0)) + 'px;}';
+
 				document.getElementById("customColorsCSS2").innerHTML = css;
+				$('.colors [class^="color soft_"]').each(function(i)
+				{
+					this.title = "#" + new Colors().setColor($(this).css( "background-color" )).HEX.toUpperCase();
+				});
 			},
 
 			init: function()
@@ -1270,7 +1317,6 @@ let func = function(event)
 					if (!this.classList.contains( "none" ))
 						Settings.colors.default[Settings.colors.default.length] = new Colors().setColor($(this).css( "background-color" )).HEX.toUpperCase();
 				});
-
 				let css = "",
 						style = document.createElement("style"),
 						style2 = document.createElement("style"),
@@ -1279,7 +1325,15 @@ let func = function(event)
 						last = $("#detailsTemplate .colors"),
 						colors = Settings.prefs.lastColors;
 
-				for(let i = 0; i < this.max; i++)
+				$('.colors .none').each(function(i)
+				{
+					this.title = "Remove color";
+				});
+				$('.colors .picker').each(function(i)
+				{
+					this.title = "Custom color";
+				});
+				for(let i = 0; i < Settings.prefs.lastColorsShow; i++)
 				{
 					let cl = "soft_cust" + i;
 					css += "." + cl + "{display:none;}\n";
@@ -1287,9 +1341,21 @@ let func = function(event)
 					span.className = "color " + cl;
 					span.setAttribute("i", i);
 					box.appendChild(span);
-					box.appendChild(document.createTextNode("\n			"));
+					box.appendChild(document.createTextNode("\n"));
+/*
+					if (!((i+1) % 7))
+					{
+						box.appendChild(document.createElement("br"));
+					}
+*/
 				}
-				$("#detailsTemplate .colors").append(box);
+				$("#customColorsCSS, #customColorsCSS2").remove();
+				let b = $(".customColors");
+				if (b.length)
+					b.html(box.innerHTML);
+				else
+					$("#detailsTemplate .colors").append(box);
+
 				style.innerHTML = css;
 				style.id = "customColorsCSS";
 				style2.id = "customColorsCSS2";
@@ -1396,10 +1462,11 @@ svg,
 .close:hover,
 .back:hover,
 .back:hover svg,
-#cushows-list:not(.opened) > li:hover,
-#cushows-list:not(.opened) > li:hover *,
+#cushows-list > li:hover,
+#cushows-list > li:hover *,
 #cushows-list.opened > li.opened,
 #cushows-list.opened > li.opened *,
+#cushows-list.opened > li.opened .color > .colors,
 #manage-links-popup .content > div.dragging:not(.hide),
 #manage-links-popup .content > div.dragging:not(.hide) *,
 #manage-links-popup .content:not(.dragging) > div:hover,
@@ -1409,8 +1476,9 @@ svg,
 	fill: rgb(76, 76, 76) !important;
 }
 
-#cushows-list:not(.opened) > li:hover,
+#cushows-list > li:hover,
 #cushows-list.opened > li.opened,
+#cushows-list.opened > li.opened .color > .colors,
 #manage-links-popup .content > div.dragging:not(.hide),
 #manage-links-popup .content:not(.dragging) > div:hover
 {
@@ -1526,9 +1594,15 @@ div.entry
 	border: 1px dotted white;
 }
 
-#cushows-list > li.edit.delete:before
+#cushows-list > li.selected:not(.edit)
 {
-	background-color: #D2D2D2;
+	color: forestgreeen;
+}
+
+#cushows-list > li.edit.delete,
+#cushows-list > li.edit.delete > *
+{
+	color: coral;
 }
 /*
 END DARK THEME
@@ -4304,15 +4378,42 @@ body.edge #manage-links-popup .content > div > img
 	display: inline-block;
 	height: 1em;
 }
-#cushows-list:not(.opened) .editBox
+#cushows-list .editBox
 {
 	cursor: pointer;
 }
-#cushows-list:not(.opened) .editBox > span:hover
+#cushows-list .editBox > span:hover
 {
 	outline: 1px dotted #FF9090;
 }
-#cushows-list:not(.opened) > li:hover,
+body.colorbox:not(.colorpicker) #manage-cushows-popup .content li:not(.opened),
+body.colorpicker .colors,
+body.colorbox #cushows-form,
+#cushows-list.opened > li.opened > .editBox,
+#cushows-list.opened > li:not(.opened)
+{
+	-webkit-filter: opacity(40%);
+	-moz-filter: opacity(40%);
+	-o-filter: opacity(40%);
+	-ms-filter: opacity(40%);
+	filter: opacity(40%);
+	pointer-events: none;
+}
+body.colorpicker *,
+body.colorbox *
+{
+	pointer-events: none;
+}
+body.colorbox:not(.colorpicker) #manage-cushows-popup .content,
+body.colorpicker .cp-color-picker,
+body.colorpicker .cp-color-picker *,
+body.colorbox:not(.colorpicker) li.opened div.color,
+body.colorbox:not(.colorpicker) li.opened div.color *
+{
+	pointer-events: auto;
+}
+
+#cushows-list > li:hover,
 #cushows-list.opened > li.opened,
 #manage-links-popup .content > div.dragging:not(.hide),
 #manage-links-popup .content:not(.dragging) > div:hover
@@ -5156,7 +5257,7 @@ div.undoBar > div > .close
 {
 	display: block;
 }
-#timeOffsetBox > #timeOffset
+input[type="number"]
 {
 	width: 2.8em;
 }
@@ -5532,16 +5633,17 @@ body.ff #cushows-edit textarea
 #cushows-list > li.selected:not(.edit)
 {
 	border: 1px dotted black;
+	color: green;
+	font-weight: bold
 }
 
-#cushows-list > li.edit.delete:before
+#cushows-list > li.edit.delete,
+#cushows-list > li.edit.delete > *
 {
- 	content: '';
-  background: black;
-  width: 100%;
-  transform: translateY(0.7em);
-  height: 1px;
-  float: left;
+	text-decoration: line-through;
+	color: red;
+	font-weight: normal;
+	font-style: italic;
 }
 
 #engine-edit .action,
@@ -5564,18 +5666,22 @@ body.ff #cushows-edit textarea
 	float: left;
 }
 
+.customColors
+{
+	white-space: normal;
+}
 #cushows-list .color > .colors
 {
 	display: none;
 	position: relative;
-	padding: 0.5em;
+	padding: 5px;
 	margin: 0;
 	top: 1.3em;
 	left: -0.6em;
-	background-color: white;
 	border: 1px solid black;
 	z-index: 1;
 	cursor: default;
+	max-width: 27em;
 }
 #cushows-list li.opened > .color > .colors
 {
@@ -5780,6 +5886,7 @@ log(err);
 				let val = colFix(col);
 				cpHex.val(val);
 				this.undo({v: val, s: 0, e: 0});
+				document.body.classList.toggle("colorpicker", true);
 			}
 			// on change
 			else if( toggled === undefined ){
@@ -5793,6 +5900,12 @@ log(err);
 			}
 			// on hide
 			else if( toggled === false ){
+				document.body.classList.toggle("colorpicker", false);
+				document.body.classList.toggle("colorpickerclose", true); //work around click firing on other elements
+				setTimeout(function()
+				{
+					document.body.classList.toggle("colorpickerclose", false);
+				}, 500);
 	//restore entry color
 				if( editingSeriesId > 0 )
 					loadColor( editingSeriesId );
@@ -6347,7 +6460,15 @@ log("hide");
 			{
 				e.stopPropagation();
 				e.preventDefault();
-				customShows.show(showId, entry._cushowId);
+				let data = entry._cushowId;
+				if (!data)
+				{
+					try
+					{
+						data = JSON.parse(entry.getAttribute("data-data"));
+					}catch(e){};
+				}
+				customShows.show(showId, data);
 			}, false);
 			showHideBox.parentNode.insertBefore(editBox, showHideBox.nextSibling);
 		}
@@ -6766,8 +6887,10 @@ log("hide");
 			{
 				let data = customShows._list.l[i],
 						id = ~~i + customShows.id;
+
 				if (data[0].toLowerCase().indexOf(name) == -1)
 					continue;
+
 				let ep = {},
 						today = new Date(),
 						last = null,
@@ -6808,6 +6931,7 @@ log("hide");
 					p.innerHTML = "";
 
 				p.innerHTML += html;
+				p.
 				Array.prototype.slice
 					.call(p.children)
 					.map(function (a)
@@ -6834,19 +6958,19 @@ log("hide");
 
 		data.name = customShows._list.l[id][0];
 		data.wiki = customShows._list.l[id][2];
-		let html = '<b>' + data.name + ' (all episodes)</b><br>';
+		$('<b>' + data.name + ' (all episodes)</b><br>').appendTo(searchResults);
 		for(let i = 0; i < data.length; i++)
 		{
-			html +=	'<div class="entry custom' + (!i ? " separating" : "") + '" ' +
+			$('<div class="entry custom' + (!i ? " separating" : "") + '" ' +
 							'data-series-id="' + _id + '" ' +
 							'data-series-source="' + data.wiki + '" ' +
-							'data-date="' + data[i].date + '">' +
-							'<div class="title"><div class="tiny-date">' + customShows.d2y(data[i].date) + "-" + customShows.d2m(data[i].date) + "-" + customShows.d2d(data[i].date) + '</div>' +
+							'data-date="' + data[i].date + '" ' +
+							'><div class="title"><div class="tiny-date">' + customShows.d2y(data[i].date) + "-" + customShows.d2m(data[i].date) + "-" + customShows.d2d(data[i].date) + '</div>' +
 							data.name + " " + (data[i].season ? "S" + pad(data[i].season) : "" ) + "E" + pad(data[i].episode) +
-							'</div></div>';
+							'</div></div>')
+			.appendTo(searchResults)[0]._cushowId = data[i].d;
 		}
-		html += "<br>Your added custom show<br><br>";
-		searchResults.html(html);
+		$("<br>Your added custom show<br><br>").appendTo(searchResults);
 		markSearchResults();
 	}//customShow.search()
 
@@ -7136,11 +7260,13 @@ log("hide");
 		{
 			let name = cushName.val().trim().toLowerCase(),
 					add = customShows.listNames[name] || !name || !cushData.val().trim() || cushData.hasClass("error"),
-					update = (!editId && !customShows.listNames[name]) || !name || !cushData.val().trim() || cushData.hasClass("error");
+					update = (!editId && !customShows.listNames[name]) || !name || !cushData.val().trim() || cushData.hasClass("error"),
+					merge = editId && customShows.listNames[name] && customShows.listNames[name] != editId;
 
 //if (editId && customShows.listNames[name])
 			edit(customShows.listNames[name] || editId, true, "selected");
-			edit(editId && customShows.listNames[name] && customShows.listNames[name] != editId ? editId : -1, false, "delete");
+			edit(merge ? editId : -1, false, "delete");
+			cushSubmitUpdate.val( merge ? "Merge" : "Update");
 			cushSubmit.prop("disabled", add);
 			cushSubmitUpdate.prop("disabled", update);
 			cushReset.prop("disabled", !(name + cushData.val() + cushWiki.val()));
@@ -7398,6 +7524,7 @@ log("hide");
 			colorPicker.appendChild(colorBox);
 			colorPicker.className = "color entry colorbox";
 			colorPicker.setAttribute("data-series-id", id + customShows.id);
+			colorPicker.title = "Set Color";
 			entry.title = data.name;
 			entry.appendChild(colorPicker);
 			entry.appendChild(nameBox);
@@ -7412,14 +7539,17 @@ log("hide");
 					$(cushBox).find(':not([id="cush_' + id +'"]).opened').toggleClass("opened", false);
 					e.target.parentNode.classList.toggle("opened");
 					let opened = e.target.parentNode.classList.contains("opened");
-					document.body.classList.toggle("colorpicker", opened);
+					document.body.classList.toggle("colorbox", opened);
 					e.target.parentNode.parentNode.classList.toggle("opened", opened);
+					if (opened)
+						scrollIntoView(e.target.firstChild, e.target.parentElement.parentElement.parentElement, 0, 1);
+
 					e.stopPropagation();
 					e.preventDefault();
 					return;
 				}
 
-				if (document.body.classList.contains("colorpicker"))
+				if (document.body.classList.contains("colorbox"))
 					return;
 
 				e.stopPropagation();
@@ -8705,11 +8835,20 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 //ESC(27) = close popups
 	function hidePopups()
 	{
-		if ($("body").hasClass("prompt"))
+		let $body = $("body");
+		if ($body.hasClass("prompt"))
 		{
 			_prompt.hide();
 		}
-		else if ($("body").hasClass("popup"))
+		if (document.body.classList.contains("colorpicker"))
+		{
+			return;
+		}
+		else if (document.body.classList.contains("colorbox"))
+		{
+			 $("li.opened").find("div.entry.color").click();
+		}
+		else if ($body.hasClass("popup"))
 		{
 			customLinks.hide();
 			customShows.hide();
@@ -8740,7 +8879,14 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		if (p)
 			return;
 
-		if (document.body.classList.contains("colorpicker") && !target.parents("li.opened").get().length)
+		if (document.body.classList.contains("colorpicker") || document.body.classList.contains("colorpickerclose"))
+		{
+			e.stopPropagation();
+			e.preventDefault();
+			e.stopImmediatePropagation();
+			return;
+		}
+		if (document.body.classList.contains("colorbox") && !target.parents("li.opened").get().length)
 		{
 			e.stopPropagation();
 			e.preventDefault();
