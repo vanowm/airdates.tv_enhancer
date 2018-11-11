@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.55.1
+// @version     1.55.2
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,9 @@
 
 
 var changesLogText = multiline(function(){/*
+1.55.2 (2018-11-10)
+	! settings restore could create duplicate custom shows
+	! clicking on disqus notification icon would not open the notification panel
 1.55.1 (2018-11-10)
 	! search by name failed find custom shows
 	* custom shows no longer displayed as duplicate if original show with exact same name + season + episode already exists in the same day
@@ -447,8 +450,7 @@ function cloneObj(obj)
 	return r;
 }
 
-window.addEventListener("message", receiveMessage, false);
-let func = function(event)
+Object.defineProperty(window, 'browser', { get: function()
 {
 	let browser = "";
 	if((navigator.userAgent.indexOf("Opera") || navigator.userAgent.indexOf('OPR')) != -1 )
@@ -459,22 +461,28 @@ let func = function(event)
 	{
 		browser = "edge";
 	}
-	else if(navigator.userAgent.indexOf("Safari") != -1)
+	else if(navigator.userAgent.indexOf("Chrome") != -1 )
 	{
-		browser = "safari";
+		browser = "chrome";
 	}
 	else if(navigator.userAgent.indexOf("Firefox") != -1 )
 	{
 		browser = "ff";
 	}
+	else if(navigator.userAgent.indexOf("Safari") != -1)
+	{
+		browser = "safari";
+	}
 	else if((navigator.userAgent.indexOf("MSIE") != -1 ) || (!!document.documentMode == true )) //IF IE > 10
 	{
 		browser = "ie"
 	}
-	else if(navigator.userAgent.indexOf("Chrome") != -1 )
-	{
-		browser = "chrome";
-	}
+	return browser;
+}});
+window.addEventListener("message", receiveMessage, false);
+let func = function(event)
+{
+	let browser = window.browser;
 	if (browser)
 		document.body.classList.toggle(browser, true);
 
@@ -562,6 +570,7 @@ let func = function(event)
 			lastColor: "",
 			lastColors: [],
 			lastColorsShow: 7, //number of last colors to show
+			lastColorsLine: 7, //number of last colors per line
 			cushowsHelp: false,
 /*			colorsCustom: {
 				"807fff": {name: ""},
@@ -801,13 +810,14 @@ let func = function(event)
 				.appendTo(content)
 				.find("input")
 				.val(Settings.pref("lastColorsShow"))
+				.attr("max", Settings.colors.max)
 				.on("input", function(evt)
 				{
 					this.nextSibling.textContent = " last custom color" + ((this.value == 1) ? "" : "s");
 
 					let s = this.selectionStart,
 							e = this.selectionEnd,
-							val = Math.min(100, Math.max(0, ~~this.value.replace(/[^0-9\-]/g, "")));
+							val = Math.min(Settings.colors.max, Math.max(0, ~~this.value.replace(/[^0-9\-]/g, "")));
 					this.value = val;
 
 					if (e !== null)
@@ -917,7 +927,7 @@ let func = function(event)
 			a.href = "#";
 			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12,3A9,9 0 0,0 3,12H0L4,16L8,12H5A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19C10.5,19 9.09,18.5 7.94,17.7L6.5,19.14C8.04,20.3 9.94,21 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M14,12A2,2 0 0,0 12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12Z" /></svg>';
 			a.textContent = "Backup settings";
-			span.title = "Backup all settings, including links manager data, watched and hidden shows lists, middle click selection.";
+			span.title = "Backup all settings, including links manager data, watched and hidden shows lists, middle click selection, last custom colors and custom shows.";
 			let backup = function()
 			{
 				let cookies = {},
@@ -1002,7 +1012,7 @@ let func = function(event)
 				{
 					json = JSON.parse(str);
 				}
-				catch(e){}
+				catch(e){log(e)}
 				if (json && typeof(json) == "object")
 				{
 					if ("hidden" in json)
@@ -1174,10 +1184,40 @@ let func = function(event)
 						let changed = false;
 						for(let i in json.customShows.l)
 						{
+
 							customShows._list.l[i] = json.customShows.l[i];
 							changed = true;
 							customShowsNum++;
 						}
+
+//remove duplicate
+						let newData = {},
+								names = {};
+
+						for(let f in customShows._list.l)
+						{
+							let data = customShows._list.l[f],
+									name = data[0],
+									seen = {},
+									id = f;
+
+							if (name in names)
+							{
+								data[1] = [].concat(names[name].d[1], data[1]);
+								id = names[name].i;
+							}
+							data[1] = data[1].sort().filter(function(item)
+							{
+								var k = JSON.stringify(item);
+								return k in seen ? false : (seen[k] = true);
+							});
+							names[name] = {
+								i: f,
+								d: data
+							}
+							newData[id] = data;
+						}
+						customShows._list.l = newData;
 						if (changed)
 						{
 							customShows._list.i = Math.max(json.customShows.i, customShows._list.i);
@@ -1271,7 +1311,7 @@ let func = function(event)
 		colors:
 		{
 			default: [], //list of predefined colors
-			max: 100, //max num of colors to remember
+			max: 105, //max num of colors to remember
 			inited: false,
 			add: function add(color, save)
 			{
@@ -1281,7 +1321,7 @@ let func = function(event)
 
 				let colors = Settings.prefs.lastColors;
 				colors[colors.length] = color;
-				if (colors.length > this.max)
+				if (colors.length + 1 > this.max)
 					colors.splice(0, colors.length - this.max);
 
 				this.css();
@@ -1304,11 +1344,13 @@ let func = function(event)
 					css += ".soft_cust" + i + "{background-color:#" + colors[colors.length - i - 1] + ";display:inline-block}\n";
 				}
 				let max = Math.min(Settings.prefs.lastColorsShow, Settings.prefs.lastColors.length),
-						max2 = Math.max(max, 7);
+						max2 = Settings.prefs.lastColorsLine && Settings.prefs.lastColorsShow ? Settings.prefs.lastColorsLine < max ?  Settings.prefs.lastColorsLine : max : max,
+						max3 = Math.max(max2, 7);
+						max4 = Math.max(1, Math.min(max2, 19));
+				css += '#cushows-list.opened>li.opened{margin-bottom:' + ((Math.ceil(max/max4) + 1) * (14 + (browser == "ff" ? 1 : 0)) + 15) + 'px;}#cushows-list.opened>li.opened .colors{width:' + 
+								Math.min(308, max3 * 16 -2 + Math.ceil((max3 - 1) / 3) - ((max3 + 2) % 3 ? 1 : 0)) + 'px;}';
 
-				css += '#cushows-list.opened>li.opened{margin-bottom:' + ((Math.ceil(max/20) + 1) * 14 + 15) + 'px;}#cushows-list.opened>li.opened .colors{width:' + 
-								Math.min(308, max2 * 16 -2 + Math.ceil((max2 - 1) / 3) - ((max2 + 2) % 3 ? 1 : 0)) + 'px;}';
-
+				$(".colors").toggleClass("nopre", (!Settings.prefs.lastColorsLine || Settings.prefs.lastColorsLine > 19) ? true : false)
 				document.getElementById("customColorsCSS2").innerHTML = css;
 				$('.colors [class^="color soft_"]').each(function(i)
 				{
@@ -1329,7 +1371,8 @@ let func = function(event)
 						span = document.createElement("span"),
 						box = document.createElement("div"),
 						last = $("#detailsTemplate .colors"),
-						colors = Settings.prefs.lastColors;
+						colors = Settings.prefs.lastColors,
+						max = Math.min(Settings.prefs.lastColorsShow, Settings.prefs.lastColors.length);
 
 				$('.colors .none').each(function(i)
 				{
@@ -1339,7 +1382,7 @@ let func = function(event)
 				{
 					this.title = "Custom color";
 				});
-				for(let i = 0; i < Settings.prefs.lastColorsShow; i++)
+				for(let i = 0; i < max; i++)
 				{
 					let cl = "soft_cust" + i;
 					css += "." + cl + "{display:none;}\n";
@@ -1347,13 +1390,8 @@ let func = function(event)
 					span.className = "color " + cl;
 					span.setAttribute("i", i);
 					box.appendChild(span);
-					box.appendChild(document.createTextNode("\n"));
-/*
-					if (!((i+1) % 7))
-					{
-						box.appendChild(document.createElement("br"));
-					}
-*/
+					let br = (Settings.prefs.lastColorsLine && !((i+1) % Settings.prefs.lastColorsLine)) ? document.createTextNode("\n") : document.createTextNode(" ");
+					box.appendChild(br);
 				}
 				$("#customColorsCSS, #customColorsCSS2").remove();
 				let b = $(".customColors");
@@ -5395,7 +5433,7 @@ div.days
 }
 div.day
 {
-	min-width: 118px;
+	min-width: 136px;
 }
 
 /*
@@ -5674,6 +5712,10 @@ body.ff #cushows-edit textarea
 }
 
 .customColors
+{
+	white-space: pre;
+}
+.colors.nopre .customColors
 {
 	white-space: normal;
 }
@@ -7283,7 +7325,7 @@ log("hide");
 			let name = cushName.val().trim().toLowerCase(),
 					add = customShows.listNames[name] || !name || !cushData.val().trim() || cushData.hasClass("error"),
 					update = (!editId && !customShows.listNames[name]) || !name || !cushData.val().trim() || cushData.hasClass("error"),
-					merge = editId && customShows.listNames[name] && customShows.listNames[name] != editId;
+					merge = customShows.listNames[name] && customShows.listNames[name] != editId;
 
 //if (editId && customShows.listNames[name])
 			edit(customShows.listNames[name] || editId, true, "selected");
@@ -7822,7 +7864,14 @@ px)
 		{
 			disqusMessageNotifLoaded(true);
 			disqusMessageCount.el.removeAttribute("unread");
-			$("#disqus_thread").find("iframe")[0].contentWindow.postMessage({id: "ade", func: "disqusNotifClick", args: null, return: null}, "https://disqus.com");
+			$("#disqus_thread").find("iframe").each(function()
+			{
+				try
+				{
+					this.contentWindow.postMessage({id: "ade", func: "disqusNotifClick", args: null, return: null}, "https://disqus.com");
+				}
+				catch(e){}
+			});
 		}, false);
 	}
 
