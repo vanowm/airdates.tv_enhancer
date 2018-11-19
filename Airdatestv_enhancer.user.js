@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.55.2
+// @version     1.56
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,12 @@
 
 
 var changesLogText = multiline(function(){/*
+1.56 (2018-11-18)
+	+ changes log shown after update (can be disabled via checkbox in top-right corner)
+	+ quick color picks shows which one is the current color
+	! after a link was changed, middle click on a show would use old data for the selected links
+	! links manager missing cursor-over indicator on edit/delete buttons
+	! custom show name field shown as "error" after "clear" button used
 1.55.2 (2018-11-10)
 	! settings restore could create duplicate custom shows
 	! clicking on disqus notification icon would not open the notification panel
@@ -707,6 +713,18 @@ let func = function(event)
 				s = true;
 			}
 
+			if (this.pref("version") != adeVersion)
+			{
+				if (!Settings.prefs.noChangesLog && Settings.prefs.version != adeVersion)
+				{
+					setTimeout(function()
+					{
+						changesLog.show(true);
+					});
+				}
+				this.prefs.version = adeVersion;
+				s = true;
+			}
 			if (s)
 				this.save();
 
@@ -2571,7 +2589,6 @@ END DARK THEME
 				content.append(create(engine, updater));
 	//			updateDetails();
 			}
-
 			engName.val("");
 			engId.val("");
 			engUrl.val("");
@@ -3265,6 +3282,12 @@ END DARK THEME
 				Settings.save();
 			}
 			css.html(html.replace(/(\s+)(\.activeOnly)([^\{]+)\{/, "$1$2$3:not(.multi),body:not(.collapseMulti) $2$3,$2 .day.expand $3,$2 .day.opened $3{"));
+			let col = "#" + new Colors().setColor(color||"#FFF").HEX;
+			if (col == "#FFFFFF")
+				col = "Remove color";
+
+			css.html(css.html() + '.entry[data-series-id="' + seriesId + '"] .color[title="' + col + '"], li[data-series-id="' + seriesId + '"] .color[title="#' + col + '"]{box-shadow:inset 0 0 2px 2px}'
+			);
 			try
 			{
 				let c = html.match(/ color\:([^;}]+)[;}]/i)[1];
@@ -4423,12 +4446,12 @@ body.edge #manage-links-popup .content > div > img
 	display: inline-block;
 	height: 1em;
 }
-#cushows-list .editBox
+.editBox
+{
+}
+.editBox > span:hover
 {
 	cursor: pointer;
-}
-#cushows-list .editBox > span:hover
-{
 	outline: 1px dotted #FF9090;
 }
 body.colorbox:not(.colorpicker) #manage-cushows-popup .content li:not(.opened),
@@ -5719,6 +5742,10 @@ body.ff #cushows-edit textarea
 {
 	white-space: normal;
 }
+.color
+{
+	color: white;
+}
 #cushows-list .color > .colors
 {
 	display: none;
@@ -5730,11 +5757,15 @@ body.ff #cushows-edit textarea
 	border: 1px solid black;
 	z-index: 1;
 	cursor: default;
-	max-width: 27em;
+	max-width: 27em;
 }
 #cushows-list li.opened > .color > .colors
 {
 	display: inline-block;
+}
+#changesLogLegend > a.noChangesLog
+{
+	float: right;
 }
 @keyframes rotate-loading {
  0% {
@@ -6019,6 +6050,9 @@ log(err);
 
 			$.each( _engines, function( i, engine )
 			{
+				if (engine.host in customLinks._list) //using up-to-date data
+					engine = customLinks._list[engine.host];
+
 				if (!$("body").hasClass("engine_" + cleanName(engine.host)))
 					return;
 
@@ -6694,7 +6728,7 @@ log("hide");
 
 		for(let i in list)
 		{
-			let day = days.querySelector('[data-date="' + i + '"]');
+			let day = days ? days.querySelector('[data-date="' + i + '"]') : null;
 //log(day);
 			if (!day)
 				continue;
@@ -7370,6 +7404,7 @@ log("hide");
 		{
 			clearTimeout(change.timer);
 			editId = null;
+			cushName.toggleClass("error", false);
 			cushData.toggleClass("error", false);
 			edit();
 			setTimeout(buttonsUpdate);
@@ -7990,6 +8025,11 @@ px)
 		if (id > customShows.id)
 		{
 			id = id - customShows.id;
+			if (!(id in customShows._list.l))
+			{
+				let keys = Object.keys(customShows._list.l).sort();
+				id = keys[keys.length - 1];
+			}
 			return [customShows._list.l[id][0], customShows._list.l[id][2]]
 		}
 
@@ -8452,7 +8492,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			a.addEventListener("click", function(e)
 			{
 				e.preventDefault();
-				changesLog.show();
+				changesLog.show(true);
 				$("#account-popup").toggle(false);
 				if (window.hashChanged.hashSearch && location.hash == "#changes")
 					removeHash();
@@ -8460,6 +8500,8 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			}, false);
 			span.appendChild(a);
 			parent.insertBefore(span, h.nextSibling);
+	
+			$("#account-popup-content > .header").append($("div.close")[0].cloneNode(true));
 
 		});//account-overview:click()
 
@@ -8965,7 +9007,14 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		}
 
 		p = target.parents("#account-popup").get().length;
-		if (p)
+		if (e.target.id != "account-overview" && (p == 0 || (p && close)))
+		{
+			hide[hide.length] = function()
+			{
+				$("#account-overview").click();
+			};
+		}
+		else if (p)
 			return;
 
 		p = target.parents("#settings-popup").get().length;
@@ -9019,23 +9068,18 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		$("#username").val(DB.loggedInUsername);
 
 /* changes log */
-	let changesLog = function changesLog(f)
+	let changesLog = function changesLog()
 	{
-		if (!f && (Settings.pref("noChangesLog") || Settings.pref("version") == adeVersion))
-			return;
-
 		changesLog.getData();
 	}
 
 	changesLog.show = function(noBack)
 	{
 		changesLog();
-/*
 		if (noBack)
 			changesLog.div.setAttribute("noback", "");
 		else
 			changesLog.div.removeAttribute("noback");
-*/
 		hidePopups()
 		$("body").toggleClass("changesLog", true);
 		setPopup(true);
@@ -9128,8 +9172,10 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		*/});
 		changesLog.div = $(html).appendTo("body")[0];
 		let head = $("#changesLogHead"),
-				cont = $("#changesLogContent");
+				cont = $("#changesLogContent"),
+				opt = createCheckbox("noChangesLog", "Don't show this again", Settings.prefs.noChangesLog ? true : false, Settings.callback);
 
+		document.getElementById("changesLogLegend").appendChild(opt);
 		head.html(head.html().replace("#", adeVersion));
 		for(let v in list)
 		{
@@ -9501,7 +9547,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		else if (hash == "#changes")
 		{
 			hashSearch = true;
-			changesLog.show(true);
+			changesLog.show();
 		}
 		else if (hash == "#settings" || hash == "#options")
 		{
