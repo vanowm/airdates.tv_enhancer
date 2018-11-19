@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.56
+// @version     1.56.1
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,8 @@
 
 
 var changesLogText = multiline(function(){/*
+1.56.1 (2018-11-18)
+	* selected color in quick color picks now shows rounded
 1.56 (2018-11-18)
 	+ changes log shown after update (can be disabled via checkbox in top-right corner)
 	+ quick color picks shows which one is the current color
@@ -1525,9 +1527,9 @@ svg,
 .back:hover,
 .back:hover svg,
 #cushows-list > li:hover,
-#cushows-list > li:hover *,
+#cushows-list > li:hover *:not(.color),
 #cushows-list.opened > li.opened,
-#cushows-list.opened > li.opened *,
+#cushows-list.opened > li.opened *:not(.color),
 #cushows-list.opened > li.opened .color > .colors,
 #manage-links-popup .content > div.dragging:not(.hide),
 #manage-links-popup .content > div.dragging:not(.hide) *,
@@ -1666,6 +1668,7 @@ div.entry
 {
 	color: coral;
 }
+
 /*
 END DARK THEME
 *//*
@@ -3286,8 +3289,9 @@ END DARK THEME
 			if (col == "#FFFFFF")
 				col = "Remove color";
 
-			css.html(css.html() + '.entry[data-series-id="' + seriesId + '"] .color[title="' + col + '"], li[data-series-id="' + seriesId + '"] .color[title="#' + col + '"]{box-shadow:inset 0 0 2px 2px}'
-			);
+			css.html(css.html() + '.entry[data-series-id="' + seriesId + '"] .color[title="' + col + '"], li[data-series-id="' + seriesId + '"] .color[title="#' + col + '"]{border:1px solid white;border-radius:10px;position:relative;}'
+ 													+ '.entry[data-series-id="' + seriesId + '"] .color[title="' + col + '"]:after, li[data-series-id="' + seriesId + '"] .color[title="#' + col + '"]:after{content:"";display:block;position:absolute;top:-3px;bottom:-3px;left:-3px;right:-3px;border-radius:10px;border:1px solid black;}'
+ 			);
 			try
 			{
 				let c = html.match(/ color\:([^;}]+)[;}]/i)[1];
