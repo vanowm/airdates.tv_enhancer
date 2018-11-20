@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.56.1
+// @version     1.57
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,11 @@
 
 
 var changesLogText = multiline(function(){/*
+1.57 (2018-11-20)
+	+ after an update changes log highlights changes between new and old versions
+	! "My Shows" displayed duplicate entries when settings where restored from old backups
+	! deleted custom show has "edit" link in "My Shows" list, producing error in console
+	! newly added custom color wasn't pre-selected
 1.56.1 (2018-11-18)
 	* selected color in quick color picks now shows rounded
 1.56 (2018-11-18)
@@ -513,6 +518,7 @@ let func = function(event)
 	}
 	let adeName = "Airdates.tv enhancer",
 			adeVersion = "n/a",
+			prevVersion = null,
 			force = false,
 			enginesDefault = [],
 			_engines = [],
@@ -719,6 +725,7 @@ let func = function(event)
 			{
 				if (!Settings.prefs.noChangesLog && Settings.prefs.version != adeVersion)
 				{
+					prevVersion = Settings.prefs.version;
 					setTimeout(function()
 					{
 						changesLog.show(true);
@@ -849,6 +856,7 @@ let func = function(event)
 
 					if (!evt.isTrigger)
 						Settings.colors.init();
+
 				})
 				.trigger("input");
 
@@ -3289,15 +3297,14 @@ END DARK THEME
 			if (col == "#FFFFFF")
 				col = "Remove color";
 
-			css.html(css.html() + '.entry[data-series-id="' + seriesId + '"] .color[title="' + col + '"], li[data-series-id="' + seriesId + '"] .color[title="#' + col + '"]{border:1px solid white;border-radius:10px;position:relative;}'
- 													+ '.entry[data-series-id="' + seriesId + '"] .color[title="' + col + '"]:after, li[data-series-id="' + seriesId + '"] .color[title="#' + col + '"]:after{content:"";display:block;position:absolute;top:-3px;bottom:-3px;left:-3px;right:-3px;border-radius:10px;border:1px solid black;}'
- 			);
+			css.html(css.html() + '.entry[data-series-id="' + seriesId + '"] .color[title="' + col + '"], li[data-series-id="' + seriesId + '"] .color[title="' + col + '"]{border:1px solid white;border-radius:10px;box-shadow:0px 0px 0px 1px black;}');
 			try
 			{
 				let c = html.match(/ color\:([^;}]+)[;}]/i)[1];
 				$('div.entry[data-series-id="' + seriesId + '"]').attr("color", c);
 			}
 			catch(e){log(e);}
+
 		}
 		else
 		{
@@ -4993,6 +5000,10 @@ body:not(.popup) div.entry[opened]
 	display: flex;
 	white-space: pre-wrap;
 }
+#changesLogContent > div[class^="cl_ver_"].prev:not(:hover)
+{
+	opacity: 0.3;
+}
 #changesLogContent > div[class^="cl_ver_"]:not(:last-child)
 {
 	padding-bottom: 1px;
@@ -5628,6 +5639,7 @@ body.ff #cushows-edit textarea
 	cursor: default;
 	border: 1px solid transparent;
 	display: block;
+	transition: margin 0.2s;
 }
 
 #cushows-list > li > span
@@ -5762,6 +5774,7 @@ body.ff #cushows-edit textarea
 	z-index: 1;
 	cursor: default;
 	max-width: 27em;
+	background-color: white;
 }
 #cushows-list li.opened > .color > .colors
 {
@@ -5811,6 +5824,7 @@ body.ff #cushows-edit textarea
 
 						Settings.colors.add(cp.color.colors.HEX, cp.color.colors.HEX.toUpperCase() != "FFFFFF");
 						assignColor( editingSeriesId, "#" + cp.color.colors.HEX, true );
+						Settings.colors.init();
 						editingSeriesId = -1;
 					}
 					cp.toggle();
@@ -6944,6 +6958,7 @@ log("hide");
 		customShows.inited = true;
 		if (upgraded)
 			customShows.save();
+
 	}//customShows.init()
 
 	customShows.save = function()
@@ -8030,10 +8045,8 @@ px)
 		{
 			id = id - customShows.id;
 			if (!(id in customShows._list.l))
-			{
-				let keys = Object.keys(customShows._list.l).sort();
-				id = keys[keys.length - 1];
-			}
+				return null
+
 			return [customShows._list.l[id][0], customShows._list.l[id][2]]
 		}
 
@@ -8212,7 +8225,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 //				entry.setAttribute("color", $(entry).css("color") == "rgb(0, 0, 0)" ? "black" : "white");
 				entry.setAttribute("data-series-source", info[id][1]);
 
-				entry.classList.toggle("custom", (~~id > customShows.id));
+				entry.classList.toggle("custom", (~~id > customShows.id && info[id][0] !== "ZZZZZZZZZZZZZ"));
 
 				title.textContent = info[id][0];
 				if (title.textContent === "ZZZZZZZZZZZZZ")
@@ -8511,11 +8524,13 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 
 		let list = ls("info") || {},
 				userCookie = readCookieRaw("adsc_SESSION"),
-				isUser = userCookie && userCookie.indexOf("username=") > 0;
+				isUser = userCookie && userCookie.indexOf("username=") > 0,
+				update = false;
 		DB.info = {};
 		DB.infoLoaded = false;
 		DB.infoChecked = ls("infoChecked") || {};
 		// load colors right away.
+		
 		DB.getColors().done( function(data){
 			for (var i = 0; i < data.length; i++)
 			{
@@ -8540,14 +8555,13 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id]);
 					assignColor(id, DB.savedColors[id], true);
 				}
-
 				if (id in list)
 				{
 					DB.info[id] = list[id];
 					continue;
 				}
-				added = true;
 				DB.infoAdd(id);
+				added = true;
 			}
 
 			for(let i = 0; i < _hidden.length; i++)
@@ -9094,7 +9108,29 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		$("body").toggleClass("changesLog", false);
 		setPopup(false);
 	}
-
+	function versionsCompare(a, b)
+	{
+		//treat non-numerical characters as lover version
+		//replacing them with a negative number based on charcode of each character
+		a = ("" + a).replace(/[^0-9\.]/g, versionsCompare.fix).split('.');
+		b = ("" + b).replace(/[^0-9\.]/g, versionsCompare.fix).split('.');
+		var c = Math.max(a.length, b.length);
+		for (var i = 0; i < c; i++)
+		{
+			//convert to integer
+			a[i] = ~~a[i];
+			b[i] = ~~b[i];
+			if (a[i] > b[i])
+				return 1;
+			else if (a[i] < b[i])
+				return -1;
+		}
+		return 0;
+	}
+	versionsCompare.fix = function (s)
+	{
+		return "." + (s.toLowerCase().charCodeAt(0) - 2147483647) + ".";
+	}
 	changesLog.getData = function ()
 	{
 		if (changesLog.div)
@@ -9181,9 +9217,17 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 
 		document.getElementById("changesLogLegend").appendChild(opt);
 		head.html(head.html().replace("#", adeVersion));
+		if (prevVersion)
+		{
+			let h = head.find("h4");
+			h.text(h.text() + " (updated from v" + prevVersion + ")");
+		}
 		for(let v in list)
 		{
-			let ver = $('<div class="cl_ver_' + v.replace(/\./g, "_") + '"></div>').appendTo(cont);
+			let verType = prevVersion ? versionsCompare(v.substr(1), prevVersion) : 0,
+					updated = prevVersion && verType < 1 ? " prev" : "",
+					ver = $('<div class="cl_ver_' + v.replace(/\./g, "_") + updated + '"></div>').appendTo(cont);
+
 			$('<div class="cl_ver_head">' + v + (list[v].d ? " " + list[v].d : "") + '</div>').appendTo(ver);
 			for(let i = 0; i < list[v].length; i++)
 			{
