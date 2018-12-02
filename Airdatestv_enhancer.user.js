@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.57
+// @version     1.58
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,8 @@
 
 
 var changesLogText = multiline(function(){/*
+1.58 (2018-12-02)
+	+ ability change order in list of all episodes of a show
 1.57 (2018-11-20)
 	+ after an update changes log highlights changes between new and old versions
 	! "My Shows" displayed duplicate entries when settings where restored from old backups
@@ -585,7 +587,8 @@ let func = function(event)
 			lastColors: [],
 			lastColorsShow: 7, //number of last colors to show
 			lastColorsLine: 7, //number of last colors per line
-			cushowsHelp: false,
+			cushowsHelp: 0,
+			searchOrder: 0,
 /*			colorsCustom: {
 				"807fff": {name: ""},
 				"ff7fff": {name: ""},
@@ -781,19 +784,14 @@ let func = function(event)
 
 			Settings.box = popup;
 			content.append(createCheckbox("enableWatched", "Enable watched", this.prefs.enableWatched ? true : false, this.callback, null, ""));
-			let opt = createCheckbox("shortTitle", "Truncate long titles", this.prefs.shortTitle ? true : false, this.callback, ["Shorten titles to fit into single row."], "");
-			content.append(opt);
-			opt = createCheckbox("shortTitleExpand", "Auto expand truncated titles", this.prefs.shortTitleExpand ? true : false, this.callback, ["Show full title when cursor over it. If disabled you still be able see full title in tooltip or when show is opened."], "");
-			content.append(opt);
+			content.append(createCheckbox("shortTitle", "Truncate long titles", this.prefs.shortTitle ? true : false, this.callback, ["Shorten titles to fit into single row."], ""));
+			content.append(createCheckbox("shortTitleExpand", "Auto expand truncated titles", this.prefs.shortTitleExpand ? true : false, this.callback, ["Show full title when cursor over it. If disabled you still be able see full title in tooltip or when show is opened."], ""));
 	//		content.append(createCheckbox("animateExpand", "Animate during expanding", this.prefs.animateExpand ? true : false, this.callback, null, ""));
-			opt = createCheckbox("smallLogo", "Small logo", this.prefs.smallLogo ? true : false, this.callback, null, "");
-			content.append(opt);
-			opt = createCheckbox("searchScroll", "Auto scroll to the top", this.prefs.searchScroll ? true : false, this.callback, ["Scroll to the top on search and page refresh"], "");
-			content.append(opt);
-			opt = createCheckbox("todayChange", "Track today", this.prefs.todayChange ? true : false, this.callback, ['Automatically change "today" at midnight'], "");
-			content.append(opt);
+			content.append(createCheckbox("smallLogo", "Small logo", this.prefs.smallLogo ? true : false, this.callback, null, ""));
+			content.append(createCheckbox("searchScroll", "Auto scroll to the top", this.prefs.searchScroll ? true : false, this.callback, ["Scroll to the top on search and page refresh"], ""));
+			content.append(createCheckbox("todayChange", "Track today", this.prefs.todayChange ? true : false, this.callback, ['Automatically change "today" at midnight'], ""));
 
-			opt = $(multiline(function(){/*
+			let opt = $(multiline(function(){/*
 <span id="weeksBox">Show number of weeks: 
 	<select id="weeks">
 		<option value="">Default</option>
@@ -6149,6 +6147,7 @@ log(err);
 	{
 		if (showMyShows.box || showMyHidden.box)
 			return
+
 		let entries = $("#searchResults").find("div.entry");
 		entries.each(watched.attach);
 		setTimeout(function()
@@ -6185,7 +6184,6 @@ log(err);
 
 					return;
 				}
-
 				
 				obj.load("/s?"+$.param({q:"info:" + id}), function(e, t, r)
 				{
@@ -6198,6 +6196,39 @@ log(err);
 				})
 			}
 		});
+		if (entries.length)
+		{
+			function reverseOrder(entries, desc)
+			{
+				if (!entries.length)
+					return;
+
+				let before = entries[entries.length-1].nextSibling,
+						order = reverseOrder.order(entries);
+
+				if (typeof(desc) != "undefined" && ((desc && order == 1) || (!desc && order == -1)))
+					return;
+
+				for(let i = entries.length-1; i > -1; i--)
+					entries[i].parentNode.insertBefore(entries[i], before);
+
+			}
+			reverseOrder.order = function(entries)
+			{
+				return entries[0].innerText.toLowerCase().localeCompare(entries[entries.length-1].innerText.toLowerCase());
+			}
+
+			$("#searchResults").prepend('<div class="info"><small><span><span class="button"></span></span></small><div>').find("span.button").click(function(e)
+			{
+				if (!e.isTrigger)
+				{
+					Settings.prefs.searchOrder = Settings.prefs.searchOrder ? 0 : 1;
+					Settings.save();
+				}
+				reverseOrder($("#searchResults").find("div.entry"), Settings.prefs.searchOrder);
+				this.innerHTML = Settings.prefs.searchOrder ? "&#x25BC;" : "&#x25B2;";
+			}).trigger("click");
+		}
 		return _markSearchResults();
 	};
 
