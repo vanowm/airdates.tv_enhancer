@@ -6,9 +6,9 @@
 // @include     http://www.airdates.tv/*
 // @include     https://www.airdates.tv/*
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
-// @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAAEiElEQVRYw+2VW4hVVRjHf+uyz97nnLkcHWfGuWYzDlKUhUrUgynkQxREFJFEDwbzFkXQg0I9hIRF9BDRk1AyigkhouJDBuEEPlcQNdqo1cnRzozpzDnOuezL+no4czVnqIfBl/m/7L2+tde3/vv7/uu/YBWruMdQCweXRkff2Ltv36elUun3MAzFswnabiCq5qiGIX1NIT3uD8TzEJXDmo2kMbAOLvddoTg5RXNDI1YPEIce63vuo1fyrPcm0RmfX0cr97/wylvv9PX3HJjd0y4kkP8zv+nMmTPs379/wyObN3PzVhbPOwDuCF0JHPd38YF7n6zVoL7G6PeYXgebLz7MwTcPEmoIbUwUDpIOrjCQUbyrPuQrPUhLWKWv6xAvvjzauXDPRQQ8L0U6SLPrqV1s2bplJrphbv43OoEnmAbg5lx8ujVkW+nxBZkEShEAEWsp0kYRaG3dSENjsqgF+s6OCI4oDgGo1cA5mZuNFndsPkl89zhAgpn/QZP8e+3ioSBOEGFFIFLPvyQBESGKImSFGLjE4RK3XAUgTpKVI+ASXLKMBhQgzq0YgThOcLJcC2YrwMoQiFxM7OKlCcyqT5z7z0n/D1yckMTLtGD2v1fqFERxjHPLiHC29yulgcQlJHeIcJETzm5sbf3p+4sTqKW0oZYjPD8XhjFRsowG7l6B+Xe1hBMqdWd8fo1esKZSrRLFiwksqoCZcc3duzWtbVCtQHNTlkwWrgjsKWeRqfo3xwPDS00Q3IDCQxkeKIPT4BzktgXYXyAPfPSZZeh1iBLY97ZiZMQtTSAM6xfI2NgPjI3lAB+4ARgwlhGmILmEQ0BfpjloobdsqepmLiQ/gWhIhFxvO6nSbcbLFcKWv4ECnlEYc51ytW9pAr6fVu1tnQTpvWSzoJQQR60kbhOec5w332L0lyilyakcvXQhHjRGf/FYzw6sZ/FTPrq7B2+gn3QqxeFPjnLo4yGMMdRqNZ57/lX/rgREZODw0NBgc64B319DHIVESUzKC3BRREiCHwd0JB2AQitNiSLaGCpGoVvWzOnRK04ixVukrYfVlkqlgmiFiHDhwsigiBxVSg3PERCR7PC5c+dPnT6dEhHa2zsoThVRClK+T6VSwRiDUgqjTf1WAxJxWAXKOZwDqzVaa5qbmylXyigB63mEYUhDJsP18QInTp4kt3btKRF5UCk1pkRkIJ/Pf372m7PbNYrJyUmqtSrWWJwTtNaghFq1hvU80kGKWhSThDFWK0ARR1VwjiCVwg8CfC/AGEu2sZHYJXjaooW6B/iWQqHAkzt3/vzo1i171HfDw18cO3bstfGJCYLAB6kfq7ppODzPm7mmQ5I4RmlDd1cHjQ0NlCshTamA2AiV8m0mCuOgFJ71SZwj5XmEtRqJc2htUAqM1oS1Globnn72mUN2YmLiyLVr1/J9/f391tpGpVUkru4FSlG3TgFtNL6f4urVcX788Xs6OteTL0zT5sXcLJUJgR3bt+OcULpd8tpza4rdPd3XnYjVWiMzfqGVIpPJpC5dvOiM0SdYxSruNf4Bbv4W546hynoAAAAASUVORK5CYII=
+// @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.58.1
+// @version     1.59
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,14 @@
 
 
 var changesLogText = multiline(function(){/*
+1.59 (2018-12-09)
+	+ ability add custom icon for each link (can be an URL or "data:" type)
+	+ option to change how custom colors displayed: use all available width or wrap in 7 per line
+	! some changes links manager would not reflect in opened details of a show
+	! improved drag'n drop in links manager
+	! greatly improved performance during changing number of custom colors to display in settings
+	* quick colors and link's icons are now scalable with page zoom in Waterfox
+	* replaced color picker icon with a SVG, which allows to be scaled without compromising quality
 1.58.1 (2018-12-02)
 	! in some situations all days disappear
 	! search bar not centered
@@ -856,11 +864,22 @@ let func = function(event)
 					Settings.pref("lastColorsShow", val);
 
 					if (!evt.isTrigger)
-						Settings.colors.init();
+					{
+						clearTimeout(opt.timer);
+						opt.timer = setTimeout(Settings.colors.init, 100);
+					}
 
 				})
 				.trigger("input");
 
+			content.append(createCheckbox("lastColorsLine", "Custom colors fill width", this.prefs.lastColorsLine ? false : true, function(e, id, check)
+			{
+				let num = check ? 0 : 7;
+				Settings.pref("lastColorsLine", num);
+				if (!e.isTrigger)
+					Settings.colors.init();
+
+			}, ['Use all available width, or show 7 custom colors per line'], ""));
 			opt = $(multiline(function(){/*
 <span>Theme: <select id="theme"></select></span>
 			*/}))
@@ -1369,15 +1388,7 @@ let func = function(event)
 						colors = Settings.prefs.lastColors;
 
 				for(let i = 0; i < colors.length; i++)
-				{
 					css += ".soft_cust" + i + "{background-color:#" + colors[colors.length - i - 1] + ";display:inline-block}\n";
-				}
-				let max = Math.min(Settings.prefs.lastColorsShow, Settings.prefs.lastColors.length),
-						max2 = Settings.prefs.lastColorsLine && Settings.prefs.lastColorsShow ? Settings.prefs.lastColorsLine < max ?  Settings.prefs.lastColorsLine : max : max,
-						max3 = Math.max(max2, 7);
-						max4 = Math.max(1, Math.min(max2, 19));
-				css += '#cushows-list.opened>li.opened{margin-bottom:' + ((Math.ceil(max/max4) + 1) * (14 + (browser == "ff" ? 1 : 0)) + 15) + 'px;}#cushows-list.opened>li.opened .colors{width:' + 
-								Math.min(308, max3 * 16 -2 + Math.ceil((max3 - 1) / 3) - ((max3 + 2) % 3 ? 1 : 0)) + 'px;}';
 
 				$(".colors").toggleClass("nopre", (!Settings.prefs.lastColorsLine || Settings.prefs.lastColorsLine > 19) ? true : false)
 				document.getElementById("customColorsCSS2").innerHTML = css;
@@ -1410,6 +1421,7 @@ let func = function(event)
 				$('.colors .picker').each(function(i)
 				{
 					this.title = "Custom color";
+//					this.classList.add("svg");
 				});
 				for(let i = 0; i < max; i++)
 				{
@@ -1438,10 +1450,29 @@ let func = function(event)
 				for(let i = 0; i < colors.length; i++)
 					colors[i] = colors[i].toUpperCase();
 
-				this.css();
+				let that = Settings.colors;
+				that.css();
 
-				if (this.inited)
+				if (that.inited)
 					return
+
+				$( document ).off( "mouseover", ".color");
+				$( document ).off( "mouseout", ".color");
+				let coltimer;
+				$( document ).on( "mouseover", ".colors", function(e)
+				{
+						clearTimeout(coltimer);
+						if (e.target.classList.contains("color"))
+						{
+							var $this = $( e.target );
+							assignColor( $this.parents("div.entry").data( "series-id" ), $this.hasClass( "none" )? "" : $this.css( "background-color" ) );  
+						}
+				});
+				$( document ).on( "mouseout", ".colors", function(){
+					clearTimeout(coltimer);
+					let $this = $(this);
+					coltimer = setTimeout(function(){loadColor( $this.parents("div.entry").data( "series-id" ) )}, 100); 
+				}); 
 
 				$( document ).on( "mousedown", "div.colors .color", function(e)
 				{
@@ -1460,9 +1491,9 @@ let func = function(event)
 
 					e.preventDefault();
 				});
-				this.inited = true;
+				that.inited = true;
 			}//Settings.colors.init()
-		},
+		},//Settings.colors
 
 		themes:
 		{
@@ -1647,6 +1678,7 @@ div.entry
 	border-top: 1px solid black;
 }
 *//*
+#resultsBecauseNoOneChecks,
 #searchResults .description
 {
 	color: #b9b2b2;
@@ -1675,6 +1707,28 @@ div.entry
 #cushows-list > li.edit.delete > *
 {
 	color: coral;
+}
+#searchResults div.entry
+{
+	border-color: #6c6c6c;
+}
+
+#searchResults div.entry.separating
+{
+	border-color: #aaa;
+}
+.desc > div.entry
+{
+	border-top: none;
+	border-bottom: 1px dashed #ccc;
+}
+.desc > div.entry.separating
+{
+	border-bottom: 1px solid #555;
+}
+:not(.desc) > div.entry.separating
+{
+	border-top: 1px solid;
 }
 
 /*
@@ -1984,14 +2038,27 @@ END DARK THEME
 
 	function isEqual (a, b)
 	{
+		if (typeof(a) == "undefined" || typeof(b) == "undefined")
+			return false;
+
 		for(let i in a)
 		{
-			if (!(i in b) || a[i] != b[i])
+			if (typeof(a[i]) == "object")
+			{
+ 				if (!isEqual(a[i], b[i]))
+					return false;
+			}
+			else if (!(i in b) || a[i] != b[i])
 				return false
 		}
 		for(let i in b)
 		{
-			if (!(i in a) || a[i] != b[i])
+			if (typeof(b[i]) == "object")
+			{
+				if (!isEqual(a[i], b[i]))
+					return false;
+			}
+			else if (!(i in a) || a[i] != b[i])
 				return false
 		}
 		return true;
@@ -2341,6 +2408,12 @@ END DARK THEME
 					<input id="engine-id" placeholder="&lt;optional&gt;">
 				</div>
 			</div>
+			<div>
+				<label>Icon:</label>
+				<div>
+					<input id="engine-icon" placeholder="&lt;optional&gt;">
+				</div>
+			</div>
 			<div title="You can add multiple regular expressions separated by new line">
 				<label><a href="https://developer.mozilla.org/docs/Web/JavaScript/Guide/Regular_Expressions" target="_blank">RegExp</a>:</label>
 				<div class="engine-regexp">
@@ -2366,6 +2439,7 @@ END DARK THEME
 		$(html).appendTo(content.parent());
 		let engId = $("#engine-id"),
 				engUrl = $("#engine-url"),
+				engIcon = $("#engine-icon"),
 				engName = $("#engine-name"),
 				engForm = $("#engine-form"),
 				engSubmit = $("#engine-submit"),
@@ -2405,8 +2479,11 @@ END DARK THEME
 							name: engName.val(),
 							host: engId.val().trim(),
 							href: engUrl.val().trim(),
+							icon: engIcon.val().trim(),
 							regexp: reg
 						}];
+				if (eng.icon === "")
+					deleteeng.icon;
 
 				if (!eng[0].href.match(/[a-z]+:\/\//i))
 					eng[0].href = "http://" + eng[0].href;
@@ -2419,8 +2496,7 @@ END DARK THEME
 						img = a.find("img")[0],
 						children = engRes.children(),
 						domain = getHost(eng[0].href) || null;
-
-				img.src = "http://www.google.com/s2/favicons?domain=" + domain;
+				img.setAttribute("src", eng[0].icon ? eng[0].icon : "http://www.google.com/s2/favicons?domain=" + domain);
 
 				engRes.html("");
 				if (domain || a.text())
@@ -2434,11 +2510,12 @@ END DARK THEME
 		function buttonsUpdate()
 		{
 			engSubmit.prop("disabled", !engName.val().trim() || !engUrl.val().trim() || engRegexp.hasClass("error"));
-			engReset.prop("disabled", !(engName.val().trim() + engId.val() + engUrl.val() + engRegexp.val() + engRegexpReplace.val()));
+			engReset.prop("disabled", !(engName.val().trim() + engId.val() + engUrl.val() + engIcon.val() +  engRegexp.val() + engRegexpReplace.val()));
 		}
 
 
 		engId.on("input change", change);
+		engIcon.on("input change", change);
 		engUrl.on("input change", change);
 		engName.on("input change", change);
 		engTags.on("change", function(e)
@@ -2511,8 +2588,12 @@ END DARK THEME
 			let engine = {
 						name: engName.val().trim(),
 						href: engUrl.val().trim(),
-						host: engId.val().trim()
+						host: engId.val().trim(),
+						icon: engIcon.val().trim()
 					};
+			if (engine.icon === "")
+				delete engine.icon;
+
 			if (reg.length)
 			{
 				engine.regexp = reg;
@@ -2576,6 +2657,7 @@ END DARK THEME
 						if (isEqual(enginesDefault[i], engine))
 						{
 							update.find(".del").trigger("click");
+							updateDetails();
 							return;
 						}
 					}
@@ -2602,10 +2684,12 @@ END DARK THEME
 			}
 			engName.val("");
 			engId.val("");
+			engIcon.val("");
 			engUrl.val("");
 			engRegexp.val("");
 			engRegexpReplace.val("");
 			buttonsUpdate();
+			updateDetails();
 		});//engForm.submit()
 
 		function updateDetails()
@@ -2640,6 +2724,7 @@ END DARK THEME
 			let host = engId.val(),
 					name = engName.val(),
 					href = engUrl.val(),
+					icon = engIcon.val(),
 					list = [];
 
 			for (let i = 0; i < enginesDefault.length; i++)
@@ -2662,6 +2747,7 @@ END DARK THEME
 				{
 					$("#engine-id").val(host);
 					$("#engine-name").val(name);
+					$("#engine-icon").val(icon);
 					let url = $("#engine-url");
 					url.val(href);
 					url.trigger("input");
@@ -2669,8 +2755,12 @@ END DARK THEME
 			});
 			customLinks.show();
 		});
-		let dragged = null;
+		let dragged = null,
+				draggedNext = null;
 
+		document.body.addEventListener('dragover', dndEvent, false);
+		content[0].addEventListener('drop', dndEvent, false);
+		content[0].addEventListener('dragend', dndEvent, false);
 		function dndEvent(e)
 		{
 			let r = null;
@@ -2689,13 +2779,16 @@ END DARK THEME
 
 					e.dataTransfer.effectAllowed = 'move';
 					dragged = this;
+					draggedNext = this.nextElementSibling;
 					dragged.classList.add("dragging");
 					this.parentNode.classList.add("dragging");
 					setTimeout(function()
 					{
 						dragged.classList.add("hide");
 					});
-					e.dataTransfer.setData('application/x-moz-node', dragged);
+//					e.dataTransfer.setData('application/x-moz-node', dragged);
+					e.dataTransfer.setDragImage(dragged, 0, 0);
+					e.dataTransfer.setData('text/plain', "");
 					break;
 				case "dragenter":
 					if (!dragged)
@@ -2725,8 +2818,19 @@ END DARK THEME
 								e.preventDefault(); // Necessary. Allows us to drop.
 						return;
 					}
+					let p = e.target;
+					while(p && p != content[0])
+						p = p.parentNode;
 
-					e.dataTransfer.dropEffect = 'move';
+					e.dataTransfer.dropEffect = p ? 'move' : "none";
+
+					if (!p)
+					{
+						if (draggedNext)
+							dragged.parentNode.insertBefore(dragged, draggedNext);
+						else
+							dragged.parentNode.appendChild(dragged);
+					}
 					if (e.stopPropagation)
 						e.stopPropagation();
 
@@ -2791,10 +2895,6 @@ END DARK THEME
 			div.setAttribute("draggable", true);
 			div.addEventListener('dragstart', dndEvent, false);
 			div.addEventListener('dragenter', dndEvent, false)
-			div.addEventListener('dragover', dndEvent, false);
-			div.addEventListener('dragleave', dndEvent, false);
-			div.addEventListener('drop', dndEvent, false);
-			div.addEventListener('dragend', dndEvent, false);
 			div.addEventListener("mousedown", dndEvent, false);
 
 			dndHandle.innerText = "☰";
@@ -2841,6 +2941,7 @@ END DARK THEME
 					engId.val((getHost(engine.href) == engine.host) ? "" : engine.host);
 					engName.val(engine.name);
 					engUrl.val(engine.href.replace(/http:\/\//i, ""));
+					engIcon.val(engine.icon || "");
 					let reg = engine.regexp || [],
 							regexp = [],
 							repl = [];
@@ -2870,6 +2971,7 @@ END DARK THEME
 							let host = engId.val(),
 									name = engName.val(),
 									href = engUrl.val(),
+									icon = engIcon.val(),
 									engine = _engine,
 									update = false;
 
@@ -2951,6 +3053,7 @@ END DARK THEME
 								{
 									$("#engine-id").val(host);
 									$("#engine-name").val(name);
+									$("#engine-icon").val(icon);
 									let url = $("#engine-url");
 									url.val(href);
 									url.trigger("input");
@@ -2959,6 +3062,7 @@ END DARK THEME
 									$(customLinks.div).find(".content")[0].scrollTop = scroll;
 							});
 							customLinks.show();
+							updateDetails();
 						}, 300);
 					});
 				}
@@ -3148,17 +3252,19 @@ END DARK THEME
 	function createCheckbox(id, label, cookie, callback, title, className)
 	{
 		let span = document.createElement("span"),
-				checkon = document.createElement("span"),
-				checkoff = document.createElement("span"),
+//				checkon = document.createElement("span"),
+//				checkoff = document.createElement("span"),
 				a = document.createElement("a"),
 				check = typeof(cookie) == "boolean" ? cookie : cs(cookie) ? true : false;
 		if (title)
 		{
-			checkon.title = title[0];
-			checkoff.title = title[1] || title[0];
+//			checkon.title = title[0];
+//			checkoff.title = title[1] || title[0];
 			a.title = title[2] || title[0];
 		}
 		a.className = "checkbox " + id + " " + (typeof(className) == "undefined" ? "filter" : className);
+		span.className = "checkbox";
+/*
 		checkon.className = "checkon nu";
 		checkoff.className = "checkoff nu";
 		checkon.innerHTML = "☑";
@@ -3168,6 +3274,7 @@ END DARK THEME
 	//	a.href = "#";
 		span.appendChild(checkon);
 		span.appendChild(checkoff);
+*/
 		span.appendChild(document.createTextNode(label));
 		a.appendChild(span);
 		$(a).insertBefore("#nu-showing");
@@ -4087,7 +4194,7 @@ div.entry
 	float: left;
 	width: 100%;
 }
-div.entry,
+
 .pointer,
 .checkbox,
 .date
@@ -4101,13 +4208,12 @@ div.entry,
 	cursor: pointer;
 }
 
-.tools .edit  svg,
 .showhide0 > svg,
 .showhide1 > svg
 {
 	margin: 0 0.1em 0 -1px;
-	width: 18px;
-	height: 16px;
+	width: 1.2em;
+	height: 1.2em;
 	max-width: unset;
 	max-height: unset;
 }
@@ -4378,7 +4484,7 @@ div.moreOpt:not([opened]) > div
 }
 img.icon
 {
-	max-width: 16px;
+	width: 1.333em;
 }
 div.back
 {
@@ -4420,10 +4526,14 @@ div:not(#account-popup-content) > .header
 #engine-edit
 {
 	padding: 3px 10px;
-	overflow: auto;
+	overflow-x: hidden;
+	overflow-y: auto;
 	max-height: 30.7em;
 }
-
+#settings-popup .content
+{
+	max-height: unset;
+}
 #cushows-edit,
 #engine-edit
 {
@@ -4506,6 +4616,10 @@ body.colorbox:not(.colorpicker) li.opened div.color *
 {
 	background-color: #FFFFB7;
 	outline: 1px dotted grey;
+}
+#cushows-list.opened>li.opened .colors
+{
+	width: 26em;
 }
 .close:hover,
 .back:hover
@@ -4876,12 +4990,31 @@ span.button
 	border-radius: 4px;
 	padding: 3px;
 }
-
 /* fix search field box covers text on bottom *//*
 #searchFieldContainer
 {
+	width: 100%;
 	height: 0;
+	display: grid;
+	position: relative;
+	padding-top: 0;
+	padding-bottom: 10px
 }
+#searchFieldContainer > img
+{
+	padding-top: 10px;
+}
+
+#searchFieldPlaceholder
+{
+	height: 2em;
+}
+
+#searchbar input
+{
+	width: unset;
+}
+
 /* changes log *//*
 
 body:not(.changesLog) #changesLog
@@ -5403,8 +5536,8 @@ input[type="number"]
 [msg]:before {
 	background: no-repeat url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http://www.w3.org/2000/svg%22%20width%3D%2236px%22%20height%3D%2212px%22%3E%3Cpath%20fill%3D%22rgba(17, 17, 17, 0.9)%22%20transform%3D%22rotate(0)%22%20d%3D%22M2.658,0.000%20C-13.615,0.000%2050.938,0.000%2034.662,0.000%20C28.662,0.000%2023.035,12.002%2018.660,12.002%20C14.285,12.002%208.594,0.000%202.658,0.000%20Z%22/%3E%3C/svg%3E");
 	background-size: 100% auto;
-	width: 18px;
-	height: 6px;
+	width: 1.2em;
+	height: 0.5em;
 	filter: alpha(opacity=0);
 	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
 	-moz-opacity: 0;
@@ -5655,7 +5788,8 @@ body.ff #cushows-edit textarea
 
 #cushows-list > li > :nth-child(1)
 {
-	width: 10px;
+	width: 1em;
+	height: 1em;
 	border: 1px solid black;
 	float: unset;
 	margin: 0;
@@ -5800,11 +5934,115 @@ body.ff #cushows-edit textarea
  }
 }
 
-#searchbar input
+#searchResults .colors > .picker,
+#searchResults .colors .color
 {
-	width: 176px;
+	width: 1em;
+	height: 1em;
 }
 
+#searchResults span.picker,
+#searchResUlts span.color
+{
+	width: 1.2em;
+	height: 1.2em;
+}
+.picker
+{
+	background-image: none;
+	width: 0.9em;
+	height: 0.9em;
+	vertical-align: top;
+}
+
+.entry.colorbox:hover:after,
+.picker-light:hover:before,
+.picker:before
+{
+	content: "";
+	display: inline-block;
+	background-repeat: no-repeat;
+	vertical-align: top;
+	display: block;
+	width: 1.2em;
+	height: 1.2em;
+	position: absolute;
+	background-image: url("data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGVuYWJsZS1iYWNrZ3JvdW5kPSJuZXcgMCAwIDE0IDE0IiB2ZXJzaW9uPSIxLjAiIHZpZXdCb3g9IjAgMCAxNCAxNCIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJtMy4xIDEzLjdjLTAuNiAwLjQtMS40IDAuMy0xLjktMC4ybC0wLjgtMC44Yy0wLjUtMC41LTAuNi0xLjMtMC4yLTEuOWwwLjgtMS4zYzAuMS0wLjggMC40LTEuNiAxLTIuMmwzLjMtMy4zYzAtMC42IDAuMi0xLjQgMC43LTEuOWwwLjItMC4yYzAuNS0wLjUgMS4yLTAuNyAxLjktMC41bDAuNC0wLjRjMS4yLTEuMiAzLjMtMS4yIDQuNSAwczEuMiAzLjMgMCA0LjVsLTAuNCAwLjRjMC4yIDAuNyAwIDEuNC0wLjUgMS45bC0wLjIgMC4yYy0wLjUgMC41LTEuMiAwLjctMS45IDAuNWwtMy4zIDMuM2MtMC42IDAuNi0xLjQgMS0yLjIgMWwtMS40IDAuOXoiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJtNS45IDExLjJjLTAuNSAwLjUtMS4xIDAuNy0xLjcgMC44LTAuMSAwLTAuMiAwLTAuMyAwLjFsLTEuNyAxLjEtMS40LTEuNCAxLjItMS43YzAtMC4xIDAuMS0wLjIgMC4xLTAuMyAwLTAuNiAwLjMtMS4yIDAuOC0xLjdsMy44LTMuOGMtMC40LTAuNC0wLjQtMSAwLTEuNGwwLjItMC4yYzAuNC0wLjQgMS0wLjQgMS40IDBsMS0xYzAuOC0wLjggMi4yLTAuOCAzLjEgMCAwLjggMC44IDAuOCAyLjIgMCAzLjFsLTEgMWMwLjQgMC40IDAuNCAxIDAgMS40bC0wLjIgMC4yYy0wLjQgMC40LTEgMC40LTEuNCAwbC0zLjkgMy44eiIvPjxwYXRoIGQ9Im05IDYuNmwtMy44IDMuOGMtMC4zIDAuMy0wLjYgMC40LTEgMC41LTAuMyAwLTAuNiAwLjEtMC44IDAuM2wtMSAwLjctMC4yLTAuMiAwLjctMWMwLjItMC4yIDAuMi0wLjUgMC4zLTAuOCAwLTAuNCAwLjItMC44IDAuNS0xbDMuNy0zLjkiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJtNS43IDguM2wtMS4yIDEuMmMtMC4xIDAuMS0wLjIgMC4zLTAuMyAwLjVzLTAuMyAwLjMtMC41IDAuMi0wLjMtMC4zLTAuMi0wLjRjMC4xLTAuNCAwLjMtMC42IDAuNS0wLjhsMS4yLTEuMmMwLjEtMC4xIDAuNC0wLjEgMC41IDBzMC4xIDAuNCAwIDAuNXoiLz48L3N2Zz4=");
+	background-position: center;
+}
+.entry.colorbox:hover:after,
+.color,
+.svg:before
+{
+	width: 0.9em;
+	height: 0.9em;
+}
+.picker-light:before,
+.picker-light:hover
+{
+	background-image: none;
+}
+.picker-light:hover:before
+{
+	width: 90%;
+	height: 90%;
+	position: relative;
+	top: 50%;
+	left: 50%;
+	-webkit-transform: translate(-50%, -50%);
+	-moz-transform: translate(-50%, -50%);
+	-ms-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+}
+
+.desc > div.entry
+{
+	border-top: none;
+	border-bottom: 1px dashed #ccc;
+}
+.desc > div.entry.separating
+{
+	border-bottom: 1px solid #555;
+}
+:not(.desc) > div.entry.separating
+{
+	border-top: 1px solid;
+}
+
+li .color
+{
+	vertical-align: 2px;
+}
+.colors,
+.colors *:not(.color):not(.picker)
+{
+	cursor: default;
+}
+
+.none
+{
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+span.checkbox
+{
+}
+span.checkbox:before
+{
+	content: "☐";
+	padding-right: 3px;
+	font-size: 1.3em;
+}
+span.checkbox[checked]:before
+{
+	content: "☑";
+}
+.content span.checkbox:before
+{
+	font-size: 1.3em;
+}
 */});//css
 
 	style.innerHTML = css;
@@ -6163,14 +6401,16 @@ log(err);
 		if (showMyShows.box || showMyHidden.box)
 			return
 
-		let entries = $("#searchResults").find("div.entry");
+		let searchResults = $("#searchResults"),
+				entries = searchResults.find("div.entry");
+
 		entries.each(watched.attach);
 		setTimeout(function()
 		{
 			$("div.day").each(collapseMulti);
 		});
 
-		let li = $("#searchResults").find("li[data-series-id]");
+		let li = searchResults.find("li[data-series-id]");
 		function wikiTitle(node, wiki)
 		{
 			let text = node.text();
@@ -6227,25 +6467,26 @@ log(err);
 				for(let i = entries.length-1; i > -1; i--)
 					entries[i].parentNode.insertBefore(entries[i], before);
 
+				return 
 			}
 			reverseOrder.order = function(entries)
 			{
 				return entries[0].innerText.toLowerCase().localeCompare(entries[entries.length-1].innerText.toLowerCase());
 			}
 
-			$("#searchResults").prepend('<div class="info"><small><span><span class="button"></span></span></small><div>').find("span.button").click(function(e)
+			searchResults.prepend('<div class="info"><small><span><span class="button"></span></span></small><div>').find("span.button").click(function(e)
 			{
 				if (!e.isTrigger)
 				{
 					Settings.prefs.searchOrder = Settings.prefs.searchOrder ? 0 : 1;
 					Settings.save();
 				}
-				reverseOrder($("#searchResults").find("div.entry"), Settings.prefs.searchOrder);
+				reverseOrder(searchResults.toggleClass("desc", Settings.prefs.searchOrder ? true : false).find("div.entry"), Settings.prefs.searchOrder);
 				this.innerHTML = Settings.prefs.searchOrder ? "&#x25BC;" : "&#x25B2;";
 			}).trigger("click");
 		}
 		return _markSearchResults();
-	};
+	};//markSearchResults()
 
 	$("body").on("click", 'div.entry div.title>input[type="checkbox"]', function(e)
 	{
@@ -6333,10 +6574,11 @@ log("hide");
 
 				if (!_engs)
 				{
-					if($entry.parents(".calendar").get().length>0)
+					if($entry.attr("id") == "engine-hidden" || $entry.parents(".calendar").get().length>0)
 						engs = engs.concat([{name: "Show all episodes", host: "airdates.tv", href: "javascript:search('info:MONKEY_ID');"}]);
 					else
 						engs = engs.concat([{name: "Show in calendar", host: "airdates.tv", href: "MONKEY_ARCHIVELINK", cls:"archive-link"}]);
+
 				}
 				var e = $( $.parseHTML($( "#detailsTemplate" ).html()) ).appendTo( $entry );
 				
@@ -6399,8 +6641,7 @@ log("hide");
 						a.attr("target","");
 						domain = "airdates.tv";
 					}
-
-					img.attr("src", "http://www.google.com/s2/favicons?domain=" + (domain || null));
+					img.attr("src", engine.icon ? engine.icon : "http://www.google.com/s2/favicons?domain=" + (domain || null));
 
 					img.toggleClass(id, true);
 					a.toggleClass(id, true);
@@ -7212,6 +7453,7 @@ log("hide");
 
 		let html = multiline(function(){/*
 	<div id="manage-cushows-popup">
+		<style id="manage-cushows-css"></style>
 		<div id="manage-cushows-popup-content">
 			<div class="header">
 				<div class="back" title="Back">
@@ -7706,7 +7948,14 @@ log("hide");
 					document.body.classList.toggle("colorbox", opened);
 					e.target.parentNode.parentNode.classList.toggle("opened", opened);
 					if (opened)
+					{
+						document.getElementById("manage-cushows-css").innerHTML = '#cushows-list.opened>li.opened{margin-bottom:'
+																																			+ (~~window.getComputedStyle(e.target.firstChild).height.replace("px", "")
+																																					/ ~~window.getComputedStyle(document.body).fontSize.replace("px", "")
+																																					+ 1)
+																																			+ 'em}';
 						scrollIntoView(e.target.firstChild, e.target.parentElement.parentElement.parentElement, 0, 1);
+					}
 
 					e.stopPropagation();
 					e.preventDefault();
@@ -10086,8 +10335,8 @@ span.troll
 background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAA3NCSVQICAjb4U/gAAAACXBIWXMAAAsSAAALEgHS3X78AAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1M1cbXjNgAAABZ0RVh0Q3JlYXRpb24gVGltZQAxMi8yOC8xMZSAjI8AAAA/UExURf///wAAAAEBAQICAgMDAwQEBAUFBQYGBgcHBwgICAkJCQoKCgsLCw0NDQ8PDxAQEBISEhMTExYWFvr6+v////L9RbYAAAABdFJOUwBA5thmAAAAZklEQVQYGY3BWw6CMABFwXtQKLZafJz9r1WaaPgycSb5wwys8KT1DFcPZIeHlgQBZ5jcbUnTByq4oDXpopMDd88JWlCZEEtSKUsHRCUJr1W8iVqTIBeWAirZ4Rdk6A6cWPMBHfLbGzqjB8v8i7F/AAAAAElFTkSuQmCC");
 background-repeat: no-repeat;
 background-position: center;
-width: 16px;
-height: 16px;
+width: 1.1em;
+height: 1.1em;
 cursor: pointer;
 vertical-align: top;
 display: inline-block;
