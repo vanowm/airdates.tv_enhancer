@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.59
+// @version     1.60
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,10 @@
 
 
 var changesLogText = multiline(function(){/*
+1.60 (2019-03-04)
+	+ ADEU keyword in disqus
+	! disqus troll script would not initialize on new comments which were loaded without page refresh
+	* custom shows link no longer shown when viewing as another user
 1.59 (2018-12-09)
 	+ ability add custom icon for each link (can be an URL or "data:" type)
 	+ option to change how custom colors displayed: use all available width or wrap in 7 per line
@@ -4110,7 +4114,8 @@ body.userViewer .importColors,
 body.userViewer .importColorsIcon,
 body.userViewer .clearColorsIcon,
 body.userViewer .clearColors,
-body.userViewer .colors
+body.userViewer .colors,
+body.userViewer .myCustomShows
 {
 	display: none !important;
 }
@@ -8754,7 +8759,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			parent.appendChild(span);
 
 			span = span.cloneNode(true);
-			span.className = "";
+			span.className = "myCustomShows";
 			delete span.className;
 			a = span.lastChild;
 			i = span.firstChild;
@@ -8775,6 +8780,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			parent.appendChild(span);
 
 			span = span.cloneNode(true);
+			span.className = "";
 			a = span.lastChild;
 			i = span.firstChild;
 			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z" /></svg>';
@@ -10012,16 +10018,20 @@ if (isFrame)
 				i,
 				isStr = isNaN(a.replace(/['`].*/, ''));
 
+		if ((a.length - p.length) > 0)
+			p = "bla" + "a".repeat(a.length - p.length) + "h";
+
 		if ((a.length < 2 && isStr) || (a.length < 7 && a.match(/['`]/) && isStr) || a.match(/^\$?[0-9]+k?/i))
 			return a;
 
 		for(i = 0; i < a.length; i++)
+		{
 			if (a[i] == a[i].toLowerCase())
 			{
 				caps = false;
 				break;
 			}
-
+		}
 		for(i = 0; i < p.length; i++)
 		{
 			t = p[i];
@@ -10123,11 +10133,196 @@ if (isFrame)
 		reloadLoop.inited = true;
 	}
 	reloadLoop.s = 2;
+	function initPosts(names, li)
+	{
+		if (li.classList.contains("init"))
+			return;
+
+		for(let i = 0; i < names.length; i++)
+		{
+			let body = findParent(names[i], "post-content");
+			if (!body)
+			{
+				continue;
+			}
+
+			let parent = findParent(names[i], "post-byline"),
+					img = document.createElement("span"),
+					name = names[i].innerText,
+					troll = (isTroll(name) != -1),
+					post = body.getElementsByClassName("post-message")[0];
+
+			post._parent = parent;
+			if (post.__inited)
+				continue;
+
+			if (post.innerHTML == "<div></div>")
+				continue;
+
+			img.className = "troll";
+				names[i].parentNode.insertBefore(img, names[i].nextSibling);
+/*
+			if (names[i].parentNode.querySelectorAll('span:not([class])').length)
+				names[i].parentNode.insertBefore(img, names[i].nextSibling);
+			else
+				names[i].parentNode.appendChild(img);
+*/
+
+			parent.setAttribute("troll", troll);
+
+			names[i].innerHTML = names[i].innerHTML.replace("Tubasing", "Tubashit");
+
+			if (typeof(comments[name]) == "undefined")
+				comments[name] = [];
+
+/* replace disqus links with actual links */
+			let as = post.getElementsByTagName("a");
+			for(let i = 0; i < as.length; i++)
+			{
+				let a = as[i],
+						url = decodeURIComponent(a.href).match(/\/\/disq\.us\/url\?url=(.+)/);
+
+				if (url)
+				{
+					url = url[1].substring(0, url[1].indexOf(a.title) + a.title.length);
+				}
+				if (!url)
+					url = a.href;
+
+				if (url.match(/^#/))
+					url = "http://airdates.tv/" + url;
+
+				a.href = url;
+				if (!url.match(/https?:\/\/(www\.)?airdates\.tv(\/.*|#|$)/i))
+				{
+					a.target = "_blank";
+				}
+				else
+				{
+					a.addEventListener("click", function(e)
+					{
+						e.preventDefault();
+						window.top.postMessage({id: "ade", func: "hashChanged", args: [0, a.hash], return:null}, "http://www.airdates.tv");
+					}, false);
+				}
+			}
+
+			comments[name].push({
+				parent: parent,
+				post: post
+			});
+
+			img.addEventListener("click", function(e)
+			{
+				e.stopPropagation();
+				e.preventDefault();
+
+				let troll = toggleTroll(post);
+				if (troll)
+					trollAdd(name);
+				else
+					trollRemove(name);
+
+				for(let i = 0; i < comments[name].length; i++)
+				{
+					if (post === comments[name][i].post)
+						continue;
+
+					toggleTroll(comments[name][i].post);
+				}
+			}, true);
+			post.__inited = true;
+			li.classList.toggle("init", true);
+
+			if (!body.__inited)
+			{
+				let eventHandler = function(e)
+						{
+							if (parent.getAttribute("troll") != "true")
+								return;
+
+							if (this.prev == e.type)
+								return;
+
+							let type = e.type == "mouseenter";
+							this.prev = e.type;
+							clearTimeout(this.timer);
+							this.timer = setTimeout(function()
+							{
+								censorText(post, type);
+							}, type ? 200 : 1000);
+						};
+				body.addEventListener("mouseenter", eventHandler, false);
+				body.addEventListener("mouseleave", eventHandler, false);
+				body.__inited = true;
+			}
+			if (!troll)
+				continue;
+
+			censorText(post);
+		}
+	}//initPosts()
 	window.addEventListener("load", function(e)
 	{
 		let dis = 1000,
 				wasBusy = false;
 
+		(function loop()
+		{
+			if (typeof(trollList) == "undefined")
+			{
+				if (dis--)
+					setTimeout(loop);
+
+				return;
+			}
+
+			if (typeof($) != "undefined" && $ !== blankFunc &&  $(".btn.load-more__button.busy").length)
+			{
+				wasBusy = true
+				return setTimeout(loop);
+			}
+			else
+			{
+				if (wasBusy)
+				{
+					wasBusy = false;
+					return setTimeout(loop, 1000);
+				}
+				else
+				{
+				}
+			}
+
+			if (!trollList || typeof(trollList) != "object")
+				trollList = ["Tubasing"];
+
+			let list = document.querySelectorAll("ul#post-list li.post:not(.init)");
+			if (list.length)
+			{
+				for (let l = 0; l < list.length; l++)
+				{
+					let li = list[l],
+							names = li.getElementsByClassName("author");
+
+					if (!names.length)
+						continue;
+
+					initPosts(names, li);
+				}//for
+			}
+			let textarea = document.querySelectorAll("div.textarea");
+			for(let i = 0; i < textarea.length; i++)
+			{
+				if (textarea[i].innerHTML.match(/\bADEU\b/))
+					textarea[i].innerHTML = textarea[i].innerHTML.replace(/\bADEU\b/, '&lt;a href="https://greasyfork.org/en/scripts/28787-airdates-tv-enhancer" target="_blank"&gt;Airdates.tv enhancer&lt;/a&gt; &lt;a href="https://greasyfork.org/en/help/installing-user-scripts" target="_blank"&gt;&lt;i&gt;userscript&lt;/i&gt;&lt;/a&gt;')
+			}
+			setTimeout(loop, 500);
+		})()
+		reloadLoop.i = 1000;
+		reloadLoop();
+
+/*
 		(function loop()
 		{
 			if (typeof(trollList) == "undefined")
@@ -10218,7 +10413,7 @@ if (isFrame)
 								else
 									names[i].parentNode.appendChild(img);
 */
-
+/*
 								parent.setAttribute("troll", troll);
 
 								names[i].innerHTML = names[i].innerHTML.replace("Tubasing", "Tubashit");
@@ -10227,6 +10422,7 @@ if (isFrame)
 									comments[name] = [];
 
 /* replace disqus links with actual links */
+/*
 								let as = post.getElementsByTagName("a");
 								for(let i = 0; i < as.length; i++)
 								{
@@ -10311,12 +10507,13 @@ if (isFrame)
 
 								censorText(post);
 							}
-						}
+						}//initPosts()
 						initPosts(names);
 					})();//loop3()
 				}
 			})();//loop2()
 		})();//loop()
+*/
 		let style = document.createElement("style");
 		style.innerHTML = multiline(function(){/*
 .trollComment
