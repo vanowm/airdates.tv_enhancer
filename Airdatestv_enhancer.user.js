@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.60.1
+// @version     1.60.3
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,15 @@
 
 
 var changesLogText = multiline(function(){/*
+1.60.3 (2019-07-14)
+	+ main menu icon instead of "Account" link
+	! Sunday column would wrap under Saturday in small windows
+	* cookies icon for guests
+1.60.2 (2019-07-14)
+	+ search icons
+	! cookies that store guest's colors will no longer expire
+	* search bar placeholder to "Find Show ..."
+	* text "Account" to "Tools" on main menu link
 1.60.1 (2019-03-31)
 	! watched checkbox was removed from first custom show of the week when new day started
 1.60 (2019-03-04)
@@ -358,9 +367,9 @@ if (!Date.now)
 	}
 }
 
-function createCookie(name,value){ document.cookie = name+"="+encodeURIComponent(value)+"; path=/; expires="+new Date( $.now()+(863913600000)).toGMTString()+";"; }
+function createCookie(name,value){ document.cookie = name+"="+encodeURIComponent(value)+"; path=/; expires="+new Date( (new Date()).getTime()+3153600000000).toGMTString()+";"; }
 function readCookie(name) {	var n = name + "="; return $.merge( $.map( document.cookie.split(';'), function(e,i){ e=e.trim(); return e.indexOf( n ) == 0? decodeURIComponent(e.substring(n.length).replace(/\+/,' ')):null;} ), [null] )[0];}
-function eraseCookie( name ){ document.cookie = name+"=; path=/; expires="+new Date( $.now()+(-1)).toGMTString()+";"; }
+function eraseCookie( name ){ document.cookie = name+"=; path=/; expires="+new Date((new Date()).getTime()+(-1)).toGMTString()+";"; }
 function ls(id, data, callback)
 {
 	let r;
@@ -511,7 +520,9 @@ Object.defineProperty(window, 'browser', { get: function()
 	}
 	return browser;
 }});
+
 window.addEventListener("message", receiveMessage, false);
+
 let func = function(event)
 {
 	let browser = window.browser;
@@ -644,6 +655,7 @@ let func = function(event)
 		{
 			if (this.inited)
 				return;
+
 //cloneObject
 			this.prefs = ls("settings") || Object.assign({}, this.prefsDef);
 			if (typeof(this.prefs) != "object")
@@ -740,7 +752,9 @@ let func = function(event)
 				eraseCookie("w");
 				s = true;
 			}
-
+			window.createCookie = createCookie
+//			window.eraseCookie = eraseCookie;
+//			window.readCookie = readCookie;
 			if (this.pref("version") != adeVersion)
 			{
 				if (!Settings.prefs.noChangesLog && Settings.prefs.version != adeVersion)
@@ -750,6 +764,16 @@ let func = function(event)
 					{
 						changesLog.show(true);
 					});
+					if (!DB.loggedInUsername)
+					{
+						setTimeout(function()
+						{
+							for(let id in DB.savedColors)
+							{
+								DB.setColor(id, DB.savedColors[id]);
+							}
+						})
+					}
 				}
 				this.prefs.version = adeVersion;
 				s = true;
@@ -1735,6 +1759,17 @@ div.entry
 :not(.desc) > div.entry.separating
 {
 	border-top: 1px solid;
+}
+
+#searchIcon > svg
+{
+	fill: #737373 !important;
+	vertical-align: middle;
+}
+
+.cookieIconHoles
+{
+	fill: #000;
 }
 
 /*
@@ -4098,6 +4133,23 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 	margin-right: 0.3em;
 	fill: #3e3e3e;
 }
+#account-overview > span.nu > svg.cookieIcon
+{
+	width: 1em;
+	height: 1em;
+	vertical-align: sub;
+}
+.cookieIcon
+{
+	width: 1em;
+	height: 1em;
+	vertical-align: sub;
+}
+.cookieIconHoles
+{
+	fill: #fff;
+	opacity: .5;
+}
 svg
 {
 	max-width: 1.2em;
@@ -4843,11 +4895,12 @@ body.ff [draggable] .dndh
 	display: table;
 }
 
+/*
 .user > svg
 {
 	margin-right: 0.3em;
 }
-
+*//*
 /*fixing menu wrapping too soon*//*
 @media screen and (max-width: 1000px)
 {
@@ -4861,6 +4914,8 @@ body.ff [draggable] .dndh
 	body:not(.userViewer) #account-popup
 	{ top: 50px; }
 }
+
+
 #menu .nu
 {
 	font-weight: bold;
@@ -4887,6 +4942,13 @@ body.ff [draggable] .dndh
 	width: 1.3em;
 	height: 1.3em;
 	vertical-align: bottom;
+}
+.search > svg,
+.content > div.search > span > svg
+{
+	width: 1em;
+	height: 1em;
+	vertical-align: middle;
 }
 #searchResults > div.entry > div.title,
 body:not(.shortTitle) div > div.entry > div.title,
@@ -5614,7 +5676,7 @@ div.entry[color="white"] .epNumFix .input
 }
 div.days
 {
-	min-width: 865px;
+	min-width: 994px;
 }
 div.day
 {
@@ -6049,6 +6111,31 @@ span.checkbox[checked]:before
 .content span.checkbox:before
 {
 	font-size: 1.3em;
+}
+
+/*search bar icon*//*
+#searchBecauseNoOneChecks:not(.x)
+{
+	background: #fff url('data:image/svg+xml;utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%206%206%22%3E%3Cpath%20fill%3D%22%23929292%22%20d%3D%22M2.23%200a2.23%202.23%200%200%201%201.7%203.68l.08.1h.28L6%205.47%205.49%206%203.77%204.29V4l-.1-.09A2.23%202.23%200%201%201%202.24%200m0%20.69a1.54%201.54%200%201%200%201.54%201.54A1.54%201.54%200%200%200%202.23.69z%22%2F%3E%3C%2Fsvg%3E') right 5px center/1em no-repeat;
+}
+#searchIcon > svg
+{
+	vertical-align: middle;
+	margin-right: 0.3em;
+	width: 1em;
+	height: 1em;
+}
+.menuIcon
+{
+	margin: 0.2em 0.5em 0 0;
+}
+#menu li
+{
+	margin-right: 0.7em;
+}
+#arrow
+{
+	top: -20px;
 }
 */});//css
 
@@ -8024,7 +8111,7 @@ log("hide");
 				cushName.trigger("change");
 			});
 //SEARCH
-			$('<span class="search" title="Search"><svg viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg></span>').appendTo(editBox).click(function(e)
+			$('<span class="search" title="Search"><svg viewBox="0 0 6 6"><path d="M2.23 0a2.23 2.23 0 0 1 1.7 3.68l.08.1h.28L6 5.47 5.49 6 3.77 4.29V4l-.1-.09A2.23 2.23 0 1 1 2.24 0m0 .69a1.54 1.54 0 1 0 1.54 1.54A1.54 1.54 0 0 0 2.23.69z"/></svg></span>').appendTo(editBox).click(function(e)
 			{
 				if (cushBox.classList.contains("opened"))
 					return;
@@ -8098,74 +8185,6 @@ log("hide");
 
 
 	DB.viewing = DB.username != DB.loggedInUsername;
-	let ul = $("#menu").find("ul");
-	if (DB.viewing)
-	{
-		ul.children("li:last-child").css("margin-right", "1.5em");
-		let li = $(multiline(function(){/*
-<li>Viewing as
-	<span class="user">
-		<svg viewBox="0 0 24 24">
-			<path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"></path>
-		</svg>
-	</span>
-	<span class="nu"></span>
-	<a class="close" title="Close" href="*/}) + window.location.href.replace(/\/u\/[^?#]+/, "") + multiline(function(){/*">
-		<svg viewBox="0 0 24 24">
-			<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
-		</svg>
-		<svg viewBox="0 0 24 24">
-			<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
-		</svg>
-	</a>
-</li>
-*/})).appendTo(ul);
-
-	li.find("span.nu").text(DB.username);
-//fix auto wrap on small screen
-	let width = li.prop("clientWidth");
-	width = Math.round(width * 2 + 760 + width / 6);
-	$("head").append("<style>@media screen and (max-width: " + width + multiline(function(){/*
-px)
-{
-	body.userViewer #menu li:not(:nth-last-child(2)):not(:last-child){ display: block; }
-	body.userViewer #menu li .nu{ min-width: 15px; }
-	body.userViewer #account-popup,
-	body.userViewer #settings-popup,
-	body.userViewer #manage-cushows-popup,
-	body.userViewer #manage-links-popup
-	{ top: 80px; }
-}
-</style>*/}));
-	}
-	else
-	{
-		setTimeout(function()
-		{
-		let li = ul.children().last();
-		let width = li.prop("clientWidth");
-		width = Math.round(width * 2 + 600 + width / 6);
-		$("head").append("<style>@media screen and (max-width: " + width + multiline(function(){/*
-px)
-{
-	body:not(.userViewer) #menu li{ display: block; }
-	body:not(.userViewer) #menu li .nu{ min-width: 15px; }
-	body:not(.userViewer) #account-popup,
-	body:not(.userViewer) #settings-popup,
-	body:not(.userViewer) #manage-cushows-popup-popup,
-	body:not(.userViewer) #manage-links-popup
-	{ top: 80px; }
-}
-</style>*/}));
-		});
-	}
-	if (!DB.loggedInUsername)
-	{
-	//monkey
-		let monkey = $("#account-overview").find("span.nu")[0];
-		if (monkey)
-			monkey.innerHTML = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve" style="vertical-align: middle;"><circle style="fill:#5d433f;" cx="66.06" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="66.06" cy="222.97" r="41.29"/><circle style="fill:#5d433f;" cx="445.94" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="445.94" cy="222.97" r="41.29"/><path style="fill:#543e3b;" d="M442.589,262.049c-8.366-14.436-13.169-30.655-13.169-47.34v-0.001c0-72.373-44.364-134.33-107.355-160.318V24.774l-41.29,16.516l-8.258-33.032c-21.781,7.261-40.361,22.498-54.356,37.298c-77.557,17.283-135.58,86.39-135.58,169.154c0,16.685-4.803,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,93.496,92.431,169.29,206.452,169.29s206.452-75.794,206.452-169.29C462.452,308.532,455.308,283.997,442.589,262.049z"/><path style="fill:#543e3b;" d="M140.387,364.043c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-84.035,43.969-155.956,106.493-186.502l-7.396-29.584c-21.781,7.261-40.361,22.498-54.357,37.298C140.604,62.839,82.581,131.946,82.581,214.71c0,16.685-4.802,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,75.465,60.232,139.37,143.415,161.223C160.282,460.734,140.387,414.619,140.387,364.043z"/><path style="fill:#f7b189;" d="M256,470.71c68.412,0,123.871-44.367,123.871-99.097c0-11.354-2.414-22.245-6.835-32.386c-6.41-14.707-4.228-31.587,6.07-43.889c13.134-15.691,19.908-36.877,16.333-59.635c-4.91-31.259-30.182-56.486-61.448-61.353c-23.892-3.719-46.037,3.968-61.903,18.439c-4.51,4.113-10.3,6.17-16.087,6.17c-5.79,0-11.581-2.056-16.091-6.17c-15.866-14.471-38.011-22.158-61.903-18.439c-31.266,4.866-56.537,30.094-61.448,61.353c-3.575,22.757,3.199,43.943,16.333,59.635c10.298,12.303,12.48,29.182,6.07,43.889c-4.42,10.142-6.835,21.033-6.835,32.386C132.129,426.342,187.588,470.71,256,470.71z"/><path style="fill:#f7b189;" d="M132.129,371.612c0,18.522,6.468,35.795,17.524,50.625c-5.938-18.411-9.266-37.916-9.266-58.195c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-17.307,1.96-34.056,5.468-50.08c-0.295,0.042-0.583,0.04-0.879,0.086c-31.266,4.866-56.536,30.094-61.448,61.352c-3.575,22.758,3.2,43.944,16.333,59.635c10.298,12.302,12.481,29.181,6.071,43.889C134.543,349.368,132.129,360.259,132.129,371.612z"/><g><path style="fill:#5D5360;" d="M239.476,330.323c-1.242,0-2.5-0.278-3.685-0.871l-16.516-8.258c-4.081-2.04-5.734-7-3.694-11.081c2.048-4.081,7-5.734,11.081-3.694l16.516,8.258c4.081,2.04,5.734,7,3.694,11.081C245.419,328.653,242.508,330.323,239.476,330.323z"/><path style="fill:#5D5360;" d="M272.524,330.323c-3.032,0-5.944-1.669-7.395-4.565c-2.04-4.081-0.387-9.04,3.694-11.081l16.516-8.258c4.073-2.04,9.032-0.387,11.081,3.694c2.04,4.081,0.387,9.04-3.694,11.081l-16.516,8.258C275.024,330.044,273.766,330.323,272.524,330.323z"/></g><path style="fill:#4B3F4E;" d="M182.319,363.355c-5.001,0-8.941,4.431-8.248,9.384c5.126,36.617,39.853,64.938,81.929,64.938c42.077,0,76.803-28.321,81.929-64.938c0.693-4.953-3.247-9.384-8.248-9.384H182.319z"/><path style="fill:#E6646E;" d="M208.417,424.038c13.457,8.563,29.849,13.639,47.583,13.639s34.126-5.076,47.583-13.639c-5.966-20.666-25.063-35.909-47.583-35.909S214.383,403.371,208.417,424.038z"/><path style="fill:#4B3F4E;" d="M181.677,272.516L181.677,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C206.452,261.424,195.36,272.516,181.677,272.516z"/><path style="fill:#5D5360;" d="M181.677,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C206.452,225.801,195.36,214.71,181.677,214.71z"/><circle style="fill:#FFFFFF;" cx="181.68" cy="231.23" r="8.258"/><path style="fill:#4B3F4E;" d="M330.323,272.516L330.323,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C355.097,261.424,344.005,272.516,330.323,272.516z"/><path style="fill:#5D5360;" d="M330.323,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C355.097,225.801,344.005,214.71,330.323,214.71z"/><circle style="fill:#FFFFFF;" cx="330.32" cy="231.23" r="8.258"/><path style="fill:#FF8087;" d="M256,437.677c2.792,0,5.538-0.169,8.258-0.415v-16.101c0-4.56-3.694-8.258-8.258-8.258s-8.258,3.698-8.258,8.258v16.101C250.462,437.508,253.208,437.677,256,437.677z"/></svg>';
-	}
 	disqusMessageCount.el = $("#account-overview").parent().append('<span class="notifBadge"></span>').find("span").last()[0];
 	function disqusMessageNotifLoaded(loading)
 	{
@@ -8414,7 +8433,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			if (title)
 				DB.infoAdd(id, [title, $(obj).find(".entry").attr("data-series-source")]);
 		});
-	};
+	};//DB.infoLoad()
 
 	function showMyShows(e)
 	{
@@ -8629,7 +8648,10 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 		}
 		let accountLoop = 50;
 		$("#account-popup").attr("hidden", "");
-		$("#account-overview").click(function(e)
+		let accountOverview = $("#account-overview"),
+				accountPopup = $("#account-popup");
+
+		accountOverview.click(function(e)
 		{
 			if (e.isTrigger)
 				return;
@@ -8638,13 +8660,13 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			customLinks.hide();
 			customShows.hide();
 			changesLog.hide();
-			setPopup($("#account-popup").is( ":visible" ), true);
-		});
-		$("#account-overview").click(function loop(e)
+			setPopup(accountPopup.is( ":visible" ), true);
+		})
+		.click(function loop(e)
 		{
-			$("#account-popup").removeAttr("hidden");
+			accountPopup.removeAttr("hidden");
 			let as = $("#account-popup-content .content a");
-			if( !$( "#account-popup" ).hasClass("loaded") || (!as.length && accountLoop--))
+			if( !accountPopup.hasClass("loaded") || (!as.length && accountLoop--))
 				return setTimeout(function()
 				{
 					loop(e)
@@ -8667,7 +8689,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			{
 //some browsers don't have proper icon in the font
 				let span = document.createElement("span");
-				span.innerHTML = header[0].firstChild.textContent.replace("🍪", multiline(function(){/*<span title="Cookies"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve"><circle style="fill:#D5A150;" cx="256" cy="256" r="256"/><path style="fill:#AD712C;" d="M415.237,55.557c34.771,43.71,55.556,99.043,55.556,159.236c0,141.385-114.615,256-256,256c-60.193,0-115.527-20.785-159.237-55.556C102.456,474.194,174.808,512,256,512c141.385,0,256-114.615,256-256C512,174.809,474.194,102.456,415.237,55.557z"/><path style="fill:#C98A2E;" d="M139.553,145.28c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595c15.135,0,29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C150.099,143.269,144.826,145.28,139.553,145.28z"/><circle style="fill:#674230;" cx="165.045" cy="99.186" r="36.056"/><path style="fill:#7A5436;" d="M129.154,95.733c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C144.353,65.025,130.744,78.748,129.154,95.733z"/><path style="fill:#C98A2E;" d="M57.139,310.109c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13C53.272,213.243,67.5,207.35,82.635,207.35s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C67.685,308.098,62.411,310.109,57.139,310.109z"/><circle style="fill:#674230;" cx="82.631" cy="264.015" r="36.056"/><path style="fill:#7A5436;" d="M46.739,260.562c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.93,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C61.939,229.854,48.33,243.577,46.739,260.562z"/><path style="fill:#C98A2E;" d="M129.252,413.127c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.918-2.919-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C139.798,411.116,134.524,413.127,129.252,413.127z"/><circle style="fill:#674230;" cx="154.743" cy="367.033" r="36.056"/><path style="fill:#7A5436;" d="M118.852,363.58c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.984-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C134.051,332.872,120.443,346.595,118.852,363.58z"/><path style="fill:#C98A2E;" d="M242.572,485.24c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595c15.135,0,29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C253.118,483.229,247.844,485.24,242.572,485.24z"/><circle style="fill:#674230;" cx="268.063" cy="439.146" r="36.056"/><path style="fill:#7A5436;" d="M232.172,435.692c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.984-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C247.371,404.985,233.762,418.708,232.172,435.692z"/><path style="fill:#C98A2E;" d="M263.175,196.929c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C273.721,194.918,268.448,196.929,263.175,196.929z"/><circle style="fill:#674230;" cx="288.667" cy="150.829" r="36.056"/><path style="fill:#7A5436;" d="M252.776,147.382c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C267.975,116.674,254.366,130.397,252.776,147.382z"/><path style="fill:#C98A2E;" d="M386.797,382.222c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.919-6.799-4.527-10.926-4.527c-4.127,0-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C397.343,380.211,392.069,382.222,386.797,382.222z"/><circle style="fill:#674230;" cx="412.289" cy="336.127" r="36.056"/><path style="fill:#7A5436;" d="M376.397,332.674c-0.013,0.139-0.025,0.277-0.036,0.416c-0.983,11.929,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.984-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C391.597,301.967,377.988,315.69,376.397,332.674z"/><path style="fill:#C98A2E;" d="M376.495,186.488c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.919-2.918-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C387.041,184.477,381.768,186.488,376.495,186.488z"/><circle style="fill:#674230;" cx="401.987" cy="140.393" r="36.056"/><path style="fill:#7A5436;" d="M366.095,136.94c-0.013,0.139-0.025,0.277-0.036,0.416c-0.983,11.93,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C381.295,106.232,367.686,119.955,366.095,136.94z"/><path style="fill:#C98A2E;" d="M221.968,310.109c-5.273,0-10.546-2.012-14.569-6.035c-22.091-22.091-22.091-58.037,0-80.13c10.702-10.702,24.929-16.595,40.065-16.595s29.363,5.894,40.065,16.595c8.046,8.047,8.046,21.092,0,29.139c-8.048,8.045-21.093,8.046-29.139,0c-2.918-2.919-6.799-4.527-10.926-4.527s-8.008,1.608-10.926,4.527c-6.026,6.026-6.026,15.829,0,21.853c8.047,8.047,8.047,21.092,0,29.138C232.514,308.098,227.24,310.109,221.968,310.109z"/><circle style="fill:#674230;" cx="247.46" cy="264.015" r="36.056"/><path style="fill:#7A5436;" d="M211.568,260.562c-0.013,0.139-0.025,0.277-0.037,0.416c-0.983,11.93,8.817,21.985,20.779,21.551c0.792-0.029,1.591-0.083,2.393-0.164c16.973-1.712,30.582-15.435,32.172-32.42c0.013-0.139,0.025-0.277,0.036-0.415c0.983-11.928-8.817-21.985-20.779-21.551c-0.792,0.029-1.591,0.083-2.393,0.164C226.768,229.854,213.159,243.577,211.568,260.562z"/><g><circle style="fill:#AD712C;" cx="129.803" cy="294.632" r="7.726"/><circle style="fill:#AD712C;" cx="181.312" cy="294.632" r="7.726"/><circle style="fill:#AD712C;" cx="155.557" cy="248.274" r="7.726"/><circle style="fill:#AD712C;" cx="62.841" cy="340.99" r="7.726"/><circle style="fill:#AD712C;" cx="165.859" cy="454.31" r="7.726"/><circle style="fill:#AD712C;" cx="196.765" cy="413.103" r="7.726"/><circle style="fill:#AD712C;" cx="248.274" cy="351.292" r="7.726"/><circle style="fill:#AD712C;" cx="330.688" cy="320.386" r="7.726"/><circle style="fill:#AD712C;" cx="310.085" cy="340.99" r="7.726"/><circle style="fill:#AD712C;" cx="340.99" cy="371.895" r="7.726"/><circle style="fill:#AD712C;" cx="340.99" cy="433.706" r="7.726"/><circle style="fill:#AD712C;" cx="454.31" cy="217.368" r="7.726"/><circle style="fill:#AD712C;" cx="423.404" cy="423.404" r="7.726"/><circle style="fill:#AD712C;" cx="268.877" cy="31.936" r="7.726"/><circle style="fill:#AD712C;" cx="83.445" cy="124.652" r="7.726"/><circle style="fill:#AD712C;" cx="42.237" cy="186.463" r="7.726"/><circle style="fill:#AD712C;" cx="160.708" cy="201.915" r="7.726"/><circle style="fill:#AD712C;" cx="191.614" cy="186.463" r="7.726"/><circle style="fill:#AD712C;" cx="160.708" cy="171.01" r="7.726"/><circle style="fill:#AD712C;" cx="304.934" cy="248.274" r="7.726"/><circle style="fill:#AD712C;" cx="237.972" cy="93.746" r="7.726"/><circle style="fill:#AD712C;" cx="335.839" cy="186.463" r="7.726"/><circle style="fill:#AD712C;" cx="351.292" cy="232.821" r="7.726"/><circle style="fill:#AD712C;" cx="382.197" cy="232.821" r="7.726"/><circle style="fill:#AD712C;" cx="382.197" cy="263.726" r="7.726"/><circle style="fill:#AD712C;" cx="325.537" cy="78.294" r="7.726"/><circle style="fill:#AD712C;" cx="356.443" cy="62.841" r="7.726"/></svg><span>*/}));
+				span.innerHTML = header[0].firstChild.textContent.replace("Temporary", "Guest").replace("🍪", '<span title="Cookies"><svg xmlns="http://www.w3.org/2000/svg" class="cookieIcon" viewBox="0 0 18 18"><rect class="cookieIconHoles" width="10.27" height="14.58" x="3.04" y="2.49" rx="3.33" ry="3.33" transform="rotate(-41.95 8.18 9.78)"/><path d="M9 0a9 9 0 1 0 9 9 8.44 8.44 0 0 0-.13-1.5A1.05 1.05 0 0 0 17 7h-2V6a.98.98 0 0 0-1-1h-2V4a.98.98 0 0 0-1-1h-1V1a.98.98 0 0 0-1-1M6.5 3A1.5 1.5 0 1 1 5 4.5 1.5 1.5 0 0 1 6.5 3m-3 4A1.5 1.5 0 1 1 2 8.5 1.5 1.5 0 0 1 3.5 7m5 1A1.5 1.5 0 1 1 7 9.5 1.5 1.5 0 0 1 8.5 8m5 2a1.5 1.5 0 0 1 0 3 1.5 1.5 0 0 1-1.5-1.5 1.5 1.5 0 0 1 1.5-1.5M8 13a1.5 1.5 0 1 1-1.5 1.5A1.5 1.5 0 0 1 8 13z"/></svg></span>');
 				header[0].replaceChild(span, header[0].firstChild);
 			}
 			let content = $("#account-popup-content").find("div.content");
@@ -8688,7 +8710,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 				this.parentNode.replaceChild(div, this);
 			});
 
-			$("#account-overview").unbind("click", loop);
+			accountOverview.unbind("click", loop);
 			content.find("div:first-of-type > span").html('<svg viewBox="0 0 24 24"><path d="M10.59,13.41C11,13.8 11,14.44 10.59,14.83C10.2,15.22 9.56,15.22 9.17,14.83C7.22,12.88 7.22,9.71 9.17,7.76V7.76L12.71,4.22C14.66,2.27 17.83,2.27 19.78,4.22C21.73,6.17 21.73,9.34 19.78,11.29L18.29,12.78C18.3,11.96 18.17,11.14 17.89,10.36L18.36,9.88C19.54,8.71 19.54,6.81 18.36,5.64C17.19,4.46 15.29,4.46 14.12,5.64L10.59,9.17C9.41,10.34 9.41,12.24 10.59,13.41M13.41,9.17C13.8,8.78 14.44,8.78 14.83,9.17C16.78,11.12 16.78,14.29 14.83,16.24V16.24L11.29,19.78C9.34,21.73 6.17,21.73 4.22,19.78C2.27,17.83 2.27,14.66 4.22,12.71L5.71,11.22C5.7,12.04 5.83,12.86 6.11,13.65L5.64,14.12C4.46,15.29 4.46,17.19 5.64,18.36C6.81,19.54 8.71,19.54 9.88,18.36L13.41,14.83C14.59,13.66 14.59,11.76 13.41,10.59C13,10.2 13,9.56 13.41,9.17Z"></path></svg>');
 
 			hideNode("importColors");
@@ -8707,11 +8729,12 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			span = span.cloneNode(true);
 			a = span.lastChild;
 			i = span.firstChild;
+			span.className = "search";
 			a.className = "";
 			a.id = "";
 			delete a.className;
 			delete a.id;
-			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>';
+			i.innerHTML = '<svg viewBox="0 0 6 6"><path d="M2.23 0a2.23 2.23 0 0 1 1.7 3.68l.08.1h.28L6 5.47 5.49 6 3.77 4.29V4l-.1-.09A2.23 2.23 0 1 1 2.24 0m0 .69a1.54 1.54 0 1 0 1.54 1.54A1.54 1.54 0 0 0 2.23.69z"/></svg>';
 			a.href = '#myshows';
 			a.addEventListener("click", function(e)
 			{
@@ -8726,9 +8749,9 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			span = span.cloneNode(true);
 			a = span.lastChild;
 			i = span.firstChild;
-			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>';
+			i.innerHTML = '<svg viewBox="0 0 6 6"><path d="M2.23 0a2.23 2.23 0 0 1 1.7 3.68l.08.1h.28L6 5.47 5.49 6 3.77 4.29V4l-.1-.09A2.23 2.23 0 1 1 2.24 0m0 .69a1.54 1.54 0 1 0 1.54 1.54A1.54 1.54 0 0 0 2.23.69z"/></svg>';
 			a.href = '#hidden';
-			span.className = "myHidden";
+			span.className = "search";
 			a.addEventListener("click", function(e)
 			{
 				e.preventDefault();
@@ -8822,9 +8845,102 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			parent.insertBefore(span, h.nextSibling);
 	
 			$("#account-popup-content > .header").append($("div.close")[0].cloneNode(true));
+		})
+		.attr("title", "Main menu")
+		.html((accountOverview.html() || "").replace(/Account/, ''))
+		.prepend('<svg xmlns="http://www.w3.org/2000/svg" class="menuIcon" viewBox="0 0 18 12"><path d="M0 0h18v2H0V0m0 5h18v2H0V5m0 5h18v2H0z"/></svg>');//account-overview
+		accountOverview.parent().parent().prepend(accountOverview.parent());
 
-		});//account-overview:click()
+		let ul = $("#menu").find("ul"),
+				li = ul.find("li");
 
+		accountOverview.parent().parent().append('<li><a id="searchIcon" href="#searchBecauseNoOneChecks" title="Search"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6"><path d="M2.23 0a2.23 2.23 0 0 1 1.7 3.68l.08.1h.28L6 5.47 5.49 6 3.77 4.29V4l-.1-.09A2.23 2.23 0 1 1 2.24 0m0 .69a1.54 1.54 0 1 0 1.54 1.54A1.54 1.54 0 0 0 2.23.69z"/></svg>Search</a></li>').find("li:last-child").click(function(e)
+		{
+			e.originalEvent.preventDefault();
+			$("#searchBecauseNoOneChecks").focus();
+			var dur = 250,
+					arrow = $("#arrow");
+					right = this.____right || $("#searchbar").offset().left - arrow.show().offset().left + arrow.width();
+			this.____right = right;
+	/*
+			let searchbar = $("#searchbar");
+			searchbar.animate({left:$(this).offset().left}, 200).animate({left:searchbar.offset().left}, 300, function(e){this.style.left = ""; this.style.right = "";});
+	*/
+			arrow.css({'margin-right':200,right: right, 'opacity':0}).show()
+				.animate({marginRight:0,opacity:1},dur).animate({marginRight:200},dur)
+				.animate({marginRight:0},dur).animate({marginRight:200},dur) 
+				.animate({marginRight:0},dur).animate({marginRight:200},dur) 
+				.animate({marginRight:0},dur).animate({marginRight:200,opacity:0},dur).hide(1);
+
+		});
+		li.contents().filter(function(){return this.nodeType == 3}).each(function(i,e)
+		{
+			e.parentNode.removeChild(e); //remove white spaces
+		});
+		if (DB.viewing)
+		{
+	//		ul.children("li:last-child").css("margin-right", "1.5em");
+			let li = $(multiline(function(){/*
+	<li>Viewing as
+		<span class="user">
+			<svg viewBox="0 0 24 24">
+				<path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"></path>
+			</svg>
+		</span>
+		<span class="nu"></span>
+		<a class="close" title="Close" href="*/}) + window.location.href.replace(/\/u\/[^?#]+/, "") + multiline(function(){/*">
+			<svg viewBox="0 0 24 24">
+				<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
+			</svg>
+			<svg viewBox="0 0 24 24">
+				<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
+			</svg>
+		</a>
+	</li>
+	*/})).appendTo(ul);
+
+			li.find("span.nu").text(DB.username);
+		//fix auto wrap on small screen
+
+			setTimeout(function()
+			{
+				let width = (ul.width() + $("body > #menu + h1 > img").width()/2 + ul.offset().left ) * 2;
+				$("head").append('<style id="menuWidth">@media screen and (max-width: ' + width + multiline(function(){/*
+px)
+{
+	body.userViewer #menu li:not(:nth-last-child(2)):not(:last-child){ display: block; }
+	body.userViewer #menu li .nu{ min-width: 15px; }
+	.calendar {margin-top: 0.5em}
+	#searchIcon > svg{margin-right: 0.6em;}
+}
+				</style>*/}));
+			});
+		}
+		else
+		{
+			setTimeout(function()
+			{
+				let width = (ul.width() + $("body > #menu + h1 > img").width()/2 + ul.offset().left ) * 2;
+				$("head").append('<style id="menuWidth">@media screen and (max-width: ' + multiline(function(){/*
+px)
+{
+	body:not(.userViewer) #menu li{ display: block; }
+	body:not(.userViewer) #menu li .nu{ min-width: 15px; }
+	.calendar {margin-top: 0.5em}
+	#searchIcon > svg{margin-right: 0.6em;}
+}
+	</style>*/}));
+			});
+		}
+
+		if (!DB.loggedInUsername)
+		{
+		//monkey
+			let monkey = accountOverview.find("span.nu")[0];
+			if (monkey)
+	//			monkey.innerHTML = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve" style="vertical-align: middle;"><circle style="fill:#5d433f;" cx="66.06" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="66.06" cy="222.97" r="41.29"/><circle style="fill:#5d433f;" cx="445.94" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="445.94" cy="222.97" r="41.29"/><path style="fill:#543e3b;" d="M442.589,262.049c-8.366-14.436-13.169-30.655-13.169-47.34v-0.001c0-72.373-44.364-134.33-107.355-160.318V24.774l-41.29,16.516l-8.258-33.032c-21.781,7.261-40.361,22.498-54.356,37.298c-77.557,17.283-135.58,86.39-135.58,169.154c0,16.685-4.803,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,93.496,92.431,169.29,206.452,169.29s206.452-75.794,206.452-169.29C462.452,308.532,455.308,283.997,442.589,262.049z"/><path style="fill:#543e3b;" d="M140.387,364.043c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-84.035,43.969-155.956,106.493-186.502l-7.396-29.584c-21.781,7.261-40.361,22.498-54.357,37.298C140.604,62.839,82.581,131.946,82.581,214.71c0,16.685-4.802,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,75.465,60.232,139.37,143.415,161.223C160.282,460.734,140.387,414.619,140.387,364.043z"/><path style="fill:#f7b189;" d="M256,470.71c68.412,0,123.871-44.367,123.871-99.097c0-11.354-2.414-22.245-6.835-32.386c-6.41-14.707-4.228-31.587,6.07-43.889c13.134-15.691,19.908-36.877,16.333-59.635c-4.91-31.259-30.182-56.486-61.448-61.353c-23.892-3.719-46.037,3.968-61.903,18.439c-4.51,4.113-10.3,6.17-16.087,6.17c-5.79,0-11.581-2.056-16.091-6.17c-15.866-14.471-38.011-22.158-61.903-18.439c-31.266,4.866-56.537,30.094-61.448,61.353c-3.575,22.757,3.199,43.943,16.333,59.635c10.298,12.303,12.48,29.182,6.07,43.889c-4.42,10.142-6.835,21.033-6.835,32.386C132.129,426.342,187.588,470.71,256,470.71z"/><path style="fill:#f7b189;" d="M132.129,371.612c0,18.522,6.468,35.795,17.524,50.625c-5.938-18.411-9.266-37.916-9.266-58.195c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-17.307,1.96-34.056,5.468-50.08c-0.295,0.042-0.583,0.04-0.879,0.086c-31.266,4.866-56.536,30.094-61.448,61.352c-3.575,22.758,3.2,43.944,16.333,59.635c10.298,12.302,12.481,29.181,6.071,43.889C134.543,349.368,132.129,360.259,132.129,371.612z"/><g><path style="fill:#5D5360;" d="M239.476,330.323c-1.242,0-2.5-0.278-3.685-0.871l-16.516-8.258c-4.081-2.04-5.734-7-3.694-11.081c2.048-4.081,7-5.734,11.081-3.694l16.516,8.258c4.081,2.04,5.734,7,3.694,11.081C245.419,328.653,242.508,330.323,239.476,330.323z"/><path style="fill:#5D5360;" d="M272.524,330.323c-3.032,0-5.944-1.669-7.395-4.565c-2.04-4.081-0.387-9.04,3.694-11.081l16.516-8.258c4.073-2.04,9.032-0.387,11.081,3.694c2.04,4.081,0.387,9.04-3.694,11.081l-16.516,8.258C275.024,330.044,273.766,330.323,272.524,330.323z"/></g><path style="fill:#4B3F4E;" d="M182.319,363.355c-5.001,0-8.941,4.431-8.248,9.384c5.126,36.617,39.853,64.938,81.929,64.938c42.077,0,76.803-28.321,81.929-64.938c0.693-4.953-3.247-9.384-8.248-9.384H182.319z"/><path style="fill:#E6646E;" d="M208.417,424.038c13.457,8.563,29.849,13.639,47.583,13.639s34.126-5.076,47.583-13.639c-5.966-20.666-25.063-35.909-47.583-35.909S214.383,403.371,208.417,424.038z"/><path style="fill:#4B3F4E;" d="M181.677,272.516L181.677,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C206.452,261.424,195.36,272.516,181.677,272.516z"/><path style="fill:#5D5360;" d="M181.677,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C206.452,225.801,195.36,214.71,181.677,214.71z"/><circle style="fill:#FFFFFF;" cx="181.68" cy="231.23" r="8.258"/><path style="fill:#4B3F4E;" d="M330.323,272.516L330.323,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C355.097,261.424,344.005,272.516,330.323,272.516z"/><path style="fill:#5D5360;" d="M330.323,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C355.097,225.801,344.005,214.71,330.323,214.71z"/><circle style="fill:#FFFFFF;" cx="330.32" cy="231.23" r="8.258"/><path style="fill:#FF8087;" d="M256,437.677c2.792,0,5.538-0.169,8.258-0.415v-16.101c0-4.56-3.694-8.258-8.258-8.258s-8.258,3.698-8.258,8.258v16.101C250.462,437.508,253.208,437.677,256,437.677z"/></svg>';
+				monkey.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="cookieIcon" viewBox="0 0 18 18"><rect class="cookieIconHoles" width="10.27" height="14.58" x="3.04" y="2.49" rx="3.33" ry="3.33" transform="rotate(-41.95 8.18 9.78)"/><path d="M9 0a9 9 0 1 0 9 9 8.44 8.44 0 0 0-.13-1.5A1.05 1.05 0 0 0 17 7h-2V6a.98.98 0 0 0-1-1h-2V4a.98.98 0 0 0-1-1h-1V1a.98.98 0 0 0-1-1M6.5 3A1.5 1.5 0 1 1 5 4.5 1.5 1.5 0 0 1 6.5 3m-3 4A1.5 1.5 0 1 1 2 8.5 1.5 1.5 0 0 1 3.5 7m5 1A1.5 1.5 0 1 1 7 9.5 1.5 1.5 0 0 1 8.5 8m5 2a1.5 1.5 0 0 1 0 3 1.5 1.5 0 0 1-1.5-1.5 1.5 1.5 0 0 1 1.5-1.5M8 13a1.5 1.5 0 1 1-1.5 1.5A1.5 1.5 0 0 1 8 13z"/></svg></svg>(Guest)';
+		}
 		let list = ls("info") || {},
 				userCookie = readCookieRaw("adsc_SESSION"),
 				isUser = userCookie && userCookie.indexOf("username=") > 0,
@@ -8886,7 +9002,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 
 		if (DB.loggedInUsername)
 		{
-			let span = $("#account-overview").find("span.nu")[0];
+			let span = accountOverview.find("span.nu")[0];
 			if (span)
 				span.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12,4C15.64,4 18.67,6.59 19.35,10.04C21.95,10.22 24,12.36 24,15A5,5 0 0,1 19,20H6A6,6 0 0,1 0,14C0,10.91 2.34,8.36 5.35,8.04C6.6,5.64 9.11,4 12,4M7.5,9.69C6.06,11.5 6.2,14.06 7.82,15.68C8.66,16.5 9.81,17 11,17V18.86L13.83,16.04L11,13.21V15C10.34,15 9.7,14.74 9.23,14.27C8.39,13.43 8.26,12.11 8.92,11.12L7.5,9.69M9.17,8.97L10.62,10.42L12,11.79V10C12.66,10 13.3,10.26 13.77,10.73C14.61,11.57 14.74,12.89 14.08,13.88L15.5,15.31C16.94,13.5 16.8,10.94 15.18,9.32C14.34,8.5 13.19,8 12,8V6.14L9.17,8.97Z"></path></svg>' + span.innerHTML;
 		}
@@ -8896,12 +9012,13 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		{
 		}).trigger("change");
 */
-		if ($( "#searchBecauseNoOneChecks" ).length)
+		let searchBecauseNoOneChecks = $( "#searchBecauseNoOneChecks" );
+		if (searchBecauseNoOneChecks.length)
 		{
 			let lastQ = "",
 					searchTimer = null,
 					events = ["change", "search", "keyup", "input"],
-					origFunc = jQuery._data($( "#searchBecauseNoOneChecks" )[0]).events.change[0].handler,
+					origFunc = jQuery._data(searchBecauseNoOneChecks[0]).events.change[0].handler,
 					string = origFunc.toString(),
 					line = "$('html, body').animate({ scrollTop: 0 }, 500);",
 					index = string.indexOf(line),
@@ -9046,9 +9163,9 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			}
 	//			for (let i = 0; i < events.length; i++)
 	//				jQuery._data($( "#searchBecauseNoOneChecks" )[0]).events[events[i]][0].handler = newFunc;
-			$( "#searchBecauseNoOneChecks" ).off("keyup change search input");
+			searchBecauseNoOneChecks.off("keyup change search input");
 			$( "#searchBecauseNoOneChecks" ).on("keyup change search input", newFunc);
-		}
+		}//if (searchBecauseNoOneChecks.length)
 //log(jQuery._data($( "#searchBecauseNoOneChecks" )[0]).events.input[0].handler.toString());
 
 		let Backup = function Backup(id, val)
@@ -9204,7 +9321,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 
 				return false;
 			}
-		});
+		});//backup
 //log(jQuery._data($( "#searchBecauseNoOneChecks" )[0]));
 
 
@@ -10271,6 +10388,15 @@ if (isFrame)
 		let dis = 1000,
 				wasBusy = false;
 
+		function escapeHtml(txt)
+		{
+				return txt
+							.replace(/&/g, "&amp;")
+							.replace(/</g, "&lt;")
+							.replace(/>/g, "&gt;")
+							.replace(/"/g, "&quot;")
+							.replace(/'/g, "&#039;");
+		}
 		(function loop()
 		{
 			if (typeof(trollList) == "undefined")
@@ -10301,6 +10427,9 @@ if (isFrame)
 			if (!trollList || typeof(trollList) != "object")
 				trollList = ["Tubasing"];
 
+
+
+
 			let list = document.querySelectorAll("ul#post-list li.post:not(.init)");
 			if (list.length)
 			{
@@ -10315,12 +10444,40 @@ if (isFrame)
 					initPosts(names, li);
 				}//for
 			}
-			let textarea = document.querySelectorAll("div.textarea");
+			let textarea = document.querySelectorAll("div.textarea,textarea.textarea"),
+					valSrc = '<a href="https://greasyfork.org/en/scripts/28787-airdates-tv-enhancer" target="_blank">Airdates.tv enhancer</a> <a href="https://greasyfork.org/en/help/installing-user-scripts" target="_blank"><i>userscript</i></a>',
+					valEscaped = escapeHtml(valSrc),
+					val = valSrc;
 			for(let i = 0; i < textarea.length; i++)
 			{
-				if (textarea[i].innerHTML.match(/\bADEU\b/))
-					textarea[i].innerHTML = textarea[i].innerHTML.replace(/\bADEU\b/, '&lt;a href="https://greasyfork.org/en/scripts/28787-airdates-tv-enhancer" target="_blank"&gt;Airdates.tv enhancer&lt;/a&gt; &lt;a href="https://greasyfork.org/en/help/installing-user-scripts" target="_blank"&gt;&lt;i&gt;userscript&lt;/i&gt;&lt;/a&gt;')
+				let key = "value";
+				if (textarea[i].tagName == "DIV")
+				{
+					key = "innerHTML";
+					val = valEscaped;
+				}
+				if (textarea[i][key].match(/\bADEU\b/))
+					textarea[i][key]= textarea[i][key].replace(/\bADEU\b/, val)
 			}
+			let buttons = document.querySelectorAll('div[data-action="text-editor-buttons"]');
+			for(let i = 0; i < buttons.length; i++)
+			{
+				let div = buttons[i];
+				if (div._ades)
+					continue;
+
+				div._ades = true;
+				let clone = div.childNodes[div.childNodes.length-1].cloneNode(true);
+				div.appendChild(clone);
+				clone.removeAttribute("data-tag");
+				clone.removeAttribute("data-action");
+				clone.addEventListener("click", function(e)
+				{
+log(e);
+				}, false);
+				clone.childNodes[0].src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=";
+			}
+
 			setTimeout(loop, 500);
 		})()
 		reloadLoop.i = 1000;
