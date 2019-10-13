@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.60.3
+// @version     1.60.4
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,6 +17,9 @@
 
 
 var changesLogText = multiline(function(){/*
+1.60.4 (2019-10-13)
+	+ tooltip explaining how user's colors saved
+	! links favicons used insecured connection, breaking secure connection
 1.60.3 (2019-07-14)
 	+ main menu icon instead of "Account" link
 	! Sunday column would wrap under Saturday in small windows
@@ -520,10 +523,9 @@ Object.defineProperty(window, 'browser', { get: function()
 	}
 	return browser;
 }});
-
 window.addEventListener("message", receiveMessage, false);
 
-let func = function(event)
+let mainFunc = function(event)
 {
 	let browser = window.browser;
 	if (browser)
@@ -1870,7 +1872,6 @@ END DARK THEME
 		},//themes
 
 	}//Settings
-
 	function fileLoad(callback, ext)
 	{
 		let f = document.createElement("input");
@@ -2537,7 +2538,7 @@ END DARK THEME
 						img = a.find("img")[0],
 						children = engRes.children(),
 						domain = getHost(eng[0].href) || null;
-				img.setAttribute("src", eng[0].icon ? eng[0].icon : "http://www.google.com/s2/favicons?domain=" + domain);
+				img.setAttribute("src", eng[0].icon ? eng[0].icon : "https://www.google.com/s2/favicons?domain=" + domain);
 
 				engRes.html("");
 				if (domain || a.text())
@@ -6735,7 +6736,7 @@ log("hide");
 						a.attr("target","");
 						domain = "airdates.tv";
 					}
-					img.attr("src", engine.icon ? engine.icon : "http://www.google.com/s2/favicons?domain=" + (domain || null));
+					img.attr("src", engine.icon ? engine.icon : "https://www.google.com/s2/favicons?domain=" + (domain || null));
 
 					img.toggleClass(id, true);
 					a.toggleClass(id, true);
@@ -8938,8 +8939,12 @@ px)
 		//monkey
 			let monkey = accountOverview.find("span.nu")[0];
 			if (monkey)
+			{
+				monkey.title = "Colors saved locally in browser's cookies";
+//cookies svg
 	//			monkey.innerHTML = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve" style="vertical-align: middle;"><circle style="fill:#5d433f;" cx="66.06" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="66.06" cy="222.97" r="41.29"/><circle style="fill:#5d433f;" cx="445.94" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="445.94" cy="222.97" r="41.29"/><path style="fill:#543e3b;" d="M442.589,262.049c-8.366-14.436-13.169-30.655-13.169-47.34v-0.001c0-72.373-44.364-134.33-107.355-160.318V24.774l-41.29,16.516l-8.258-33.032c-21.781,7.261-40.361,22.498-54.356,37.298c-77.557,17.283-135.58,86.39-135.58,169.154c0,16.685-4.803,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,93.496,92.431,169.29,206.452,169.29s206.452-75.794,206.452-169.29C462.452,308.532,455.308,283.997,442.589,262.049z"/><path style="fill:#543e3b;" d="M140.387,364.043c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-84.035,43.969-155.956,106.493-186.502l-7.396-29.584c-21.781,7.261-40.361,22.498-54.357,37.298C140.604,62.839,82.581,131.946,82.581,214.71c0,16.685-4.802,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,75.465,60.232,139.37,143.415,161.223C160.282,460.734,140.387,414.619,140.387,364.043z"/><path style="fill:#f7b189;" d="M256,470.71c68.412,0,123.871-44.367,123.871-99.097c0-11.354-2.414-22.245-6.835-32.386c-6.41-14.707-4.228-31.587,6.07-43.889c13.134-15.691,19.908-36.877,16.333-59.635c-4.91-31.259-30.182-56.486-61.448-61.353c-23.892-3.719-46.037,3.968-61.903,18.439c-4.51,4.113-10.3,6.17-16.087,6.17c-5.79,0-11.581-2.056-16.091-6.17c-15.866-14.471-38.011-22.158-61.903-18.439c-31.266,4.866-56.537,30.094-61.448,61.353c-3.575,22.757,3.199,43.943,16.333,59.635c10.298,12.303,12.48,29.182,6.07,43.889c-4.42,10.142-6.835,21.033-6.835,32.386C132.129,426.342,187.588,470.71,256,470.71z"/><path style="fill:#f7b189;" d="M132.129,371.612c0,18.522,6.468,35.795,17.524,50.625c-5.938-18.411-9.266-37.916-9.266-58.195c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-17.307,1.96-34.056,5.468-50.08c-0.295,0.042-0.583,0.04-0.879,0.086c-31.266,4.866-56.536,30.094-61.448,61.352c-3.575,22.758,3.2,43.944,16.333,59.635c10.298,12.302,12.481,29.181,6.071,43.889C134.543,349.368,132.129,360.259,132.129,371.612z"/><g><path style="fill:#5D5360;" d="M239.476,330.323c-1.242,0-2.5-0.278-3.685-0.871l-16.516-8.258c-4.081-2.04-5.734-7-3.694-11.081c2.048-4.081,7-5.734,11.081-3.694l16.516,8.258c4.081,2.04,5.734,7,3.694,11.081C245.419,328.653,242.508,330.323,239.476,330.323z"/><path style="fill:#5D5360;" d="M272.524,330.323c-3.032,0-5.944-1.669-7.395-4.565c-2.04-4.081-0.387-9.04,3.694-11.081l16.516-8.258c4.073-2.04,9.032-0.387,11.081,3.694c2.04,4.081,0.387,9.04-3.694,11.081l-16.516,8.258C275.024,330.044,273.766,330.323,272.524,330.323z"/></g><path style="fill:#4B3F4E;" d="M182.319,363.355c-5.001,0-8.941,4.431-8.248,9.384c5.126,36.617,39.853,64.938,81.929,64.938c42.077,0,76.803-28.321,81.929-64.938c0.693-4.953-3.247-9.384-8.248-9.384H182.319z"/><path style="fill:#E6646E;" d="M208.417,424.038c13.457,8.563,29.849,13.639,47.583,13.639s34.126-5.076,47.583-13.639c-5.966-20.666-25.063-35.909-47.583-35.909S214.383,403.371,208.417,424.038z"/><path style="fill:#4B3F4E;" d="M181.677,272.516L181.677,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C206.452,261.424,195.36,272.516,181.677,272.516z"/><path style="fill:#5D5360;" d="M181.677,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C206.452,225.801,195.36,214.71,181.677,214.71z"/><circle style="fill:#FFFFFF;" cx="181.68" cy="231.23" r="8.258"/><path style="fill:#4B3F4E;" d="M330.323,272.516L330.323,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C355.097,261.424,344.005,272.516,330.323,272.516z"/><path style="fill:#5D5360;" d="M330.323,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C355.097,225.801,344.005,214.71,330.323,214.71z"/><circle style="fill:#FFFFFF;" cx="330.32" cy="231.23" r="8.258"/><path style="fill:#FF8087;" d="M256,437.677c2.792,0,5.538-0.169,8.258-0.415v-16.101c0-4.56-3.694-8.258-8.258-8.258s-8.258,3.698-8.258,8.258v16.101C250.462,437.508,253.208,437.677,256,437.677z"/></svg>';
 				monkey.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="cookieIcon" viewBox="0 0 18 18"><rect class="cookieIconHoles" width="10.27" height="14.58" x="3.04" y="2.49" rx="3.33" ry="3.33" transform="rotate(-41.95 8.18 9.78)"/><path d="M9 0a9 9 0 1 0 9 9 8.44 8.44 0 0 0-.13-1.5A1.05 1.05 0 0 0 17 7h-2V6a.98.98 0 0 0-1-1h-2V4a.98.98 0 0 0-1-1h-1V1a.98.98 0 0 0-1-1M6.5 3A1.5 1.5 0 1 1 5 4.5 1.5 1.5 0 0 1 6.5 3m-3 4A1.5 1.5 0 1 1 2 8.5 1.5 1.5 0 0 1 3.5 7m5 1A1.5 1.5 0 1 1 7 9.5 1.5 1.5 0 0 1 8.5 8m5 2a1.5 1.5 0 0 1 0 3 1.5 1.5 0 0 1-1.5-1.5 1.5 1.5 0 0 1 1.5-1.5M8 13a1.5 1.5 0 1 1-1.5 1.5A1.5 1.5 0 0 1 8 13z"/></svg></svg>(Guest)';
+			}
 		}
 		let list = ls("info") || {},
 				userCookie = readCookieRaw("adsc_SESSION"),
@@ -9004,7 +9009,11 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		{
 			let span = accountOverview.find("span.nu")[0];
 			if (span)
+			{
+				span.title = "Colors saved remotely on server";
+//cloud svg
 				span.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12,4C15.64,4 18.67,6.59 19.35,10.04C21.95,10.22 24,12.36 24,15A5,5 0 0,1 19,20H6A6,6 0 0,1 0,14C0,10.91 2.34,8.36 5.35,8.04C6.6,5.64 9.11,4 12,4M7.5,9.69C6.06,11.5 6.2,14.06 7.82,15.68C8.66,16.5 9.81,17 11,17V18.86L13.83,16.04L11,13.21V15C10.34,15 9.7,14.74 9.23,14.27C8.39,13.43 8.26,12.11 8.92,11.12L7.5,9.69M9.17,8.97L10.62,10.42L12,11.79V10C12.66,10 13.3,10.26 13.77,10.73C14.61,11.57 14.74,12.89 14.08,13.88L15.5,15.31C16.94,13.5 16.8,10.94 15.18,9.32C14.34,8.5 13.19,8 12,8V6.14L9.17,8.97Z"></path></svg>' + span.innerHTML;
+			}
 		}
 //fix paste via right click: adding input event
 /*
@@ -10066,7 +10075,7 @@ function trollListCallback(v)
 //if (isFrame && window.location.href.indexOf("disqus.com") != -1)
 if (isFrame)
 {
-	func = function(){};
+	mainFunc = function(){};
 
 //disqus troll filter
 	let trollHide = false,
@@ -10397,6 +10406,19 @@ if (isFrame)
 							.replace(/"/g, "&quot;")
 							.replace(/'/g, "&#039;");
 		}
+		function findParent(node, opt)
+		{
+			if (!node)
+				return false;
+
+			for(let i in opt)
+			{
+				if (node.getAttribute(i) != opt[i])
+					return findParent(node.parentNode, opt);
+			}
+			return node;
+		}
+
 		(function loop()
 		{
 			if (typeof(trollList) == "undefined")
@@ -10445,9 +10467,10 @@ if (isFrame)
 				}//for
 			}
 			let textarea = document.querySelectorAll("div.textarea,textarea.textarea"),
-					valSrc = '<a href="https://greasyfork.org/en/scripts/28787-airdates-tv-enhancer" target="_blank">Airdates.tv enhancer</a> <a href="https://greasyfork.org/en/help/installing-user-scripts" target="_blank"><i>userscript</i></a>',
+					valSrc = '<a href="https://greasyfork.org/scripts/28787-airdates-tv-enhancer" target="_blank">Airdates.tv enhancer</a> <a href="https://greasyfork.org/help/installing-user-scripts" target="_blank"><i>userscript</i></a>',
 					valEscaped = escapeHtml(valSrc),
 					val = valSrc;
+
 			for(let i = 0; i < textarea.length; i++)
 			{
 				let key = "value";
@@ -10459,6 +10482,10 @@ if (isFrame)
 				if (textarea[i][key].match(/\bADEU\b/))
 					textarea[i][key]= textarea[i][key].replace(/\bADEU\b/, val)
 			}
+
+//disqus button
+
+/*
 			let buttons = document.querySelectorAll('div[data-action="text-editor-buttons"]');
 			for(let i = 0; i < buttons.length; i++)
 			{
@@ -10468,18 +10495,30 @@ if (isFrame)
 
 				div._ades = true;
 				let clone = div.childNodes[div.childNodes.length-1].cloneNode(true);
-				div.appendChild(clone);
 				clone.removeAttribute("data-tag");
 				clone.removeAttribute("data-action");
+//				clone.setAttribute("data-action", "test");
+//				clone.setAttribute("data-url", "blah");
+				let parent = findParent(div, {class: "textarea-wrapper", "data-role": "textarea"}),
+						textarea = null;
+				if (parent)
+					textarea = parent.querySelectorAll("div.textarea,textarea.textarea")[0] || null;
+
 				clone.addEventListener("click", function(e)
 				{
 log(e);
+log(textarea);
+//log(window.getSelection().getRangeAt(0));
+log(getCaretCharacterOffsetWithin(textarea));
+log(getCaretPosition());
 				}, false);
 				clone.childNodes[0].src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=";
+				div.appendChild(clone);
 			}
 
+*/
 			setTimeout(loop, 500);
-		})()
+		})();
 		reloadLoop.i = 1000;
 		reloadLoop();
 
@@ -10872,6 +10911,6 @@ else
 }
 
 if (document.readyState != "loading")
-	func();
+	mainFunc();
 else
-	document.addEventListener("DOMContentLoaded", func ,true);
+	document.addEventListener("DOMContentLoaded", mainFunc ,true);
