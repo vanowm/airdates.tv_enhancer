@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.60.4
+// @version     1.61
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -17,9 +17,11 @@
 
 
 var changesLogText = multiline(function(){/*
+1.61 (2019-10-13)
+	+ added hashtag command #backupsettings
 1.60.4 (2019-10-13)
 	+ tooltip explaining how user's colors saved
-	! links favicons used insecured connection, breaking secure connection
+	! links favicons used insecured connection
 1.60.3 (2019-07-14)
 	+ main menu icon instead of "Account" link
 	! Sunday column would wrap under Saturday in small windows
@@ -330,11 +332,24 @@ let log = console.log.bind(console),
 {
 	let head = document.getElementsByTagName("head");
 	if (!head.length)
-		return setTimeout(loop);
+		return setTimeout(loop, 0);
 
 	let style = document.createElement("style");
 	head[0].appendChild(style);
 	style.innerHTML = "svg{max-width:1.2em;max-height:1.2em;}";
+if (!isFrame && window.location.href.match(/^http:/))
+{
+	let s = document.createElement("script");
+	s.src = "/public/javascripts/db.js";
+	head[0].appendChild(s);
+	s = document.createElement("script");
+	s.src = "/public/javascripts/main.js";
+	head[0].appendChild(s);
+	s = document.createElement("script");
+	s.src = "/public/javascripts/jqColorPicker.min.js";
+	head[0].appendChild(s);
+	window.engines = [];
+}
 })();
 
 if (!isFrame)
@@ -384,7 +399,7 @@ function ls(id, data, callback)
 		}
 		catch(e)
 		{
-			window.top.postMessage({id: "ade", func: "ls", args: [id], return: callback}, "http://www.airdates.tv");
+			window.top.postMessage({id: "ade", func: "ls", args: [id], return: callback}, "https://www.airdates.tv");
 			log(e);
 			return r;
 		}
@@ -401,7 +416,7 @@ function ls(id, data, callback)
 		}
 		catch(e)
 		{
-			window.top.postMessage({id: "ade", func: "ls", args: [id, data], return: callback}, "http://www.airdates.tv");
+			window.top.postMessage({id: "ade", func: "ls", args: [id, data], return: callback}, "https://www.airdates.tv");
 			log(e);
 			return r;
 		}
@@ -451,7 +466,7 @@ this._scrollTo = function(y)
 
 function receiveMessage(event)
 {
-	if (["https://disqus.com", "http://www.airdates.tv"].indexOf(event.origin) == -1 || typeof(event.data) != "object" || event.data.id != "ade")
+	if (["https://disqus.com", "https://www.airdates.tv"].indexOf(event.origin) == -1 || typeof(event.data) != "object" || event.data.id != "ade")
 	{
 		return;
 	}
@@ -527,6 +542,7 @@ window.addEventListener("message", receiveMessage, false);
 
 let mainFunc = function(event)
 {
+log("mainFunc");
 	let browser = window.browser;
 	if (browser)
 		document.body.classList.toggle(browser, true);
@@ -555,7 +571,7 @@ let mainFunc = function(event)
 			enginesDefault = [],
 			_engines = [],
 			_hidden = ls("hidden") || [],
-			loo = 1000,
+			loopWait = 1000,
 			_enginesList = [];
 
 
@@ -1007,60 +1023,12 @@ let mainFunc = function(event)
 			a.href = "#";
 			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12,3A9,9 0 0,0 3,12H0L4,16L8,12H5A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19C10.5,19 9.09,18.5 7.94,17.7L6.5,19.14C8.04,20.3 9.94,21 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M14,12A2,2 0 0,0 12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12Z" /></svg>';
 			a.textContent = "Backup settings";
+			a.id = "settingsBackup";
 			span.title = "Backup all settings, including links manager data, watched and hidden shows lists, middle click selection, last custom colors and custom shows.";
-			let backup = function()
-			{
-				let cookies = {},
-						str = "",
-						obj = {
-							version: adeVersion,
-							settings: Settings.prefs
-						},
-						add = function(name, o)
-						{
-							for(let i in o)
-							{
-								obj[name] = o;
-								break;
-							}
-						};
-
-				for(let i = 0; i < cs.list.length; i++)
-				{
-					let v = cs(cs.list[i]);
-					if (v !== null)
-					{
-						cookies[cs.list[i]] = v;
-					}
-				}
-				add("cookies", cookies);
-				add("hidden", _hidden);
-				add("watched", watched._list);
-				add("customLinks", customLinks._list);
-				add("enginesHide", enginesHide);
-				add("enginesSort", enginesSort._list);
-				add("info", DB.info);
-				add("epNumFix", episodeNumberFix.list);
-				add("themes", Settings.themes.getCustomThemes());
-				add("customShows", customShows._list);
-				str = JSON.stringify(obj);
-
-				return str;
-			}
 			a.addEventListener("click", function(e)
 			{
 				e.preventDefault();
-
-				let str = backup();
-
-				if (str)
-						_prompt({
-							callback: function(){},
-							text: adeName + " Settings \nYou can save it in a normal textfile and restore it to another computer/browser.",
-							value: str
-						});
-				else
-						alert("Nothing to backup");
+				Settings.backup();
 				return false;
 			}, false);
 
@@ -1069,6 +1037,7 @@ let mainFunc = function(event)
 			span = span.cloneNode(true);
 			i = span.firstChild;
 			a = i.nextSibling;
+			a.id = "settingsRestore";
 			span.title = "Note, your current watched and hidden shows list will stay intact, new shows will be added to it.\nCustom links will only overwrite existing with matched ID.\nAll other settings will be overwritten";
 			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3M12,8V13L16.28,15.54L17,14.33L13.5,12.25V8H12Z" /></svg>';
 			a.textContent = "Restore settings";
@@ -1356,6 +1325,60 @@ let mainFunc = function(event)
 				});
 			}
 		},//Settings.create()
+
+		_backup: function()
+		{
+			let cookies = {},
+					str = "",
+					obj = {
+						version: adeVersion,
+						settings: Settings.prefs
+					},
+					add = function(name, o)
+					{
+						for(let i in o)
+						{
+							obj[name] = o;
+							break;
+						}
+					};
+
+			for(let i = 0; i < cs.list.length; i++)
+			{
+				let v = cs(cs.list[i]);
+				if (v !== null)
+				{
+					cookies[cs.list[i]] = v;
+				}
+			}
+			add("cookies", cookies);
+			add("hidden", _hidden);
+			add("watched", watched._list);
+			add("customLinks", customLinks._list);
+			add("enginesHide", enginesHide);
+			add("enginesSort", enginesSort._list);
+			add("info", DB.info);
+			add("epNumFix", episodeNumberFix.list);
+			add("themes", Settings.themes.getCustomThemes());
+			add("customShows", customShows._list);
+			str = JSON.stringify(obj);
+
+			return str;
+		},
+
+		backup: function()
+		{
+				let str = this._backup();
+
+				if (str)
+						_prompt({
+							callback: function(){},
+							text: adeName + " Settings \nYou can save it in a normal textfile and restore it to another computer/browser.",
+							value: str
+						});
+				else
+						alert("Nothing to backup");
+		},
 
 		callback: function(e, id, check)
 		{
@@ -3385,12 +3408,15 @@ END DARK THEME
 
 	(function loop()
 	{
-		if ((typeof(engines) == "undefined" || !engines.length) && --loo)
+		if ((typeof(engines) == "undefined" || !engines.length) && --loopWait)
 			return setTimeout(loop, 0);
 
-		if (!loo)
+log(loopWait);
+		if (!loopWait)
 			return;
 
+
+log(engines);
 		Settings.init();
 		customLinksAdd();
 	})();
@@ -6150,8 +6176,9 @@ span.checkbox[checked]:before
 
 	var editingSeriesId = -1;
 	var clone = $("#colorPickerHolder").clone();
+	
 	$("#colorPickerHolder").remove();
-	var picker = clone.colorPicker(
+	var picker = clone.length && clone.colorPicker(
 	{
 		animationSpeed: 0,
 		opacity: false,
@@ -10033,6 +10060,11 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			hashSearch = true;
 			Settings.show(true);
 		}
+		else if (hash == "#backupsettings")
+		{
+			remove = true;
+			Settings.backup();
+		}
 		else if (hash == "#linksmanager")
 		{
 			hashSearch = true;
@@ -10242,7 +10274,7 @@ if (isFrame)
 
 		if (readCookie("scroll") && !--reloadLoop.s)
 		{
-			window.top.postMessage({id: "ade", func: "_scrollTo", args: [nav.offsetTop], return: null}, "http://www.airdates.tv");
+			window.top.postMessage({id: "ade", func: "_scrollTo", args: [nav.offsetTop], return: null}, "https://www.airdates.tv");
 			eraseCookie("scroll");
 			reloadLoop.s = 2;
 		}
@@ -10256,7 +10288,7 @@ if (isFrame)
 			.insertAfter( $("#thread-share-menu, #thread-share-bar"))
 			.click(function()
 			{
-//							window.top.postMessage({id: "ade", func: "_reloadDisqus", args: [], return: null}, "http://www.airdates.tv");
+//							window.top.postMessage({id: "ade", func: "_reloadDisqus", args: [], return: null}, "https://www.airdates.tv");
 				createCookie("scroll", "1");
 				window.self.location.reload();
 			});
@@ -10332,7 +10364,7 @@ if (isFrame)
 					a.addEventListener("click", function(e)
 					{
 						e.preventDefault();
-						window.top.postMessage({id: "ade", func: "hashChanged", args: [0, a.hash], return:null}, "http://www.airdates.tv");
+						window.top.postMessage({id: "ade", func: "hashChanged", args: [0, a.hash], return:null}, "https://www.airdates.tv");
 					}, false);
 				}
 			}
@@ -10649,7 +10681,7 @@ log(getCaretPosition());
 										a.addEventListener("click", function(e)
 										{
 											e.preventDefault();
-											window.top.postMessage({id: "ade", func: "hashChanged", args: [0, a.hash], return:null}, "http://www.airdates.tv");
+											window.top.postMessage({id: "ade", func: "hashChanged", args: [0, a.hash], return:null}, "https://www.airdates.tv");
 										}, false);
 									}
 								}
@@ -10889,7 +10921,7 @@ log(loop.notificationCount);
 log(count);
 */
 
-					window.top.postMessage({id: "ade", func: "disqusMessageCount", args: [loop.notificationCount], return: null}, "http://www.airdates.tv");
+					window.top.postMessage({id: "ade", func: "disqusMessageCount", args: [loop.notificationCount], return: null}, "https://www.airdates.tv");
 				}
 			})()
 
@@ -10909,8 +10941,14 @@ log(count);
 else
 {
 }
-
+let mainFuncDelay = function(e)
+{
+	if (!isFrame && window.location.href.match(/^http:/))
+		setTimeout(function(){mainFunc(e);}, 1000);
+	else
+		mainFunc(e);
+}
 if (document.readyState != "loading")
-	mainFunc();
+	mainFuncDelay();
 else
-	document.addEventListener("DOMContentLoaded", mainFunc ,true);
+	document.addEventListener("DOMContentLoaded", mainFuncDelay ,true);
