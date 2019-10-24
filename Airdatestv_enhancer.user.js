@@ -20,6 +20,8 @@ var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
+1.62.2 (2019-10-24)
+	! fixed missing weeks
 1.62.1 (2019-10-24)
 	+ tooltip for "go to the top" button
 	! leave archive bottom link was not scroll to the top
@@ -6236,11 +6238,12 @@ span.checkbox[checked]:before
 	vertical-align: bottom;
 }
 
-body.archiveBottom > div.archive
+body.archiveBottom > div.archiveBottom
 {
 	display: block;
 }
-div.archive
+
+div.archiveBottom
 {
 	clear: both;
 	display: none;
@@ -10225,7 +10228,6 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			o.hash = "#backupsettings";
 		}
 	});
-
 	let div = document.createElement("div");
 	div.id = "go2top";
 	div.setAttribute("title", "Go to top");
@@ -10255,16 +10257,13 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 	let a = $("#tv-text").clone();
 	a.attr("id", "tv-text2").find("a").each(function(i, obj)
 	{
-		if (["archive-prev", "archive-next", "leaveArchive"].indexOf(obj.id) != -1)
+		obj.addEventListener("click", function(e)
 		{
-			obj.addEventListener("click", function(e)
-			{
-				scrollTop(document.getElementById("mainTitle").offsetTop);
-			}, false);
-		}
+			scrollTop(document.getElementById("mainTitle").offsetTop);
+		}, false);
 		obj.id += "2";
 	});
-	$("<div/>").addClass("archive").append(a).insertAfter("div.calendar");
+	$("div.calendar").after($("<div></div>").addClass("archiveBottom").append(a));
 };//mainFunc()
 
 //disqus
