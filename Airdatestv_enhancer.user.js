@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.61.2
+// @version     1.62
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -20,6 +20,11 @@ var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
+1.62 (2019-10-24)
+	+ jump to the top button
+	+ option to show next/prev month buttons under calendar
+	! some color issue in changes log with dark theme
+	! prompt to enter a date to jump to (when clicked on archive's date) was not showing correct currently viewing date
 1.61.2 (2019-10-20)
 	+ information about server upgrade inside changes log and what to do
 1.61.1 (2019-10-13)
@@ -550,7 +555,6 @@ window.addEventListener("message", receiveMessage, false);
 
 let mainFunc = function(event)
 {
-log("mainFunc");
 	let browser = window.browser;
 	if (browser)
 		document.body.classList.toggle(browser, true);
@@ -614,7 +618,7 @@ log("mainFunc");
 			"ff7f7f": {name: ""},
 		},
 */
-		
+
 		prefs: {},
 		prefsDef: {
 			enableWatched: 0,
@@ -643,6 +647,7 @@ log("mainFunc");
 			lastColorsLine: 7, //number of last colors per line
 			cushowsHelp: 0,
 			searchOrder: 0,
+			archiveBottom: 1, //show next/prev month links below calendar
 /*			colorsCustom: {
 				"807fff": {name: ""},
 				"ff7fff": {name: ""},
@@ -857,9 +862,10 @@ log("mainFunc");
 			content.append(createCheckbox("smallLogo", "Small logo", this.prefs.smallLogo ? true : false, this.callback, null, ""));
 			content.append(createCheckbox("searchScroll", "Auto scroll to the top", this.prefs.searchScroll ? true : false, this.callback, ["Scroll to the top on search and page refresh"], ""));
 			content.append(createCheckbox("todayChange", "Track today", this.prefs.todayChange ? true : false, this.callback, ['Automatically change "today" at midnight'], ""));
+			content.append(createCheckbox("archiveBottom", "Show bottom archive links", this.prefs.archiveBottom ? true : false, this.callback, ['Show next/prev month links below calendar'], ""));
 
 			let opt = $(multiline(function(){/*
-<span id="weeksBox">Show number of weeks: 
+<span id="weeksBox">Show number of weeks:
 	<select id="weeks">
 		<option value="">Default</option>
 		<option value="1">1</option>
@@ -1528,14 +1534,14 @@ log("mainFunc");
 						if (e.target.classList.contains("color"))
 						{
 							var $this = $( e.target );
-							assignColor( $this.parents("div.entry").data( "series-id" ), $this.hasClass( "none" )? "" : $this.css( "background-color" ) );  
+							assignColor( $this.parents("div.entry").data( "series-id" ), $this.hasClass( "none" )? "" : $this.css( "background-color" ) );
 						}
 				});
 				$( document ).on( "mouseout", ".colors", function(){
 					clearTimeout(coltimer);
 					let $this = $(this);
-					coltimer = setTimeout(function(){loadColor( $this.parents("div.entry").data( "series-id" ) )}, 100); 
-				}); 
+					coltimer = setTimeout(function(){loadColor( $this.parents("div.entry").data( "series-id" ) )}, 100);
+				});
 
 				$( document ).on( "mousedown", "div.colors .color", function(e)
 				{
@@ -1619,7 +1625,8 @@ svg,
 #settings-popup .content a,
 #manage-cushows-popup-content a,
 #manage-links-popup-content a,
-#changesLogBox
+#changesLogBox,
+#noChangesLog > a
 {
 	color: #D2D2D2 !important;
 	fill: #D2D2D2 !important;
@@ -2123,7 +2130,7 @@ END DARK THEME
 		{
 			if (typeof(a[i]) == "object")
 			{
- 				if (!isEqual(a[i], b[i]))
+				if (!isEqual(a[i], b[i]))
 					return false;
 			}
 			else if (!(i in b) || a[i] != b[i])
@@ -3015,7 +3022,7 @@ END DARK THEME
 				clone.remove();
 				let editBox = $('<span class="editBox"></span>').appendTo(div);
 				$('<span class="edit" title="Edit"><svg viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path></svg></span>').appendTo(editBox).click(function(e)
- 				{
+				{
 					engId.val((getHost(engine.href) == engine.host) ? "" : engine.host);
 					engName.val(engine.name);
 					engUrl.val(engine.href.replace(/http:\/\//i, ""));
@@ -3424,12 +3431,9 @@ END DARK THEME
 		if ((typeof(engines) == "undefined" || !engines.length) && --loopWait)
 			return setTimeout(loop, 0);
 
-log(loopWait);
 		if (!loopWait)
 			return;
 
-
-log(engines);
 		Settings.init();
 		customLinksAdd();
 	})();
@@ -3532,11 +3536,14 @@ log(engines);
 		$("#archive-next").attr("href", "/archive/" + ym2str(ym+1));
 		$("body").toggleClass("archive", !!match&&match.length==3);
 		$("#leaveArchive").text(ym>ymToday?"Leave future":"Leave archive");
-
+		$("#archive-prev2").attr("href", "/archive/" + ym2str(ym-1));
+		$("#archive-next2").attr("href", "/archive/" + ym2str(ym+1));
+		$("#leaveArchive2").text(ym>ymToday?"Leave future":"Leave archive");
 		let whenDone = function(){
 			// insert custom shows
 			// set title
 			$("#archive-current").text((!!match&&match.length==3)?ym2str(ym):"Go waste your time");
+			$("#archive-current2").text((!!match&&match.length==3)?ym2str(ym):"Go waste your time");
 			// highlight today with a happy yellow background
 			$( "div.day[data-date='" + today.getFullYear() + pad( today.getMonth() + 1 ) + pad( today.getDate() ) + "']" ).addClass( "today" ).attr( "id", "today" );
 			markSearchResults();
@@ -3569,11 +3576,11 @@ log(engines);
 			showHideLoad();
 		};
 
-		if(ymCurrent != ym)
+		if(window.ymCurrent != ym)
 		{
 			$(".days").load("/_archive/" + ~~(ym/12) + "-" + ~~((ym%12)+1), function()
 			{
-				ymCurrent = ym;
+				window.ymCurrent = ym;
 				whenDone();
 			});
 		}
@@ -5249,7 +5256,7 @@ body:not(.popup) div.entry[opened]
 	display: flex;
 	white-space: pre-wrap;
 }
-#changesLogContent > div[class^="cl_ver_"].prev:not(:hover)
+#changesLogContent > div[class^="cl_ver_v"].prev:not(:hover)
 {
 	opacity: 0.3;
 }
@@ -5298,7 +5305,7 @@ body:not(.popup) div.entry[opened]
 {
 	background-color: #FFBFBF;
 }
-.cl_comment > span:last-child
+#changesLogContent > div[class^="cl_ver_v"] .cl_comment > span:last-child
 {
 	font-style: italic;
 	opacity: 0.5;
@@ -6193,6 +6200,80 @@ span.checkbox[checked]:before
 	color: red;
 	font-style: normal;
 }
+
+#go2top
+{
+	position: fixed;
+	bottom: 10px;
+	right: 10px;
+	z-index: 1;
+	outline: none;
+	background-color: silver;
+	color: white;
+	cursor: pointer;
+	padding: 0;
+	width: 1.5em;
+	height: 1.5em;
+	text-align: center;
+	vertical-align: middle;
+	display: none;
+	border: 1px solid grey;
+	border-radius: 3px;
+	opacity: 0.8;
+}
+
+#go2top > i
+{
+	border: solid black;
+	border-width: 0 3px 3px 0;
+	display: inline-block;
+	transform: rotate(-135deg);
+	-webkit-transform: rotate(-135deg);
+	padding: 0.3em;
+	vertical-align: bottom;
+}
+
+body.archiveBottom > div.archive
+{
+	display: block;
+}
+div.archive
+{
+	clear: both;
+	display: none;
+}
+
+#archive-current2
+{
+	text-align: center; 
+	display: inline-block;  
+}
+
+#leaveArchive2
+{
+	display: none; 
+}
+
+body.archive #leaveArchive2
+{
+	display: block; 
+}
+
+#archive-next2,#archive-prev2,#archive-current2
+{
+	padding: 5px 10px; 
+	text-decoration: none; 
+}
+
+#archive-current2
+{
+	min-width: 180px; 
+}
+
+div.separator
+{
+	margin-top: 0;
+}
 */});//css
 
 	style.innerHTML = css;
@@ -6205,7 +6286,7 @@ span.checkbox[checked]:before
 
 	var editingSeriesId = -1;
 	var clone = $("#colorPickerHolder").clone();
-	
+
 	$("#colorPickerHolder").remove();
 	var picker = clone.length && clone.colorPicker(
 	{
@@ -6501,7 +6582,7 @@ log(err);
 
 		if (regexp.length)
 		{
-			
+
 			for(let i = 0; i < regexp.length; i++)
 			{
 				MONKEY_REGEXP = MONKEY_REGEXP.replace(regexp[i][0], regexp[i][1]);
@@ -6525,13 +6606,13 @@ log(err);
 
 		if (regexp.length && engine.href.indexOf("MONKEY_N_REGEXP") == -1 && engine.href.indexOf("MONKEY_REGEXP") == -1)
 		{
-			
+
 			for(let i = 0; i < regexp.length; i++)
 			{
 				href = href.replace(regexp[i][0], regexp[i][1]);
 			}
 		}
-		
+
 		return {
 			href: fixLink(href, engine),
 			title: title,
@@ -6590,7 +6671,7 @@ log(err);
 
 					return;
 				}
-				
+
 				obj.load("/s?"+$.param({q:"info:" + id}), function(e, t, r)
 				{
 					if (t == "error")
@@ -6618,7 +6699,7 @@ log(err);
 				for(let i = entries.length-1; i > -1; i--)
 					entries[i].parentNode.insertBefore(entries[i], before);
 
-				return 
+				return
 			}
 			reverseOrder.order = function(entries)
 			{
@@ -6673,7 +6754,7 @@ log("hide");
 				_repl[i] = reg[i][1];
 			}
 		}
-			
+
 		repl = typeof(repl) == "string" ? repl.replace(/\r/g, "\n").replace(/\n+/g, "\n").split("\n") : _repl;
 
 		for(let i = 0; i < lines.length; i++)
@@ -6732,7 +6813,7 @@ log("hide");
 
 				}
 				var e = $( $.parseHTML($( "#detailsTemplate" ).html()) ).appendTo( $entry );
-				
+
 				let _MONKEY = $entry.children("div.title").text(),
 						_MONKEY_N = _MONKEY.replace( /S[0-9]+E[0-9]+$/g, '' ),
 						_WIKI_TITLE = $entry.data("series-source"),
@@ -6776,7 +6857,7 @@ log("hide");
 
 					if (regexp.length && engine.href.indexOf("MONKEY_N_REGEXP") == -1 && engine.href.indexOf("MONKEY_REGEXP") == -1)
 					{
-						
+
 						for(let i = 0; i < regexp.length; i++)
 						{
 							href = href.replace(regexp[i][0], regexp[i][1]);
@@ -6874,7 +6955,7 @@ log("hide");
 			}, false);
 			showHideBox.appendChild(showHideObj);
 			$entry.find(".engines > .tools").last().append(showHideBox);
-			
+
 			let epNumFixBox = document.createElement("div"),
 					epNumFixInputSeason = document.createElement("input"),
 					epNumFixInputEpisode = document.createElement("input"),
@@ -7252,7 +7333,7 @@ log("hide");
 						day.appendChild(a);
 					});
 			}
-	
+
 		}
 	}//customShows()
 	customShows.d2y = function(date)
@@ -7466,18 +7547,18 @@ log("hide");
 						next = date;
 						break;
 					}
-					
+
 				}
 				html += '<li data-series-id="' + id + '">' +
 								'<span class="color picker picker-light"></span> ' +
 								'<span class="description"><b>' + data[0] + '</b><br>' +
 								(last ? "Last aired" : "Next show") +
-								': <a class="archive-link" href="/archive/' + 
+								': <a class="archive-link" href="/archive/' +
 								customShows.d2y(ep.date) + "-" + customShows.d2m(ep.date) + "#" + customShows.d2d(ep.date) +
 								'">' + customShows.d2y(ep.date) + "-" + customShows.d2m(ep.date) + "-" + customShows.d2d(ep.date) + "</a><br>" +
 								'Indexed: <a href="javascript:search(\'info:' + id + '\');">' + customShows.list[id].length + ' episode' + (customShows.list[id].length > 1 ? "s" : "") + '</a><br>' +
 								'</span></li>';
-								
+
 			}
 			if (html)
 			{
@@ -7573,7 +7654,7 @@ log("hide");
 			}
 		}
 	}//customShows.show()
-	
+
 	function scrollIntoView(el, p, offsetTop, offsetBot)
 	{
 		let pRect = p.getBoundingClientRect(),
@@ -7665,19 +7746,19 @@ log("hide");
 				<span><i>S0E0</i> | <i>YYYYMMDD</i> | <i>n</i> | <i>i</i></span>
 			</div>
 			<div class="info">
-				<label><i>S0E0</i></label> 
+				<label><i>S0E0</i></label>
 				<span>= Season + Episode number</span>
 			</div>
 			<div class="info">
-				<label><i>YYYYMMDD</i></label> 
+				<label><i>YYYYMMDD</i></label>
 				<span>= Date the episode starts (can be YYYY-MM-DD)</span>
 			</div>
 			<div class="info">
-				<label><i>n</i></label> 
+				<label><i>n</i></label>
 				<span>= Number of episodes (1+)</span>
 			</div>
 			<div class="info">
-				<label><i>i</i></label> 
+				<label><i>i</i></label>
 				<span>= Interval between episodes (in days) (0+)</span>
 			</div>
 			<div class="info">
@@ -7769,9 +7850,9 @@ log("hide");
 
 			try
 			{
-			  sel = window.getSelection();
-			  if (sel.toString() == '')
-			  {
+				sel = window.getSelection();
+				if (sel.toString() == '')
+				{
 					window.setTimeout(function()
 					{
 						range = document.createRange(); //range object
@@ -7779,7 +7860,7 @@ log("hide");
 						sel.removeAllRanges(); //remove all ranges from selection
 						sel.addRange(range);//add Range to a Selection.
 					}, 1);
-			  }
+				}
 			}
 			catch(e){};
 		}).trigger("click");
@@ -8009,7 +8090,7 @@ log("hide");
 			}
 			customShows.init(customShows._list);
 			customShows.save();
-			
+
 			$('div[data-series-id="' + (id + customShows.id) + '"]').each(function()
 			{
 				delete this.parentNode.list;
@@ -8900,7 +8981,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			}, false);
 			span.appendChild(a);
 			parent.insertBefore(span, h.nextSibling);
-	
+
 			$("#account-popup-content > .header").append($("div.close")[0].cloneNode(true));
 		})
 		.attr("title", "Main menu")
@@ -8925,8 +9006,8 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 	*/
 			arrow.css({'margin-right':200,right: right, 'opacity':0}).show()
 				.animate({marginRight:0,opacity:1},dur).animate({marginRight:200},dur)
-				.animate({marginRight:0},dur).animate({marginRight:200},dur) 
-				.animate({marginRight:0},dur).animate({marginRight:200},dur) 
+				.animate({marginRight:0},dur).animate({marginRight:200},dur)
+				.animate({marginRight:0},dur).animate({marginRight:200},dur)
 				.animate({marginRight:0},dur).animate({marginRight:200,opacity:0},dur).hide(1);
 
 		});
@@ -9010,7 +9091,7 @@ px)
 		DB.infoLoaded = false;
 		DB.infoChecked = ls("infoChecked") || {};
 		// load colors right away.
-		
+
 		DB.getColors().done( function(data){
 			for (var i = 0; i < data.length; i++)
 			{
@@ -9561,7 +9642,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		else if (p)
 			return;
 
-		
+
 		for(let i = 0; i < hide.length; i++)
 			hide[i]();
 
@@ -10142,7 +10223,45 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		}
 	});
 
-};//func()
+	let div = document.createElement("div");
+	div.id = "go2top";
+	div.innerHTML = "<i/>";
+	document.body.appendChild(div);
+	window.addEventListener("scroll", function(e)
+	{
+		if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+			div.style.display = "block";
+		} else {
+			div.style.display = "none";
+		}
+	}, false);
+	let scrollTop = function(y)
+	{
+		$("html, body").animate({scrollTop: y }, 100)
+//		document.body.scrollTop = 0; // For Safari
+//		document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+	}
+	div.addEventListener("click", function(e)
+	{
+		e.preventDefault();
+		e.stopPropagation();
+		scrollTop(0);
+	}, false);
+
+	let a = $("#tv-text").clone();
+	a.attr("id", "tv-text2").find("a").each(function(i, obj)
+	{
+		if (obj.id == "archive-prev" || obj.id == "archive-next")
+		{
+			obj.addEventListener("click", function(e)
+			{
+				scrollTop(document.getElementById("mainTitle").offsetTop);
+			}, false);
+		}
+		obj.id += "2";
+	});
+	$("<div/>").addClass("archive").append(a).insertAfter("div.calendar");
+};//mainFunc()
 
 //disqus
 var trollList;
