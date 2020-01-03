@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.62.2
+// @version     1.63
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -20,6 +20,13 @@ var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
+1.63 (2020-01-03)
+	+ prompt's buttons now highlighted when cursor over
+	+ option to make popups more stand out by bluring background around them
+	+ ability specify day of the week of a custom show
+	! horizontal scrollbar shown in Links Manager
+	! account popup not dimmed when import/export colors prompt opened
+	* when popups are opened, page scroll is disabled
 1.62.2 (2019-10-24)
 	! fixed missing weeks
 1.62.1 (2019-10-24)
@@ -653,6 +660,7 @@ let mainFunc = function(event)
 			cushowsHelp: 0,
 			searchOrder: 0,
 			archiveBottom: 1, //show next/prev month links below calendar
+			popupBlur: 1, //blur background when popups are shown
 /*			colorsCustom: {
 				"807fff": {name: ""},
 				"ff7fff": {name: ""},
@@ -826,7 +834,7 @@ let mainFunc = function(event)
 				return callback ? callback() : true;
 
 			let html = multiline(function(){/*
-<div id="settings-popup">
+<div id="settings-popup" class="popup">
 	<div id="settings-popup-content">
 		<div class="header">
 			<div class="back" title="Back">
@@ -868,6 +876,7 @@ let mainFunc = function(event)
 			content.append(createCheckbox("searchScroll", "Auto scroll to the top", this.prefs.searchScroll ? true : false, this.callback, ["Scroll to the top on search and page refresh"], ""));
 			content.append(createCheckbox("todayChange", "Track today", this.prefs.todayChange ? true : false, this.callback, ['Automatically change "today" at midnight'], ""));
 			content.append(createCheckbox("archiveBottom", "Show bottom archive links", this.prefs.archiveBottom ? true : false, this.callback, ['Show next/prev month links below calendar'], ""));
+			content.append(createCheckbox("popupBlur", "Blur behind popups", this.prefs.popupBlur ? true : false, this.callback, ['Make popups standout more'], ""));
 
 			let opt = $(multiline(function(){/*
 <span id="weeksBox">Show number of weeks:
@@ -1822,6 +1831,11 @@ div.entry
 {
 	color: #FFBFBF;
 }
+
+div.undoBar *
+{
+	color: black;
+}
 /*
 END DARK THEME
 *//*
@@ -2431,7 +2445,7 @@ END DARK THEME
 			return callback ? callback() : true;
 
 		let html = multiline(function(){/*
-	<div id="manage-links-popup">
+	<div id="manage-links-popup" class="popup">
 		<div id="manage-links-popup-content">
 			<div class="header">
 				<div class="back" title="Back">
@@ -3291,7 +3305,7 @@ END DARK THEME
 	function colorsManager()
 	{
 		let html = multiline(function(){/*
-	<div id="colorsmanager">
+	<div id="colorsmanager" class="popup">
 		<div id="colorsmanager-popup-content">
 			<div class="header">
 				<div class="back" title="Back">
@@ -4569,16 +4583,32 @@ div.moreOpt:not([opened]) > div
 	cursor: default;
 }
 
+#account-popup,
 #settings-popup,
 #manage-cushows-popup,
 #manage-links-popup
 {
-	position: absolute;
-	z-index: 1234;
+	position: fixed;
 	top: 50px;
 	left: 4.7%;
+	bottom: 10px;
+	right: 4.7%;
 	width: 1px;
 	display: none;
+}
+
+body.prompt #account-popup
+{
+	z-index: 1;
+}
+
+body.popup .popup
+{
+	z-index: 1234;
+}
+body.prompt > .popup
+{
+	z-index: unset;
 }
 #account-popup-content,
 #settings-popup-content,
@@ -4592,6 +4622,9 @@ div.moreOpt:not([opened]) > div
 	border: 1px dotted black;
 	min-width: 350px;
 	min-height: 10px;
+	max-width: 100%;
+	max-height: 100%;
+	overflow: auto;
 }
 img.icon
 {
@@ -4633,8 +4666,8 @@ div:not(#account-popup-content) > .header
 #settings-popup .content,
 #manage-cushows-popup .content,
 #manage-links-popup .content,
-#cushows-edit,
-#engine-edit
+#engine-form,
+#cushows-edit
 {
 	padding: 3px 10px;
 	overflow-x: hidden;
@@ -5433,113 +5466,6 @@ body:not(.popup) div.entry[opened]
 	left: 91%;
 }
 
-.promptbox
-{
-	display: none;
-}
-.prompt-content
-{
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	z-index: 999999;
-}
-.prompt-form
-{
-	background: #FBFBFB;
-	border: 1px solid silver;
-	padding: 1em;
-	border-radius: 3px;
-	-webkit-box-shadow: 0 4px 4px -2px grey;
-	-moz-box-shadow: 0 4px 4px -2px grey;
-	box-shadow: 0 4px 4px -2px grey;
-	color: black;
-}
-.promptbox > .fade
-{
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	z-index: 999998;
-	background-color: rgba(0,0,0, 0.4);
-}
-.prompt-form > .msg
-{
-	margin-bottom: 1em;
-	white-space: pre-wrap;
-}
-.prompt-form > .control
-{
-	float: right;
-	margin-top: 1em;
-}
-
-.prompt-form > .control > span
-{
-	display: inline-block;
-}
-.prompt-form > .control input[type="button"]
-{
-	height: 2.6em;
-	width: 6.1em;
-	font-size: 0.96em;
-	border-radius: 2px;
-	border-image: none;
-	border: 1px solid rgba(0,0,0,0.3);
-	margin-left: 1em;
-}
-.prompt-form > .control > input.ok
-{
-	background-color: #5A97FF;
-	color: white;
-}
-.prompt-form > .control > input.ok:hover
-{
-	background-color: #629CFF;
-}
-.prompt-form > .control > input.ok:active
-{
-	background-color: #4279D8;
-}
-.prompt-form .input
-{
-	width: 100%;
-	min-width: 5em;
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
-}
-.prompt-form > textarea
-{
-	height: 4em;
-}
-body.prompt
-{
-	overflow: hidden;
-}
-body:not(.prompt) > .promptbox
-{
-	display: none !important;
-}
-body.prompt > .promptbox
-{
-	display: block !important;
-}
-body.prompts > *:not(.promptbox)
-{
-	-webkit-filter: grayscale(100%);
-	filter: grayscale(100%);
-}
-body.prompt.scrollbar
-{
-	position: absolute;
-}
 
 div.undoBar
 {
@@ -6251,38 +6177,178 @@ div.archiveBottom
 
 #archive-current2
 {
-	text-align: center; 
-	display: inline-block;  
+	text-align: center;
+	display: inline-block;
 }
 
 #leaveArchive2
 {
-	display: none; 
+	display: none;
 }
 
 body.archive #leaveArchive2
 {
-	display: block; 
+	display: block;
 }
 
 #archive-next2,#archive-prev2,#archive-current2
 {
-	padding: 5px 10px; 
-	text-decoration: none; 
+	padding: 5px 10px;
+	text-decoration: none;
 }
 
 #archive-current2
 {
-	min-width: 180px; 
+	min-width: 180px;
 }
 
 div.separator
 {
 	margin-top: 0;
 }
+
+.promptbox
+{
+	display: none;
+	z-index: 999999 !important;
+}
+.prompt-content
+{
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: 999999;
+}
+.prompt-form
+{
+	background: #FBFBFB;
+	border: 1px solid silver;
+	padding: 1em;
+	border-radius: 3px;
+	-webkit-box-shadow: 0 4px 4px -2px grey;
+	-moz-box-shadow: 0 4px 4px -2px grey;
+	box-shadow: 0 4px 4px -2px grey;
+	color: black;
+}
+
+.prompt-form > .msg
+{
+	margin-bottom: 1em;
+	white-space: pre-wrap;
+}
+.prompt-form > .control
+{
+	float: right;
+	margin-top: 1em;
+}
+
+.prompt-form > .control > span
+{
+	display: inline-block;
+}
+.prompt-form > .control input[type="button"]
+{
+	height: 2.6em;
+	width: 6.1em;
+	font-size: 0.96em;
+	border-radius: 2px;
+	border-image: none;
+	border: 1px solid rgba(0,0,0,0.3);
+	margin-left: 1em;
+}
+.prompt-form > .control > input[type="button"]:hover
+{
+	background-color: initial;/*hover*//*
+}
+.prompt-form > .control > input[type="button"]:active
+{
+	background-color: initial;/*active*//*
+}
+.prompt-form > .control > input.ok
+{
+	background-color: #5A97FF;
+	color: white;
+}
+.prompt-form > .control > input.ok:hover
+{
+	background-color: #64A5FF;
+}
+.prompt-form > .control > input.ok:active
+{
+	background-color: #2F7DFF;
+}
+.prompt-form .input
+{
+	width: 100%;
+	min-width: 5em;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+.prompt-form > textarea
+{
+	height: 4em;
+}
+body.popupBlur.popup:not(.prompt) > :not(.popup),
+body.popupBlur.prompt > :not(.promptbox)
+{
+	-webkit-filter: blur(10px);
+	-moz-filter: blur(10px);
+	-o-filter: blur(10px);
+	-ms-filter: blur(10px);
+	filter: blur(10px);
+}
+body.popup,
+body.prompt
+{
+	overflow: hidden;
+	margin-right: 1.5em;
+}
+body.popupBlur.popup:after,
+body.popupBlur.prompt:after
+{
+}
+body.popup:after,
+body.prompt:after
+{
+	background-color: black;
+	opacity: 0.7;
+	content: "";
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	z-index: 9;
+}
+
+body:not(.prompt) > .promptbox
+{
+	display: none !important;
+}
+body.prompt > .promptbox
+{
+	display: block !important;
+}
+body.prompts > *:not(.promptbox)
+{
+	-webkit-filter: grayscale(100%);
+	filter: grayscale(100%);
+}
+body.prompt.scrollbar
+{
+	position: absolute;
+}
+
+
 */});//css
 
 	style.innerHTML = css;
+	style.id = "mainCSS";
 	$("head").append(style);
 
 	Settings.themes.init();
@@ -6300,6 +6366,7 @@ div.separator
 		opacity: false,
 		buildCallback: function($elm)
 		{
+			$elm.toggleClass("popup", true);
 			let cp = this;
 			$elm
 				.append('<div class="cp-disp"><input type="button" value="Save"> <input type="button" value="Cancel"><input type="text" spellcheck="false" id="colorpicker-hex"></div>')
@@ -6504,6 +6571,7 @@ log(err);
 		}
 	}).attr("id", "colorPickerHolderNew"); //replace ID so it won't initialize in main.js
 
+log(picker);
 	function colFix(c)
 	{
 		return "#" + String(c).toUpperCase().replace(/[^A-F0-9]/g, "");
@@ -7448,12 +7516,19 @@ log("hide");
 						date = data[n][2],
 						num = data[n][3],
 						days = data[n][4],
+						weekDays = "" + (data[n][5] || 1234567),
 						_date = new Date(0);
 
+				weekDays = weekDays.replace("7", "0");
 				_date.setFullYear(this.d2y(date), this.d2m(date)-1, this.d2d(date));
 				_date.setHours(0);
 				for (let e = 0; e < num; e++)
 				{
+					let i = 7;
+					while(weekDays.indexOf(_date.getDay()) == -1 && i--)
+					{
+						_date = new Date(_date.getTime() + 86400000);
+					}
 					let newDate = "" + _date.getFullYear() + pad(_date.getMonth()+1) + pad(_date.getDate()),
 							newId = id + customShows.id;
 					if (!customShows.list[newId])
@@ -7690,7 +7765,7 @@ log("hide");
 			return callback ? callback() : true;
 
 		let html = multiline(function(){/*
-	<div id="manage-cushows-popup">
+	<div id="manage-cushows-popup" class="popup">
 		<style id="manage-cushows-css"></style>
 		<div id="manage-cushows-popup-content">
 			<div class="header">
@@ -7749,7 +7824,7 @@ log("hide");
 			</div>
 			<div class="info">
 				<label>Format:</label>
-				<span><i>S0E0</i> | <i>YYYYMMDD</i> | <i>n</i> | <i>i</i></span>
+				<span><i>S0E0</i> | <i>YYYYMMDD</i> | <i>n</i> | <i>i</i> | <i>1234567</i></span>
 			</div>
 			<div class="info">
 				<label><i>S0E0</i></label>
@@ -7766,6 +7841,10 @@ log("hide");
 			<div class="info">
 				<label><i>i</i></label>
 				<span>= Interval between episodes (in days) (0+)</span>
+			</div>
+			<div class="info">
+				<label><i>1234567</i></label>
+				<span>= (optional) day of the week, where 1 = Monday and 7 = Sunday</span>
 			</div>
 			<div class="info">
 				<label></label>
@@ -7798,7 +7877,7 @@ log("hide");
 				editId = null,
 				_today = new Date(),
 				cushBox = document.createElement("div"),
-				dataRegex = /^([^0-9]*([0-9]+)[^0-9]+([0-9]+))[^0-9]+((([0-9]{4})[^0-9]+([0-9]{1,2})[^0-9]+([0-9]{1,2}))|(([0-9]{4})[^0-9]*([0-9]{2})[^0-9]*([0-9]{2}))|(([0-9]{4})[^0-9]*([0-9]{1,2})[^0-9]+([0-9]{1,2})))[^0-9]+([0-9]+)[^0-9]+([0-9]+)[^0-9]*$/;
+				dataRegex = /^([^0-9]*([0-9]+)[^0-9]+([0-9]+))[^0-9]+((([0-9]{4})[^0-9]+([0-9]{1,2})[^0-9]+([0-9]{1,2}))|(([0-9]{4})[^0-9]*([0-9]{2})[^0-9]*([0-9]{2}))|(([0-9]{4})[^0-9]*([0-9]{1,2})[^0-9]+([0-9]{1,2})))[^0-9]+([0-9]+)[^0-9]+([0-9]+)[^0-9]*([0-9]+)?[^0-9]*$/;
 
 		cushBox.id = "cushows-list";
 		cushBox.setAttribute("tabindex", 0);
@@ -7846,10 +7925,31 @@ log("hide");
 		{
 			let t = new Date(),
 					sel, range,
-					el = this;
+					el = this,
+					n = rand(1, 7),
+					i = rand(0, 2) ? 7 : 1,
+					remDup = function(a)
+					{
+						let b = {};
+						for(let i = 0; i < a.length; i++)
+						{
+							b[a[i]] = "";
+						}
+						return Object.keys(b);
+					},
+					w = remDup((Array(n+1).join((Math.random().toString(7)+'0000000').slice(2, 18)).slice(0, n)).replace(/[0]/g, 7).split("")).sort(),
+					tooltip = [],
+					days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
+			for(let c = 0; c < w.length; c++)
+			{
+				tooltip[tooltip.length] = days[w[c]-1];
+			}
+			tooltip = tooltip.join("\n");
+			w = w.join("");
 			t = new Date(t.getTime() - (86400000 * rand(-2, 2)));
-			this.innerHTML = "S" + pad(rand(0, 15)) + "E" + pad(rand(0, 22)) + " | " + t.getFullYear() + "-" + pad(t.getMonth() + 1) + "-" + pad(t.getDate()) + " | " + rand(1, 22) + " | " + (rand(0, 1) ? (rand(0, 2) ? 7 : 1) : 0);
+			
+			this.innerHTML = "S" + pad(rand(0, 15)) + "E" + pad(rand(0, 22)) + " | " + t.getFullYear() + "-" + pad(t.getMonth() + 1) + "-" + pad(t.getDate()) + " | " + rand(1, 22) + " | " + i + (w && i == 1 ?  ' | <span title="' + tooltip + '">' + w + "</span>": "");
 
 			if (e.isTrigger)
 				return;
@@ -7886,7 +7986,7 @@ log("hide");
 					{
 						data[i] = data[i].trim();
 						let d = data[i].match(dataRegex);
-						if (data[i].length && (!d || ~~d[17] < 1))
+						if (data[i].length && (!d || ~~d[17] < 1 || (d[19] && (d[19].match(/[^1-7]/) || d[19].length > 7))))
 						{
 							error = true;
 							break;
@@ -8011,6 +8111,9 @@ log("hide");
 				a[2] = ~~a[2];
 				a[3] = ~~r[17];
 				a[4] = ~~r[18];
+				if (r[19])
+					a[5] = ~~r[19];
+
 				if (a[3] < 1)
 					return;
 
@@ -8795,6 +8898,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 		let accountOverview = $("#account-overview"),
 				accountPopup = $("#account-popup");
 
+		accountPopup.toggleClass("popup", true);
 		accountOverview.click(function(e)
 		{
 			if (e.isTrigger)
@@ -8979,7 +9083,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			a.addEventListener("click", function(e)
 			{
 				e.preventDefault();
-				changesLog.show(true);
+				changesLog.show();
 				$("#account-popup").toggle(false);
 				if (window.hashChanged.hashSearch && location.hash == "#changes")
 					removeHash();
@@ -9431,7 +9535,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 				let that = this;
 				if (!this.undoObj[id])
 				{
-					this.undoObj[id] = $('<div class="undoBar"><div><span class="msg"></span> <a class="undoBar">Undo</a><span class="undo close">X</span><div></div>').appendTo("body");
+					this.undoObj[id] = $('<div class="undoBar popup"><div><span class="msg"></span> <a class="undoBar">Undo</a><span class="undo close">X</span><div></div>').appendTo("body");
 					this.undoObj[id].find("a").on("click", function()
 					{
 						let id = that.last.pop();
@@ -9761,7 +9865,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			"": "comment"
 		},
 		html = multiline(function(){/*
-<div id="changesLog">
+<div id="changesLog" class="popup">
 	<div id="changesLogBox">
 		<div id="changesLogHead" class="header">
 			<div class="back" title="Back">
@@ -9867,7 +9971,6 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 	{
 		let html = $(multiline(function(){/*
 <div class="promptbox">
-	<div class="fade"></div>
 	<div class="prompt-content">
 		<form class="prompt-form">
 			<div class="msg"></div>
@@ -9893,8 +9996,38 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 				file = html.find(".file"),
 				that = this,
 				padding = 0,
-				rightOld = $("body")[0].style.right;
+				rightOld = $("body")[0].style.right,
+				rgb2hsl = function(c)
+				{
+					let r = c[0]/255, g = c[1]/255, b = c[2]/255,
+				 			a=Math.max(r,g,b), n=a-Math.min(r,g,b), f=(1-Math.abs(a+a-n-1)),
+				  		h= n && ((a==r) ? (g-b)/n : ((a==g) ? 2+(b-r)/n : 4+(r-g)/n));
+				  return [60*(h<0?h+6:h), f ? n/f : 0, (a+a-n)/2];// h:[0,360], s:[0,1], l:[0,1]
+				},
+				hsl2rgb = function(c)
+				{
+					let h = c[0], s = c[1], l = c[2],
+				  		a=s*Math.min(l,1-l),
+				  		f= function(n)
+				  		{
+				  			let k=(n+h/30)%12;
+				  			return l - a*Math.max(Math.min(k-3,9-k,1),-1);
+				  		};
 
+				  return [Math.round(f(0)*255),Math.round(f(8)*255),Math.round(f(4)*255)];
+				}
+				rgbLum = function(c, lum)
+				{
+					let hsl = rgb2hsl(c);
+					hsl[2] += lum / 240;
+					return hsl2rgb(hsl);
+				}
+				rgb = cancel.css('background-color').match(/([0-9]+)/g),
+				hover = "rgb" + (rgb.length > 3 ? "a" : "") + "(" + rgbLum(rgb, -10).join(",") + (rgb.length > 3 ? "," + rgb[3] : "") + ");",
+				active = "rgb" + (rgb.length > 3 ? "a" : "") + "(" + rgbLum(rgb, -30).join(",") + (rgb.length > 3 ? "," + rgb[3] : "") + ");",
+				mainCSS = document.getElementById("mainCSS");
+
+		mainCSS.innerHTML = mainCSS.innerHTML.replace(/initial;\/\*active\*\//, active).replace(/initial;\/\*hover\*\//, hover);
 		that.callback = function(){};
 //prevent from focus, act like chrome window
 		form.on("mousedown", function(e)
@@ -10177,7 +10310,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		else if (hash == "#changes")
 		{
 			hashSearch = true;
-			changesLog.show();
+			changesLog.show(true);
 		}
 		else if (hash == "#settings" || hash == "#options")
 		{
@@ -10685,7 +10818,30 @@ if (isFrame)
 
 //disqus button
 
+
 /*
+function getCaretPosition() {
+    var x = 0;
+    var y = 0;
+    var sel = window.getSelection();
+    if(sel.rangeCount) {
+        var range = sel.getRangeAt(0).cloneRange();
+        if(range.getClientRects()) {
+        range.collapse(true);
+        var rect = range.getClientRects()[0];
+        if(rect) {
+            y = rect.top;
+            x = rect.left;
+        }
+        }
+    }
+    return {
+        x: x,
+        y: y
+    };
+}
+
+
 			let buttons = document.querySelectorAll('div[data-action="text-editor-buttons"]');
 			for(let i = 0; i < buttons.length; i++)
 			{
@@ -10695,6 +10851,9 @@ if (isFrame)
 
 				div._ades = true;
 				let clone = div.childNodes[div.childNodes.length-1].cloneNode(true);
+clone = document.createElement("div");
+clone.className = "wysiwyg__item";
+clone.innerHTML = '<div class="wysiwyg_blockquote" title="Airdates enhancer" role="img" aria-label="ADEU"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII="></div>';
 				clone.removeAttribute("data-tag");
 				clone.removeAttribute("data-action");
 //				clone.setAttribute("data-action", "test");
@@ -10706,14 +10865,17 @@ if (isFrame)
 
 				clone.addEventListener("click", function(e)
 				{
+					e.stopPropagation();
+					e.preventDefault();
+					e.stopImmediatePropagation();
 log(e);
 log(textarea);
-//log(window.getSelection().getRangeAt(0));
-log(getCaretCharacterOffsetWithin(textarea));
+log(window.getSelection().getRangeAt(0));
+//log(getCaretCharacterOffsetWithin(textarea));
 log(getCaretPosition());
 				}, false);
-				clone.childNodes[0].src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=";
-				div.appendChild(clone);
+//				clone.childNodes[0].src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=";
+				setTimeout(function(){div.appendChild(clone);}, 1000);
 			}
 
 */
@@ -10721,199 +10883,6 @@ log(getCaretPosition());
 		})();
 		reloadLoop.i = 1000;
 		reloadLoop();
-
-/*
-		(function loop()
-		{
-			if (typeof(trollList) == "undefined")
-			{
-				if (dis--)
-					setTimeout(loop);
-
-				return;
-			}
-
-			if (typeof($) != "undefined" && $ !== blankFunc &&  $(".btn.load-more__button.busy").length)
-			{
-				wasBusy = true
-				return setTimeout(loop);
-			}
-			else
-			{
-				if (wasBusy)
-				{
-					wasBusy = false;
-					return setTimeout(loop, 1000);
-				}
-				else
-				{
-				}
-			}
-
-			if (!trollList || typeof(trollList) != "object")
-				trollList = ["Tubasing"];
-
-			(function loop2()
-			{
-				let postsList = document.getElementsByClassName("post-list"),
-						loopStop = false;
-
-				if (postsList.length < 2)
-					return setTimeout(loop2, 100);
-
-				for(let i = 0; i < postsList.length; i++)
-				{
-					let posts = postsList[i];
-					if (!posts.innerHTML && !posts.id)
-						continue;
-
-					(function loop3()
-					{
-
-						let names = posts.getElementsByClassName("author");
-						if (!names.length)
-							return setTimeout(loop2, 100);
-
-						if (!posts.__inited)
-						{
-							$(".btn.load-more__button").click(function()
-							{
-								setTimeout(loop);
-							});
-							posts.__inited = true;
-							reloadLoop.i = 1000;
-							reloadLoop();
-						}
-						function initPosts(names)
-						{
-							for(let i = 0; i < names.length; i++)
-							{
-
-								let body = findParent(names[i], "post-content");
-								if (!body)
-								{
-									continue;
-								}
-
-								let parent = findParent(names[i], "post-byline"),
-										img = document.createElement("span"),
-										name = names[i].innerText,
-										troll = (isTroll(name) != -1),
-										post = body.getElementsByClassName("post-message")[0];
-
-								post._parent = parent;
-								if (post.__inited)
-									continue;
-
-								img.className = "troll";
-									names[i].parentNode.insertBefore(img, names[i].nextSibling);
-/*
-								if (names[i].parentNode.querySelectorAll('span:not([class])').length)
-									names[i].parentNode.insertBefore(img, names[i].nextSibling);
-								else
-									names[i].parentNode.appendChild(img);
-*/
-/*
-								parent.setAttribute("troll", troll);
-
-								names[i].innerHTML = names[i].innerHTML.replace("Tubasing", "Tubashit");
-
-								if (typeof(comments[name]) == "undefined")
-									comments[name] = [];
-
-/* replace disqus links with actual links */
-/*
-								let as = post.getElementsByTagName("a");
-								for(let i = 0; i < as.length; i++)
-								{
-									let a = as[i],
-											url = decodeURIComponent(a.href).match(/\/\/disq\.us\/url\?url=(.+)/);
-
-									if (url)
-									{
-										url = url[1].substring(0, url[1].indexOf(a.title) + a.title.length);
-									}
-									if (!url)
-										url = a.href;
-
-									if (url.match(/^#/))
-										url = "http://airdates.tv/" + url;
-
-									a.href = url;
-									if (!url.match(/https?:\/\/(www\.)?airdates\.tv(\/.*|#|$)/i))
-									{
-										a.target = "_blank";
-									}
-									else
-									{
-										a.addEventListener("click", function(e)
-										{
-											e.preventDefault();
-											window.top.postMessage({id: "ade", func: "hashChanged", args: [0, a.hash], return:null}, "https://www.airdates.tv");
-										}, false);
-									}
-								}
-
-								comments[name].push({
-									parent: parent,
-									post: post
-								});
-
-								img.addEventListener("click", function(e)
-								{
-									e.stopPropagation();
-									e.preventDefault();
-
-									let troll = toggleTroll(post);
-									if (troll)
-										trollAdd(name);
-									else
-										trollRemove(name);
-
-									for(let i = 0; i < comments[name].length; i++)
-									{
-										if (post === comments[name][i].post)
-											continue;
-
-										toggleTroll(comments[name][i].post);
-									}
-								}, true);
-								post.__inited = true;
-
-								if (!body.__inited)
-								{
-									let eventHandler = function(e)
-											{
-												if (parent.getAttribute("troll") != "true")
-													return;
-
-												if (this.prev == e.type)
-													return;
-
-												let type = e.type == "mouseenter";
-												this.prev = e.type;
-												clearTimeout(this.timer);
-												this.timer = setTimeout(function()
-												{
-													censorText(post, type);
-												}, type ? 200 : 1000);
-											};
-									body.addEventListener("mouseenter", eventHandler, false);
-									body.addEventListener("mouseleave", eventHandler, false);
-									body.__inited = true;
-								}
-								if (!troll)
-									continue;
-
-								censorText(post);
-							}
-						}//initPosts()
-						initPosts(names);
-					})();//loop3()
-				}
-			})();//loop2()
-		})();//loop()
-*/
 		let style = document.createElement("style");
 		style.innerHTML = multiline(function(){/*
 .trollComment
