@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.63.2
+// @version     1.64
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -20,6 +20,8 @@ var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
+1.64 (2020-01-04)
+	+ new tags for custom links: {YEAR}, {MONTH}, {DAY}
 1.63.2 (2020-01-04)
 	* it's possible now add custom show without specifying season
 1.63.1 (2020-01-04)
@@ -2508,6 +2510,9 @@ END DARK THEME
 						<option value="MONKEY_ID">ID</option>
 						<option value="{WIKI_TITLE}">Wiki page</option>
 						<option value="MONKEY_ARCHIVELINK">Archive link</option>
+						<option value="{YEAR}">Year</option>
+						<option value="{MONTH}">Month</option>
+						<option value="{DAY}">Day</option>
 					</select>
 				</div>
 			</div>
@@ -6645,11 +6650,9 @@ log(err);
 
 	function parseLink(div, engine)
 	{
-
 		//		let title = el.children("div.title").text().replace("?", "").replace(/[0-9]+-[0-9]+-[0-9]+/, ""),
 		let el = $(div),
 				title = div._title && div._title._titleOrig ? div._title._titleOrig : el.children("div.title").text();
-
 		title = title.replace("?", "").replace(/[0-9]+-[0-9]+-[0-9]+/, "");
 		let _MONKEY = title.replace(/ E[0-9]+/g, "") || "",
 				_MONKEY_N = title.replace( /\s*S[0-9]+E[0-9]+$/g, '' ) || "",
@@ -6675,12 +6678,16 @@ log(err);
 				MONKEY_N = encodeURIComponent( _MONKEY_N ),
 				WIKI_TITLE = encodeURIComponent( _WIKI_TITLE ),
 				MONKEY_ID = encodeURIComponent( _MONKEY_ID ),
+				date = (""+el.data("date")).match(/([0-9]{4})([0-9]{2})([0-9]{1,2})/),
 				href = engine.href
 							.replace( "MONKEY_ID", MONKEY_ID )
 							.replace( "MONKEY_N_REGEXP", MONKEY_N_REGEXP )
 							.replace( "MONKEY_REGEXP", MONKEY_REGEXP )
 							.replace( "MONKEY_N", MONKEY_N )
 							.replace( "MONKEY", MONKEY )
+							.replace( "{YEAR}", date[1] )
+							.replace( "{MONTH}", date[2] )
+							.replace( "{DAY}", date[3] )
 							.replace( "{WIKI_TITLE}", WIKI_TITLE );
 
 		if (regexp.length && engine.href.indexOf("MONKEY_N_REGEXP") == -1 && engine.href.indexOf("MONKEY_REGEXP") == -1)
@@ -6925,6 +6932,7 @@ log("hide");
 							checkbox = document.createElement("input"),
 							id = "engine_" + cleanName(engine.host),
 							domain = getHost(engine.href),
+							date = (""+$entry.closest("[data-date]").data("date")).match(/([0-9]{4})([0-9]{2})([0-9]{1,2})/),
 							href = engine.href
 										.replace("MONKEY_ARCHIVELINK", (""+$entry.closest("[data-date]").data("date")).replace(/([0-9]{4})([0-9]{2})([0-9]{1,2})/,"/archive/$1-$2#$3"))
 										.replace( "MONKEY_ID", MONKEY_ID )
@@ -6932,6 +6940,9 @@ log("hide");
 										.replace( "MONKEY_REGEXP", MONKEY_REGEXP )
 										.replace( "MONKEY_N", MONKEY_N )
 										.replace( "MONKEY", MONKEY )
+										.replace( "{YEAR}", date[1] )
+										.replace( "{MONTH}", date[2] )
+										.replace( "{DAY}", date[3] )
 										.replace( "{WIKI_TITLE}", WIKI_TITLE );
 
 					if (regexp.length && engine.href.indexOf("MONKEY_N_REGEXP") == -1 && engine.href.indexOf("MONKEY_REGEXP") == -1)
