@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.64.1
+// @version     1.65
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -20,6 +20,8 @@ var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
+1.65 (2020-01-1)
+	+ option to show "My Shows" on top of the list
 1.64.1 (2020-01-06)
 	* middle click on a show would not open selected links
 1.64 (2020-01-04)
@@ -670,6 +672,7 @@ let mainFunc = function(event)
 			searchOrder: 0,
 			archiveBottom: 1, //show next/prev month links below calendar
 			popupBlur: 1, //blur background when popups are shown
+			myShowsTop: 0, //move my shows on top of the list
 /*			colorsCustom: {
 				"807fff": {name: ""},
 				"ff7fff": {name: ""},
@@ -871,7 +874,8 @@ let mainFunc = function(event)
 					content = popup.find(".content"),
 					a = document.createElement("a"),
 					i = document.createElement("span"),
-					span = document.createElement("div");
+					span = document.createElement("div"),
+					that = this;
 
 			span.appendChild(i);
 			span.appendChild(a);
@@ -886,6 +890,11 @@ let mainFunc = function(event)
 			content.append(createCheckbox("todayChange", "Track today", this.prefs.todayChange ? true : false, this.callback, ['Automatically change "today" at midnight'], ""));
 			content.append(createCheckbox("archiveBottom", "Show bottom archive links", this.prefs.archiveBottom ? true : false, this.callback, ['Show next/prev month links below calendar'], ""));
 			content.append(createCheckbox("popupBlur", "Blur behind popups", this.prefs.popupBlur ? true : false, this.callback, ['Make popups standout more'], ""));
+			content.append(createCheckbox("myShowsTop", "My Shows on top", this.prefs.myShowsTop ? true : false, function(e, id, check)
+			{
+				that.callback(e, id, check);
+				sortMyShows();
+			}, ['Move My Shows to the top of the list'], ""));
 
 			let opt = $(multiline(function(){/*
 <span id="weeksBox">Show number of weeks:
@@ -3534,6 +3543,10 @@ END DARK THEME
 			$('div.entry[data-series-id="' + seriesId + '"]').removeAttr("color");
 		}
 
+		if (permanent && Settings.prefs.myShowsTop)
+		{
+			sortMyShows();
+		}
 		return r;
 	};
 	/*
@@ -3600,12 +3613,23 @@ END DARK THEME
 			{
 				customShows();
 	//adding watched checkboxes
-				$("div.day > div.entry").each(watched.attach);
+//				$("div.day > div.entry").each(watched.attach);
 	//collapse multiple entries of the same series in one day
-				$("div.day").each(collapseMulti);
+				$("div.day").each(function(i, e, c)
+				{
+					let entries = $(e).find("div.entry");
+					for(let n = 0; n < entries.length; n++)
+					{
+							//adding watched checkboxes
+							entries[n]._iOrig = n;
+							watched.attach(i, entries[n]);
+					}
+					sortMyShows(entries);
+					collapseMulti(i, e, c);
+				});
 			});
 			showHideLoad();
-		};
+		};//whenDone()
 
 		if(window.ymCurrent != ym)
 		{
@@ -3620,6 +3644,32 @@ END DARK THEME
 			whenDone();
 		}
 		_loadArchiveFromPathname.firstRun = true;
+	}
+	let sortMyShows = function(entries)
+	{
+		if (typeof(entries) == "undefined")
+		{
+			$("div.day").each(function(i, e)
+			{
+				sortMyShows($(e).find("div.entry"));
+			});
+			return;
+		}
+		entries.sort(function(a, b)
+		{
+			return a.innerText.toLowerCase().trim().localeCompare(b.innerText.toLowerCase().trim());
+		});
+		if (Settings.prefs.myShowsTop)
+		{
+			entries.sort(function(a, b)
+			{
+				let ac = DB.getColor(a.dataset.seriesId),
+						bc = DB.getColor(b.dataset.seriesId);
+
+				return  ac === bc ? 0 : ac ? -1 : 1;
+			});
+		}
+		$(entries.context).append(entries);
 	}
 	window.loadArchiveFromPathname = _loadArchiveFromPathname;
 	/*
@@ -8269,8 +8319,11 @@ log("hide");
 	//adding watched checkboxes
 				obj.each(watched.attach);
 	//collapse multiple entries of the same series in one day
-				obj.parent().each(function(i)
+				obj.parent().each(function(i, e)
 				{
+					if (e.classList.contains("day"))
+						sortMyShows($(e).find("div.entry"));
+
 					collapseMulti(i, this, true);
 				});
 			});
@@ -10329,7 +10382,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 				});
 			});
 		});
-	}
+	}//todayChange()
 	let today = new Date();
 	todayChange.day = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
 	todayChange.timer = setInterval(todayChange, 5000);
