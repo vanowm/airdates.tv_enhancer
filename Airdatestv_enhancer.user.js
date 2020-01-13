@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.65
+// @version     1.65.1
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -20,10 +20,14 @@ var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
+1.65.1 (2020-01-12)
+	! account popup would show up after closing secondary popup via X icon (options, custom shows, etc)
+	! my shows on top shown in wrong ordered
+	* improved my show on top sorting performance
 1.65 (2020-01-1)
 	+ option to show "My Shows" on top of the list
 1.64.1 (2020-01-06)
-	* middle click on a show would not open selected links
+	! middle click on a show would not open selected links
 1.64 (2020-01-04)
 	+ new tags for custom links: {YEAR}, {MONTH}, {DAY}
 1.63.2 (2020-01-04)
@@ -193,7 +197,7 @@ var changesLogText = multiline(function(){/*
 	! dark theme looked bad in archive
 	* tweaked the look of notification badge
 1.44 (2018-07-15)
-	+ discus message notification badge on top of the page
+	+ disqus message notification badge on top of the page
 	+ colorpicker set to last used color if current show has no assigned color
 1.43.1 (2018-07-14)
 	! colorpicker stops working if used at search results
@@ -3655,21 +3659,28 @@ END DARK THEME
 			});
 			return;
 		}
+		let changed = false;
 		entries.sort(function(a, b)
 		{
-			return a.innerText.toLowerCase().trim().localeCompare(b.innerText.toLowerCase().trim());
+			let r = a.title.toLowerCase().localeCompare(b.title.toLowerCase());
+			if (r)
+				changed = true;
+
+			return r;
 		});
 		if (Settings.prefs.myShowsTop)
 		{
 			entries.sort(function(a, b)
 			{
-				let ac = DB.getColor(a.dataset.seriesId),
-						bc = DB.getColor(b.dataset.seriesId);
+				let r = (b.dataset.seriesId in DB.savedColors) - (a.dataset.seriesId in DB.savedColors);
+				if (r)
+					changed = true;
 
-				return  ac === bc ? 0 : ac ? -1 : 1;
+				return r;
 			});
 		}
-		$(entries.context).append(entries);
+		if (changed);
+			$(entries.context).append(entries);
 	}
 	window.loadArchiveFromPathname = _loadArchiveFromPathname;
 	/*
@@ -7457,6 +7468,8 @@ log("hide");
 				day.appendChild(entry);
 				added = true;
 			}
+//no longer needed as it's going to be sorted later
+/*
 			if (added)
 			{
 				//sort by name;
@@ -7468,6 +7481,7 @@ log("hide");
 					})
 					.sort(function (a, b)
 					{
+log([a, a.dataset.title, a.children[0].innerText])
 						return a.children[0].innerText.toLowerCase().localeCompare(b.children[0].innerText.toLowerCase());
 					})
 					.forEach(function (a)
@@ -7475,6 +7489,7 @@ log("hide");
 						day.appendChild(a);
 					});
 			}
+*/
 
 		}
 	}//customShows()
@@ -7717,6 +7732,36 @@ log("hide");
 					p.innerHTML = "";
 
 				p.innerHTML += html;
+
+				let changed = false,
+						parnt = $(p),
+						entries = parnt.children();
+
+				entries.sort(function(a, b)
+				{
+					let r = a.innerText.toLowerCase().localeCompare(b.innerText.toLowerCase());
+					if (r)
+						changed = true;
+
+					return r;
+				});
+/*
+				if (Settings.prefs.myShowsTop)
+				{
+					entries.sort(function(a, b)
+					{
+						let r = (b.dataset.seriesId in DB.savedColors) - (a.dataset.seriesId in DB.savedColors);
+						if (r)
+							changed = true;
+
+						return r;
+					});
+				}
+*/
+				if (changed);
+					parnt.append(entries);
+
+/*
 				Array.prototype.slice
 					.call(p.children)
 					.map(function (a)
@@ -7731,6 +7776,7 @@ log("hide");
 					{
 						p.appendChild(a);
 					});
+*/
 			}
 			return;
 		}
@@ -8115,6 +8161,21 @@ log("hide");
 
 		function sortShows()
 		{
+			let changed = false,
+					p = $(cushBox),
+					entries = p.children();
+
+			entries.sort(function(a, b)
+			{
+				let r = a.innerText.toLowerCase().localeCompare(b.innerText.toLowerCase());
+				if (r)
+					changed = true;
+
+				return r;
+			});
+			if (changed);
+				p.append(entries);
+/*
 			Array.prototype.slice
 				.call(cushBox.children)
 				.map(function (a)
@@ -8129,6 +8190,7 @@ log("hide");
 				{
 					cushBox.appendChild(a);
 				});
+*/
 		}
 		cushName.on("input change", change);
 		cushWiki.on("input change", change);
@@ -9814,7 +9876,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		{
 			hide[hide.length] = function()
 			{
-				$("#account-overview").click();
+				$("#account-popup").toggle(false);
 			};
 		}
 		else if (p)
