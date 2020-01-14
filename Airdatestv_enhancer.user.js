@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.65.2
+// @version     1.66
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -20,6 +20,8 @@ var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
+1.66 (2020-01-14)
+	+ option for today's color
 1.65.2 (2020-01-12)
 	! error when trying open an item when searched for info:myshows
 	* today's color in dark theme to orange
@@ -552,6 +554,7 @@ function cloneObj(obj)
 	return r;
 }
 
+
 Object.defineProperty(window, 'browser', { get: function()
 {
 	let browser = "";
@@ -614,7 +617,9 @@ let mainFunc = function(event)
 			_engines = [],
 			_hidden = ls("hidden") || [],
 			loopWait = 1000,
-			_enginesList = [];
+			_enginesList = [],
+			pickerCallbacks = {};
+
 
 
 	try
@@ -680,6 +685,7 @@ let mainFunc = function(event)
 			archiveBottom: 1, //show next/prev month links below calendar
 			popupBlur: 1, //blur background when popups are shown
 			myShowsTop: 0, //move my shows on top of the list
+			todayColor: "",
 /*			colorsCustom: {
 				"807fff": {name: ""},
 				"ff7fff": {name: ""},
@@ -846,6 +852,7 @@ let mainFunc = function(event)
 
 			this.themes.init();
 			this.create();
+			this.inited = true;
 		},
 		create: function(callback)
 		{
@@ -882,7 +889,8 @@ let mainFunc = function(event)
 					a = document.createElement("a"),
 					i = document.createElement("span"),
 					span = document.createElement("div"),
-					that = this;
+					that = this,
+					opt;
 
 			span.appendChild(i);
 			span.appendChild(a);
@@ -903,7 +911,7 @@ let mainFunc = function(event)
 				sortMyShows();
 			}, ['Move My Shows to the top of the list'], ""));
 
-			let opt = $(multiline(function(){/*
+			opt = $(multiline(function(){/*
 <span id="weeksBox">Show number of weeks:
 	<select id="weeks">
 		<option value="">Default</option>
@@ -1010,6 +1018,57 @@ let mainFunc = function(event)
 					Settings.themes.load(evt.target.value);
 				})
 				.trigger("change");
+
+			opt = $(multiline(function(){/*
+<li id="todayColorBox">
+	<label>Today color #</label><input id="todayColor" size="7" placeholder="Theme"><div class="color picker picker-light self" callback="todayColor" title="Set Color"></div>
+</li>
+*/}))
+				.appendTo(content)
+				.find("input")
+				.val(Settings.pref("todayColor"))
+				.on("input", function(evt)
+				{
+					let s = this.selectionStart || 0,
+							e = this.selectionEnd || 0,
+							o = this.value.toUpperCase(),
+							a = o.substr(0, s),
+							b = o.substr(e),
+							fa = a.replace(/[^0-9A-F]/g, ""),
+							fb = b.replace(/[^0-9A-F]/g, ""),
+							val = fa + fb,
+							that = this;
+
+					if (val.length > 6)
+						val = fa.substr(0, s - (s + fb.length - 6)) + fb
+
+					this.value = val;
+					this.selectionEnd = e - (o.length - val.length);
+					this.selectionStart = s - (o.length - val.length);
+
+					if (!val.length || val.length == 3 || val.length == 6)
+					{
+						Settings.pref("todayColor", val);
+						todayColor(val);
+					}
+					if (evt.isTrigger)
+					{
+						pickerCallbacks.todayColor = function(val, temp)
+						{
+							if (val && !temp)
+							{
+								that.value = val;
+								Settings.pref("todayColor", val);
+							}
+							if (val === null)
+								val = that.value;
+
+							todayColor(val);
+						}
+					}
+
+				})
+				.trigger("input");
 
 			opt = $(multiline(function(){/*
 <span id="timeOffsetBox">
@@ -1467,7 +1526,7 @@ let mainFunc = function(event)
 		colors:
 		{
 			default: [], //list of predefined colors
-			max: 105, //max num of colors to remember
+			max: 100, //max num of colors to remember
 			inited: false,
 			add: function add(color, save)
 			{
@@ -1751,6 +1810,8 @@ div.date
 	color: #8c8c8c;
 }
 
+#todayColorBox > div.picker,
+#todayColorBox > input,
 div.today div.date
 {
 	background-color: rgb(190, 150, 0);
@@ -1905,6 +1966,7 @@ END DARK THEME
 					style.innerHTML = this.list[cssName].css.replace(/^(?!\*\/)(body|\w|[\.#\[\:\$@\*])/gm, reg).replace(/(\/\*([\s\S]*?)\*\/)|(\/\/(.*)$)/gm, '').replace(/[\n\t]*/g, "");
 					head.appendChild(style);
 				}
+				todayColor();
 			},
 
 			load: function themesLoad(theme)
@@ -1959,6 +2021,7 @@ END DARK THEME
 		},//themes
 
 	}//Settings
+
 	function fileLoad(callback, ext)
 	{
 		let f = document.createElement("input");
@@ -2263,7 +2326,6 @@ END DARK THEME
 		ls("hidden", _hidden);
 		return hidden;
 	}
-
 
 	function command(id, val)
 	{
@@ -3473,6 +3535,55 @@ END DARK THEME
 		return Math.floor(Math.random() * (max - min + 1)) + min;
 	}
 
+	function todayColor(val)
+	{
+		let style = todayColor.style;
+		if (!style)
+		{
+			style = document.createElement("style");
+			style.id = "CSS_todayColor";
+			todayColor.style = style;
+			todayColor.templ = multiline(function(){/*
+	div.today{DEFAULT}
+	{
+		border-color: #{BGCOLOR} !important;
+		-webkit-box-shadow: 0px 0px 10px 0px #{BGCOLOR} !important;
+		-moz-box-shadow:    0px 0px 10px 0px #{BGCOLOR} !important;
+		box-shadow:         0px 0px 10px 0px #{BGCOLOR} !important;
+	}
+	#todayColorBox{DEFAULT} > div.picker,
+	#todayColorBox{DEFAULT} > input,
+	div.today{DEFAULT} > .date
+	{
+		background-color: #{BGCOLOR} !important;
+		color: #{COLOR} !important;
+	}
+	#todayColorBox{DEFAULT} > div.picker,
+	#todayColorBox{DEFAULT} > input
+	{
+		border-color: #{COLOR} !important;
+	}
+	*/});
+			document.getElementsByTagName("head")[0].appendChild(style);
+		}
+		val = typeof(val) == "undefined" ? Settings.prefs.todayColor : val;
+		let color = "";
+		if (val.length == 3)
+		{
+			val = val[0]+val[0]+val[1]+val[1]+val[2]+val[2];
+		}
+		if (val)
+		{
+			color = new Colors().setColor(val).rgbaMixBlack.luminance > 0.22 ? "000" : "FFF";
+		}
+		style.innerHTML = todayColor.templ
+											.replace(/\{DEFAULT\}/g, val ? "" : "DEFAULT")
+											.replace(/\{BGCOLOR\}/g, val || "000")
+											.replace(/\{COLOR\}/g, color || "000");
+
+	}//todayColor()
+
+
 	(function loop()
 	{
 		if ((typeof(engines) == "undefined" || !engines.length) && --loopWait)
@@ -3485,7 +3596,7 @@ END DARK THEME
 		customLinksAdd();
 	})();
 
-	Settings.init();
+//	Settings.init();
 	/*logo*/
 	$("body > h1 > img").click(function()
 	{
@@ -4028,7 +4139,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 				}
 			});
 		});
-	};
+	};//collapseMulti.animate()
 
 	collapseMulti.onOff = function(e, id, checked)
 	{
@@ -4111,6 +4222,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 				callback();
 		}
 	}//showPast()
+
 	function weekDay()
 	{
 		let week = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
@@ -6082,6 +6194,7 @@ body.ff #cushows-edit textarea
 }
 
 .entry.colorbox:hover:after,
+.picker-light.self:before,
 .picker-light:hover:before,
 .picker:before
 {
@@ -6108,6 +6221,7 @@ body.ff #cushows-edit textarea
 {
 	background-image: none;
 }
+.picker-light.self:before,
 .picker-light:hover:before
 {
 	width: 90%;
@@ -6420,19 +6534,56 @@ body.prompt.scrollbar
 	position: absolute;
 }
 
+#todayColorBox > div.color
+{
+	width: 1.2em;
+	height: 1.3em;
+	border: 1px solid black;
+	margin: 0;
+	vertical-align: text-top;
+	display: inline-block !important;
+	float: unset;
+	position: relative;
+	left: -0.8em;
+	vertical-align: bottom;
+}
+#todayColorBox
+{
+	display: inline-block !important;
+}
+#todayColorBox > label
+{
+	vertical-align: bottom;
+}
 
+#todayColorBox > input
+{
+	display: inline-block;
+	height: 1em;
+	padding: 0.1em 0.3em;
+	margin-left: 0.2em;
+	border: 0;
+	border-color: inherit;
+	border-style: solid;
+	border-width: 1px;
+	border-color: inherit;
+	vertical-align: text-top;
+	font-family: "Lucida Console", Courier, Monaco, monospace;;
+}
 */});//css
 
 	style.innerHTML = css;
 	style.id = "mainCSS";
 	$("head").append(style);
-
 	Settings.themes.init();
 	//fix incorrect initial color in colorpicker
 	//fix clicking outside of colorpicker saves selected color instead of discarding
 	//fix close colorpicker by pressing escape button
 
-	var editingSeriesId = -1;
+	var editingSeriesId = -1,
+			pickerCallback = "",
+			pickerColor = "";
+
 	var clone = $("#colorPickerHolder").clone();
 
 	$("#colorPickerHolder").remove();
@@ -6453,11 +6604,20 @@ body.prompt.scrollbar
 
 					if (this.value == 'Save')
 					{
-
-						Settings.colors.add(cp.color.colors.HEX, cp.color.colors.HEX.toUpperCase() != "FFFFFF");
-						assignColor( editingSeriesId, "#" + cp.color.colors.HEX, true );
+						if (editingSeriesId != -2)
+						{
+							Settings.colors.add(cp.color.colors.HEX, cp.color.colors.HEX.toUpperCase() != "FFFFFF");
+							assignColor( editingSeriesId, "#" + cp.color.colors.HEX, true );
+						}
+						if (pickerCallback && pickerCallback in pickerCallbacks && typeof(pickerCallbacks[pickerCallback]) == "function")
+						{
+							pickerCallbacks[pickerCallback](cp.color.colors.HEX);
+						}
 						Settings.colors.init();
 						editingSeriesId = -1;
+						pickerCallback = "";
+						pickerColor = "";
+
 					}
 					cp.toggle();
 				})
@@ -6553,7 +6713,13 @@ body.prompt.scrollbar
 						var col = "#" + new Colors().setColor(this.value).HEX;
 						if(col.length == 7)
 						{
-							assignColor(editingSeriesId, col, false);
+							if (editingSeriesId != -2)
+								assignColor(editingSeriesId, col, false);
+
+							if (pickerCallback && pickerCallback in pickerCallbacks && typeof(pickerCallbacks[pickerCallback]) == "function")
+							{
+								pickerCallbacks[pickerCallback](col, true);
+							}
 							cp.color.setColor(col);
 							cp.render(undefined);
 						}
@@ -6612,7 +6778,7 @@ log(err);
 			let cpHex = $("#colorpicker-hex");
 			// on show
 			if( toggled === true ){
-				var col = coalesce(DB.getColor(editingSeriesId), "#FFFFFF");
+				var col = editingSeriesId == -2 ? "#" + pickerColor : coalesce(DB.getColor(editingSeriesId), "#FFFFFF");
 				let val = colFix(col);
 				cpHex.val(val);
 				this.undo({v: val, s: 0, e: 0});
@@ -6621,7 +6787,13 @@ log(err);
 			// on change
 			else if( toggled === undefined ){
 	//preview new color
-				assignColor( editingSeriesId, "#" + colors.HEX, false );
+				if (editingSeriesId != -2)
+					assignColor( editingSeriesId, "#" + colors.HEX, false );
+
+				if (pickerCallback && pickerCallback in pickerCallbacks && typeof(pickerCallbacks[pickerCallback]) == "function")
+				{
+					pickerCallbacks[pickerCallback](colors.HEX, true);
+				}
 				if (colors.HEX != new Colors().setColor(cpHex.val()).HEX)
 				{
 					this.undo({v: "#" + colors.HEX, s: cpHex.selectionStart, e: cpHex.selectionEnd});
@@ -6640,7 +6812,14 @@ log(err);
 				if( editingSeriesId > 0 )
 					loadColor( editingSeriesId );
 
+				if (pickerCallback && pickerCallback in pickerCallbacks && typeof(pickerCallbacks[pickerCallback]) == "function")
+				{
+					pickerCallbacks[pickerCallback](null);
+				}
+
 				editingSeriesId = -1;
+				pickerCallback = "";
+				pickerColor = "";
 				picker.detach().appendTo("body");
 			}
 
@@ -6656,16 +6835,26 @@ log(err);
 	$("body").off("click", ".picker");
 
 	// now hook up the picker to the picker icons
-	$("body").on("click", ".picker", function(e){
+	$("body").on("click", ".picker", function(e)
+	{
 		if( !$(e.target).hasClass("picker") ) return;
 
 		editingSeriesId = $(this).parents("[data-series-id]").data("series-id");
+		let col = DB.savedColors[editingSeriesId];
+		if (!editingSeriesId && this.classList.contains("self"))
+		{
+			editingSeriesId = -2;
+			pickerCallback = this.getAttribute("callback");
+			col = new Colors().setColor($(this).css("background-color")).HEX;
+			col = coalesce(col, "#FFFFFF");
+		}
 	//set initial color in colorpicker based on current entry or default to white
-		let col = coalesce(DB.savedColors[editingSeriesId], "#FFFFFF");
+		col = coalesce(col, "#FFFFFF");
 		if (col == "#FFFFFF" && Settings.prefs.lastColor)
 			col = "#" + Settings.prefs.lastColor;
 
 		picker.val(col);
+		pickerColor = col;
 		picker.detach().appendTo(this).click();
 	});
 
