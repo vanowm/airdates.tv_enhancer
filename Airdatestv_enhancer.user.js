@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.67b1
+// @version     1.67
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -20,10 +20,10 @@ var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
-1.67 (2020--)
+1.67 (2020-02-02)
 	+ ability change some colors of the website
-	+ ability enter RGB and HSB volues in colorpicker
-	! accounts with hundereds "my shows" could fail properly sort shows
+	+ ability enter RGB and HSB values in colorpicker
+	! accounts with hundreds "my shows" could fail properly sort shows
 	! colorpicker not shown in Custom Shows settings
 1.66.1 (2020-01-14)
 	! option's misalignment in default theme
@@ -379,7 +379,29 @@ let log = console.log.bind(console),
 		timeOffset = 0,
 		isFrame = window.top !== window.self,
 		_Date = Date,
-		blankFunc = function(){};
+		blankFunc = function(){},
+		SVG = {
+			del: '<svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"></path></svg>',
+			search: '<svg viewBox="0 0 6 6"><path d="M2.23 0a2.23 2.23 0 0 1 1.7 3.68l.08.1h.28L6 5.47 5.49 6 3.77 4.29V4l-.1-.09A2.23 2.23 0 1 1 2.24 0m0 .69a1.54 1.54 0 1 0 1.54 1.54A1.54 1.54 0 0 0 2.23.69z"/></svg>',
+			show: '<svg viewBox="0 0 24 24"><path d="M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9M12,4.5C17,4.5 21.27,7.61 23,12C21.27,16.39 17,19.5 12,19.5C7,19.5 2.73,16.39 1,12C2.73,7.61 7,4.5 12,4.5M3.18,12C4.83,15.36 8.24,17.5 12,17.5C15.76,17.5 19.17,15.36 20.82,12C19.17,8.64 15.76,6.5 12,6.5C8.24,6.5 4.83,8.64 3.18,12Z"></path></svg>',
+			hide: '<svg viewBox="0 0 24 24"><path d="M2,5.27L3.28,4L20,20.72L18.73,22L15.65,18.92C14.5,19.3 13.28,19.5 12,19.5C7,19.5 2.73,16.39 1,12C1.69,10.24 2.79,8.69 4.19,7.46L2,5.27M12,9A3,3 0 0,1 15,12C15,12.35 14.94,12.69 14.83,13L11,9.17C11.31,9.06 11.65,9 12,9M12,4.5C17,4.5 21.27,7.61 23,12C22.18,14.08 20.79,15.88 19,17.19L17.58,15.76C18.94,14.82 20.06,13.54 20.82,12C19.17,8.64 15.76,6.5 12,6.5C10.91,6.5 9.84,6.68 8.84,7L7.3,5.47C8.74,4.85 10.33,4.5 12,4.5M3.18,12C4.83,15.36 8.24,17.5 12,17.5C12.69,17.5 13.37,17.43 14,17.29L11.72,15C10.29,14.85 9.15,13.71 9,12.28L5.6,8.87C4.61,9.72 3.78,10.78 3.18,12Z"></path></svg>',
+			backup: '<svg viewBox="0 0 24 24"><path d="M12,3A9,9 0 0,0 3,12H0L4,16L8,12H5A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19C10.5,19 9.09,18.5 7.94,17.7L6.5,19.14C8.04,20.3 9.94,21 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M14,12A2,2 0 0,0 12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12Z" /></svg>',
+			restore: '<svg viewBox="0 0 24 24"><path d="M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3M12,8V13L16.28,15.54L17,14.33L13.5,12.25V8H12Z" /></svg>',
+			clear: '<svg viewBox="0 0 24 24"><path d="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8.46,11.88L9.87,10.47L12,12.59L14.12,10.47L15.53,11.88L13.41,14L15.53,16.12L14.12,17.53L12,15.41L9.88,17.53L8.47,16.12L10.59,14L8.46,11.88M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z"></path></svg>',
+			edit: '<svg viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path></svg>',
+			guest: '<svg xmlns="http://www.w3.org/2000/svg" class="cookieIcon" viewBox="0 0 18 18"><rect class="cookieIconHoles" width="10.27" height="14.58" x="3.04" y="2.49" rx="3.33" ry="3.33" transform="rotate(-41.95 8.18 9.78)"/><path d="M9 0a9 9 0 1 0 9 9 8.44 8.44 0 0 0-.13-1.5A1.05 1.05 0 0 0 17 7h-2V6a.98.98 0 0 0-1-1h-2V4a.98.98 0 0 0-1-1h-1V1a.98.98 0 0 0-1-1M6.5 3A1.5 1.5 0 1 1 5 4.5 1.5 1.5 0 0 1 6.5 3m-3 4A1.5 1.5 0 1 1 2 8.5 1.5 1.5 0 0 1 3.5 7m5 1A1.5 1.5 0 1 1 7 9.5 1.5 1.5 0 0 1 8.5 8m5 2a1.5 1.5 0 0 1 0 3 1.5 1.5 0 0 1-1.5-1.5 1.5 1.5 0 0 1 1.5-1.5M8 13a1.5 1.5 0 1 1-1.5 1.5A1.5 1.5 0 0 1 8 13z"/></svg>',
+			link: '<svg viewBox="0 0 24 24"><path d="M10.59,13.41C11,13.8 11,14.44 10.59,14.83C10.2,15.22 9.56,15.22 9.17,14.83C7.22,12.88 7.22,9.71 9.17,7.76V7.76L12.71,4.22C14.66,2.27 17.83,2.27 19.78,4.22C21.73,6.17 21.73,9.34 19.78,11.29L18.29,12.78C18.3,11.96 18.17,11.14 17.89,10.36L18.36,9.88C19.54,8.71 19.54,6.81 18.36,5.64C17.19,4.46 15.29,4.46 14.12,5.64L10.59,9.17C9.41,10.34 9.41,12.24 10.59,13.41M13.41,9.17C13.8,8.78 14.44,8.78 14.83,9.17C16.78,11.12 16.78,14.29 14.83,16.24V16.24L11.29,19.78C9.34,21.73 6.17,21.73 4.22,19.78C2.27,17.83 2.27,14.66 4.22,12.71L5.71,11.22C5.7,12.04 5.83,12.86 6.11,13.65L5.64,14.12C4.46,15.29 4.46,17.19 5.64,18.36C6.81,19.54 8.71,19.54 9.88,18.36L13.41,14.83C14.59,13.66 14.59,11.76 13.41,10.59C13,10.2 13,9.56 13.41,9.17Z"></path></svg>',
+			customlinks: '<svg viewBox="0 0 24 24"><path d="M3,5H9V11H3V5M5,7V9H7V7H5M11,7H21V9H11V7M11,15H21V17H11V15M5,20L1.5,16.5L2.91,15.09L5,17.17L9.59,12.59L11,14L5,20Z" /></svg>',
+			customshows: '<svg viewBox="0 0 24 24"><path d="M2,6V8H14V6H2M2,10V12H14V10H2M20.04,10.13C19.9,10.13 19.76,10.19 19.65,10.3L18.65,11.3L20.7,13.35L21.7,12.35C21.92,12.14 21.92,11.79 21.7,11.58L20.42,10.3C20.31,10.19 20.18,10.13 20.04,10.13M18.07,11.88L12,17.94V20H14.06L20.12,13.93L18.07,11.88M2,14V16H10V14H2Z" /></svg>',
+			settings: '<svg viewBox="0 0 24 24"><path d="M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z" /></svg>',
+			menu: '<svg xmlns="http://www.w3.org/2000/svg" class="menuIcon" viewBox="0 0 18 12"><path d="M0 0h18v2H0V0m0 5h18v2H0V5m0 5h18v2H0z"/></svg>',
+			user: '<svg viewBox="0 0 24 24"><path d="M12,4C15.64,4 18.67,6.59 19.35,10.04C21.95,10.22 24,12.36 24,15A5,5 0 0,1 19,20H6A6,6 0 0,1 0,14C0,10.91 2.34,8.36 5.35,8.04C6.6,5.64 9.11,4 12,4M7.5,9.69C6.06,11.5 6.2,14.06 7.82,15.68C8.66,16.5 9.81,17 11,17V18.86L13.83,16.04L11,13.21V15C10.34,15 9.7,14.74 9.23,14.27C8.39,13.43 8.26,12.11 8.92,11.12L7.5,9.69M9.17,8.97L10.62,10.42L12,11.79V10C12.66,10 13.3,10.26 13.77,10.73C14.61,11.57 14.74,12.89 14.08,13.88L15.5,15.31C16.94,13.5 16.8,10.94 15.18,9.32C14.34,8.5 13.19,8 12,8V6.14L9.17,8.97Z"></path></svg>',
+			reload: '<svg viewBox="0 0 24 24"><path d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"></path></svg><span>Reload</span>',
+			close: '<svg viewBox="0 0 24 24"><path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path></svg>',
+			closehover: '<svg viewBox="0 0 24 24"><path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path></svg>',
+			viewas: '<svg viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"></path></svg>',
+			back: '<svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>',
+		};
 
 /*work around for some SVG pictures shown huge before page is fully loaded*/
 (function loop()
@@ -503,6 +525,14 @@ function multiline(func, ws)
 {
 	func = func.toString();
 	func = func.slice(func.indexOf("/*") + 2, func.lastIndexOf("*/")).split("*//*").join("*/");
+	func = func.replace(/{SVG-([A-Z]+)}/g, function(a, b)
+	{
+		b = b.toLowerCase();
+		if (SVG[b])
+			return SVG[b];
+
+		return a;
+	});
 	return ws ? func : func.replace(/[\n\t]*/g, "");
 }
 
@@ -895,18 +925,12 @@ let mainFunc = function(event)
 	<div id="settings-popup-content">
 		<div class="header">
 			<div class="back" title="Back">
-				<svg viewBox="0 0 24 24">
-					<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
-				</svg>
+				{SVG-BACK}
 			</div>
 			<h4>Options</h4>
 			<div class="close" title="Close" title="Close">
-				<svg viewBox="0 0 24 24">
-					<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
-				</svg>
-				<svg viewBox="0 0 24 24">
-					<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
-				</svg>
+				{SVG-CLOSEHOVER}
+				{SVG-CLOSE}
 			</div>
 		</div>
 		<div class="content settings">
@@ -1112,79 +1136,16 @@ let mainFunc = function(event)
 				})
 				.trigger("change");
 
-			let themeColorsInput = function(evt)
-			{
-				let s = this.selectionStart || 0,
-						e = this.selectionEnd || 0,
-						o = this.value.toUpperCase(),
-						a = o.substr(0, s),
-						b = o.substr(e),
-						fa = a.replace(/[^0-9A-F]/g, ""),
-						fb = b.replace(/[^0-9A-F]/g, ""),
-						val = fa + fb,
-						name = this.id.split("_")[1],
-						that = this,
-						data = {};
-
-				if (val.length > 6)
-					val = fa.substr(0, s - (s + fb.length - 6)) + fb
-
-				this.value = val;
-				this.selectionEnd = e - (o.length - val.length);
-				this.selectionStart = s - (o.length - val.length);
-
-				if (!val.length || val.length == 3 || val.length == 6)
-				{
-					Settings.pref("themeColors." + name, val);
-					data[name] = val;
-					Settings.themes.quickOverride(data)
-				}
-				if (evt.isTrigger)
-				{
-					pickerCallbacks["themeColor_" + name] = function(val, temp)
-					{
-						let c = (typeof(val) == "boolean") ? val : temp ? true :false;
-						that.parentNode.classList.toggle("colorpicker", c);
-						that.parentNode.parentNode.classList.toggle("colorpicker", c);
-						let b = document.getElementById("themeColorBox_" + that.parentNode._example),
-								s = b.getElementsByClassName("example")[0];
-						if (c)
-							b.setAttribute("down", that.parentNode._down);//(~~b.getAttribute("items") - (~~b.getAttribute("items") - ~~that.parentNode.getAttribute("item"))));
-						else
-							b.removeAttribute("down");
-
-						if (typeof(val) == "boolean")
-							val = null;
-
-						if (val && !temp)
-						{
-							Settings.pref("themeColors." + name, val);
-
-						}
-						if (val !== null)
-							that.value = val;
-
-						if (val === null)
-						{
-							val = Settings.prefs.themeColors[name];
-							that.value = val;
-						}
-						let data = {};
-						data[name] = val;
-						Settings.themes.quickOverride(data);
-					}
-				}
-			}//themeColorsInput()
-			let box = $('<div class="themeColorsSettings">'),
+			let box = $('<div class="themeColorsSettings"><label>Theme colors:</label></div>'),
 					info = Settings.themes.quickOverrideTempl,
 					samples = {}
-					sampleGroup = 1;
+					sampleGroup = 0;
 
 			let templ = multiline(function(){/*
-<span id="themeColorBox_{ID}" class="themeColorsBox">
-	<label>{LABEL} <span>#</span></label>
-	<input id="themeColor_{ID}" size="6" placeholder="Theme" title="{TITLE}">
-	<div class="color picker picker-light self" callback="themeColor_{ID}" title="Set Color"></div>
+<span id="themeColorBox_{ID}" class="themeColorBox">
+	<label>{LABEL}</label>
+	<div id="themeColor_{ID}" class="color picker picker-light self" callback="themeColor_{ID}" title="Set Color"></div>
+	<div class="del" title="Clear">{DEL}</div>
 </span>
 			*/});
 			for(let i in Settings.prefsDef.themeColors)
@@ -1192,13 +1153,63 @@ let mainFunc = function(event)
 				opt = $(templ
 						.replace(/\{ID\}/g, i)
 						.replace(/\{LABEL\}/g, info[i].label || "")
-						.replace(/\{TITLE\}/g, info[i].title || ""))
+						.replace(/\{TITLE\}/g, info[i].title || "")
+						.replace(/\{DEL\}/g, SVG.del))
 
 					.appendTo(box)
-					.find("input")
-					.val(Settings.pref("themeColors." + i))
-					.on("input", themeColorsInput)
-					.trigger("input");
+					.find(".color")
+					.each(function()
+					{
+						let that = this,
+								name = i,
+								data = {};
+
+						data[name] = Settings.pref("themeColors." + name);
+						Settings.themes.quickOverride(data);
+						if (data[name])
+							that.parentNode.setAttribute("color", data[name]);
+						else
+							that.parentNode.removeAttribute("color");
+
+						pickerCallbacks["themeColor_" + name] = function(val, temp)
+						{
+							let c = (typeof(val) == "boolean") ? val : temp ? true :false;
+							that.parentNode.classList.toggle("colorpicker", c);
+							that.parentNode.parentNode.classList.toggle("colorpicker", c);
+							let b = document.getElementById("themeColorBox_" + that.parentNode._example),
+									s = b.getElementsByClassName("example")[0];
+							if (c)
+								b.setAttribute("down", that.parentNode._down);
+							else
+								b.removeAttribute("down");
+
+							if (typeof(val) == "boolean")
+								val = null;
+
+							if (!temp)
+							{
+								if (val)
+									that.parentNode.setAttribute("color", val);
+								else
+									that.parentNode.removeAttribute("color");
+
+								Settings.pref("themeColors." + name, val);
+							}
+							if (val === null)
+							{
+								val = Settings.prefs.themeColors[name];
+							}
+							let data = {};
+							data[name] = val;
+							Settings.themes.quickOverride(data);
+						}
+					})
+					.parent()
+					.find(".del")
+					.on("click", function()
+					{
+						pickerCallbacks["themeColor_" + i]("");
+					});
 
 				if (info[i].sample)
 				{
@@ -1211,6 +1222,7 @@ let mainFunc = function(event)
 
 						samples[s[i]][0]++;
 						p[0]._down = samples[s[i]][0];
+						p[0].classList.toggle("group" + (samples[s[i]][1] % 2), true);
 					}
 					p[0]._example = info[i].sample;
 				}
@@ -1219,6 +1231,10 @@ let mainFunc = function(event)
 			for (let s in samples)
 			{
 				let b = $("#themeColorBox_" + s);
+				if (b.prev().hasClass("themeColorBox"))
+				{
+					b.before('<div/>');
+				}
 				b.append($('<span class="example example_' + s + ' example_down_' + samples[s][0] + '">Example</span>'));
 				for(let i = 1; i < samples[s][0]; i++)
 				{
@@ -1230,7 +1246,7 @@ let mainFunc = function(event)
 			content.append('<div class="spacer"/>');
 
 			a.href = "#";
-			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12,3A9,9 0 0,0 3,12H0L4,16L8,12H5A7,7 0 0,1 12,5A7,7 0 0,1 19,12A7,7 0 0,1 12,19C10.5,19 9.09,18.5 7.94,17.7L6.5,19.14C8.04,20.3 9.94,21 12,21A9,9 0 0,0 21,12A9,9 0 0,0 12,3M14,12A2,2 0 0,0 12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12Z" /></svg>';
+			i.innerHTML = SVG.backup;
 			a.textContent = "Backup settings";
 			a.id = "settingsBackup";
 			span.title = "Backup all settings, including links manager data, watched and hidden shows lists, middle click selection, last custom colors and custom shows.";
@@ -1248,7 +1264,7 @@ let mainFunc = function(event)
 			a = i.nextSibling;
 			a.id = "settingsRestore";
 			span.title = "Note, your current watched and hidden shows list will stay intact, new shows will be added to it.\nCustom links will only overwrite existing with matched ID.\nAll other settings will be overwritten";
-			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M13,3A9,9 0 0,0 4,12H1L4.89,15.89L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3M12,8V13L16.28,15.54L17,14.33L13.5,12.25V8H12Z" /></svg>';
+			i.innerHTML = SVG.restore;
 			a.textContent = "Restore settings";
 			function restore(str)
 			{
@@ -1525,7 +1541,7 @@ let mainFunc = function(event)
 				a = a.cloneNode(true);
 				i.parentNode.replaceChild(a, i.nextSibling);
 				span.title = "Did you make a backup?";
-				i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8.46,11.88L9.87,10.47L12,12.59L14.12,10.47L15.53,11.88L13.41,14L15.53,16.12L14.12,17.53L12,15.41L9.88,17.53L8.47,16.12L10.59,14L8.46,11.88M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z"></path></svg>';
+				i.innerHTML = SVG.clear;
 				let moreOpt = $("div.moreOpt");
 				moreOpt.find("div").append(span);
 				moreOpt.on("click", function()
@@ -2184,13 +2200,13 @@ END DARK THEME
 				_common:
 				{
 					css: multiline(function(){/*
-#themeColorBox_{ID} > input
+#themeColorBox_{ID} > .color
 {
 	background-color: #{C1} !important;
 	color: #{C2} !important;
 }
 /*
-#themeColorBox_{ID} > input
+#themeColorBox_{ID} > .color
 {
 	border-color: #{C2} !important;
 }*//*
@@ -2876,18 +2892,12 @@ body[class*="theme_"] div.day:not(.today)
 		<div id="manage-links-popup-content">
 			<div class="header">
 				<div class="back" title="Back">
-					<svg viewBox="0 0 24 24">
-						<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
-					</svg>
+					{SVG-BACK}
 				</div>
 				<h4>Links Manager</h4>
 				<div class="close" title="Close">
-					<svg viewBox="0 0 24 24">
-						<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
-					</svg>
-					<svg viewBox="0 0 24 24">
-						<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
-					</svg>
+					{SVG-CLOSEHOVER}
+					{SVG-CLOSE}
 				</div>
 			</div>
 			<div class="content"></div>
@@ -3470,7 +3480,7 @@ body[class*="theme_"] div.day:not(.today)
 
 				clone.remove();
 				let editBox = $('<span class="editBox"></span>').appendTo(div);
-				$('<span class="edit" title="Edit"><svg viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path></svg></span>').appendTo(editBox).click(function(e)
+				$('<span class="edit" title="Edit">' + SVG.edit + '</span>').appendTo(editBox).click(function(e)
 				{
 					engId.val((getHost(engine.href) == engine.host) ? "" : engine.host);
 					engName.val(engine.name);
@@ -3491,7 +3501,7 @@ body[class*="theme_"] div.day:not(.today)
 				});
 				if (customLinks._list[engine.host])
 				{
-					$('<span class="del" title="' + (def ? "Clear" : "Delete") + '">' + '<svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"></path></svg>' + '</span>')
+					$('<span class="del" title="' + (def ? "Clear" : "Delete") + '">' + SVG.del + '</span>')
 						.appendTo(editBox)
 						.click(function(e)
 					{
@@ -3739,18 +3749,12 @@ body[class*="theme_"] div.day:not(.today)
 		<div id="colorsmanager-popup-content">
 			<div class="header">
 				<div class="back" title="Back">
-					<svg viewBox="0 0 24 24">
-						<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
-					</svg>
+					{SVG-BACK}
 				</div>
 				<h4>Colors Manager</h4>
 				<div class="close" title="Close">
-					<svg viewBox="0 0 24 24">
-						<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
-					</svg>
-					<svg viewBox="0 0 24 24">
-						<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
-					</svg>
+					{SVG-CLOSEHOVER}
+					{SVG-CLOSE}
 				</div>
 			</div>
 			<div class="content"></div>
@@ -5459,7 +5463,7 @@ body.ff [draggable] .dndh
 }
 #settings-popup-content > .content > *
 {
-	margin: 3px 0 3px 0;
+	margin: 0.3em 0;
 	display: table;
 }
 
@@ -5839,7 +5843,8 @@ body:not(.popup) div.entry[opened]
 }
 #animSpeedBox
 {
-	margin-top: 0.8em !important;
+	margin-top: 1em !important;
+	margin-bottom: 0.5em !important;
 }
 #animSpeedBox > div
 {
@@ -6174,7 +6179,7 @@ input[type="number"]
 }
 .epNumFix
 {
-	margin: 3px 0 3px 0 !important;
+	margin: 0.3em 0 !important;
 	display: table;
 	text-align: center;
 }
@@ -6545,7 +6550,7 @@ body.ff #cushows-edit textarea
 }
 
 .entry.colorbox:hover:after,
-.picker-light.self:before,
+.colorpicker > .picker-light.self:before,
 .picker-light:hover:before,
 .picker:before
 {
@@ -6572,7 +6577,7 @@ body.ff #cushows-edit textarea
 {
 	background-image: none;
 }
-.picker-light.self:before,
+.colorpicker > .picker-light.self:before,
 .picker-light:hover:before
 {
 	width: 90%;
@@ -6888,70 +6893,61 @@ body.prompt.scrollbar
 {
 	display: table;
 }
-.themeColorsBox > div.color
+.themeColorBox > div.color
 {
 	width: 1em;
 	height: 1em;
 	border: 1px solid black;
-	margin: 0;
+	margin-left: 0.5em;
 	display: inline-block !important;
 	float: unset;
 	vertical-align: middle;
 	text-align: center;
-	border-left: none;
 	padding: 0.1em;
 	position: relative;
-	border-bottom-left-radius: 0;
-	border-top-left-radius: 0;
 }
-.themeColorsBox
+.themeColorBox
 {
 	display: table-row !important;
 	line-height: 2em;
 	height: 2em;
 }
 	
-.themeColorsBox > *
+.themeColorBox > *
 {
 	display: table-cell !important;
 	vertical-align: middle;
 }
-.themeColorsBox > label
+.themeColorBox > label
 {
 	text-align: end;
 }
-.themeColorsBox > label > span
+.themeColorsSettings
 {
-	float: right;
-	margin-left: .5em;
+	text-align: center;
+	width: 100%;
+}
+.themeColorsSettings > label
+{
+	width: 100% !important;
+}
+.themeColorsSettings > *
+{
+	text-align: initial;
 }
 
-.themeColorsBox > input
-{
-	display: inline-block;
-	height: 1em;
-	padding: 0.04em 0.3em;
-	margin-left: 0.2em;
-	border: 0;
-	border-color: inherit;
-	border-style: solid;
-	border-width: 1px;
-	border-color: inherit;
-	font-family: Monaco,"DejaVu Sans Mono","Courier New", "Lucida Console", Courier, fixed, monospace;
-}
-
-.themeColorsSettings.colorpicker > .colorpicker input
+.themeColorsSettings.colorpicker > .colorpicker .color
 {
 	border: 1px solid black;
-	-webkit-box-shadow: 0px 0px 10px 0px white;
-	-moz-box-shadow:    0px 0px 10px 0px white;
-	box-shadow:         0px 0px 10px 0px white;
+	-webkit-box-shadow: 0px 0px 10px 0px black;
+	-moz-box-shadow:    0px 0px 10px 0px black;
+	box-shadow:         0px 0px 10px 0px black;
 }
 .themeColorsSettings .example
 {
 	display: inline-block !important;
 	margin-left: 1em;
-	padding: 0.2em;
+	padding: 0.4em;
 	line-height: 1em;
 	vertical-align: middle;
 	position: relative;
@@ -6969,17 +6965,35 @@ body.prompt.scrollbar
 	bottom: -2em;
 }
 
-.themeColorsSettings .themeColorsBox[down="1"] .example
+.themeColorsSettings .themeColorBox[down="1"] .example
 {
 	bottom: 1em;
 }
-.themeColorsSettings .themeColorsBox[down="2"] .example
+.themeColorsSettings .themeColorBox[down="2"] .example
 {
 	bottom: -1em;
 }
-.themeColorsSettings .themeColorsBox[down="3"] .example
+.themeColorsSettings .themeColorBox[down="3"] .example
 {
 	bottom: -3em;
+}
+.themeColorsSettings .themeColorBox:not([color]) > .del
+{
+	opacity: 0.3;
+}
+.themeColorsSettings .themeColorBox[color] > .del
+{
+	cursor: pointer;
+}
+.themeColorsSettings .themeColorBox > .del
+{
+	display: inline-block !important;
+	height: 0.5em;
+	vertical-align: text-top;
+}
+.themeColorsSettings > div
+{
+	height: 1em;
 }
 */});//css
 
@@ -7629,7 +7643,7 @@ log(err);
 		{
 			editingSeriesId = -2;
 			pickerCallback = this.getAttribute("callback");
-			col = new Colors().setColor(coalesce($(this.previousSibling).css("background-color"), "#FFFFFF")).HEX;
+			col = new Colors().setColor(coalesce($(this).css("background-color"), "#FFFFFF")).HEX;
 			col = coalesce(col, "#FFFFFF");
 		}
 	//set initial color in colorpicker based on current entry or default to white
@@ -8066,9 +8080,9 @@ log("hide");
 					show = document.createElement("span"),
 					hide = document.createElement("span");
 
-			show.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9M12,4.5C17,4.5 21.27,7.61 23,12C21.27,16.39 17,19.5 12,19.5C7,19.5 2.73,16.39 1,12C2.73,7.61 7,4.5 12,4.5M3.18,12C4.83,15.36 8.24,17.5 12,17.5C15.76,17.5 19.17,15.36 20.82,12C19.17,8.64 15.76,6.5 12,6.5C8.24,6.5 4.83,8.64 3.18,12Z"></path></svg>Show';
+			show.innerHTML = SVG.show + 'Show';
 			show.className = "showhide0";
-			hide.innerHTML = '<svg viewBox="0 0 24 24"><path d="M2,5.27L3.28,4L20,20.72L18.73,22L15.65,18.92C14.5,19.3 13.28,19.5 12,19.5C7,19.5 2.73,16.39 1,12C1.69,10.24 2.79,8.69 4.19,7.46L2,5.27M12,9A3,3 0 0,1 15,12C15,12.35 14.94,12.69 14.83,13L11,9.17C11.31,9.06 11.65,9 12,9M12,4.5C17,4.5 21.27,7.61 23,12C22.18,14.08 20.79,15.88 19,17.19L17.58,15.76C18.94,14.82 20.06,13.54 20.82,12C19.17,8.64 15.76,6.5 12,6.5C10.91,6.5 9.84,6.68 8.84,7L7.3,5.47C8.74,4.85 10.33,4.5 12,4.5M3.18,12C4.83,15.36 8.24,17.5 12,17.5C12.69,17.5 13.37,17.43 14,17.29L11.72,15C10.29,14.85 9.15,13.71 9,12.28L5.6,8.87C4.61,9.72 3.78,10.78 3.18,12Z"></path></svg>Hide';
+			hide.innerHTML = SVG.hide + 'Hide';
 			hide.className = "showhide1";
 			showHideObj.appendChild(show);
 			showHideObj.appendChild(hide);
@@ -8200,7 +8214,7 @@ log("hide");
 					editObj = document.createElement("a"),
 					editIcon = document.createElement("span");
 
-			editIcon.innerHTML = '<svg viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path></svg>Edit';
+			editIcon.innerHTML = SVG.edit + 'Edit';
 			editObj.appendChild(editIcon);
 			editBox.appendChild(editObj);
 			editBox.className = "edit";
@@ -8860,18 +8874,12 @@ log([a, a.dataset.title, a.children[0].innerText])
 		<div id="manage-cushows-popup-content">
 			<div class="header">
 				<div class="back" title="Back">
-					<svg viewBox="0 0 24 24">
-						<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
-					</svg>
+					{SVG-BACK}
 				</div>
 				<h4>Custom shows</h4>
 				<div class="close" title="Close">
-					<svg viewBox="0 0 24 24">
-						<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
-					</svg>
-					<svg viewBox="0 0 24 24">
-						<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
-					</svg>
+					{SVG-CLOSEHOVER}
+					{SVG-CLOSE}
 				</div>
 			</div>
 			<div class="content"></div>
@@ -9505,7 +9513,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 				cushName.trigger("change");
 			});
 //SEARCH
-			$('<span class="search" title="Search"><svg viewBox="0 0 6 6"><path d="M2.23 0a2.23 2.23 0 0 1 1.7 3.68l.08.1h.28L6 5.47 5.49 6 3.77 4.29V4l-.1-.09A2.23 2.23 0 1 1 2.24 0m0 .69a1.54 1.54 0 1 0 1.54 1.54A1.54 1.54 0 0 0 2.23.69z"/></svg></span>').appendTo(editBox).click(function(e)
+			$('<span class="search" title="Search">' + SVG.search + '</span>').appendTo(editBox).click(function(e)
 			{
 				if (cushBox.classList.contains("opened"))
 					return;
@@ -9516,7 +9524,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 			});
 
 //DELETE
-			$('<span class="del" title="Delete"><svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"></path></svg></span>').appendTo(editBox).click(function(e)
+			$('<span class="del" title="Delete">' + SVG.del + '</span>').appendTo(editBox).click(function(e)
 			{
 				if (cushBox.classList.contains("opened"))
 					return;
@@ -10084,7 +10092,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			{
 //some browsers don't have proper icon in the font
 				let span = document.createElement("span");
-				span.innerHTML = header[0].firstChild.textContent.replace("Temporary", "Guest").replace("🍪", '<span title="Cookies"><svg xmlns="http://www.w3.org/2000/svg" class="cookieIcon" viewBox="0 0 18 18"><rect class="cookieIconHoles" width="10.27" height="14.58" x="3.04" y="2.49" rx="3.33" ry="3.33" transform="rotate(-41.95 8.18 9.78)"/><path d="M9 0a9 9 0 1 0 9 9 8.44 8.44 0 0 0-.13-1.5A1.05 1.05 0 0 0 17 7h-2V6a.98.98 0 0 0-1-1h-2V4a.98.98 0 0 0-1-1h-1V1a.98.98 0 0 0-1-1M6.5 3A1.5 1.5 0 1 1 5 4.5 1.5 1.5 0 0 1 6.5 3m-3 4A1.5 1.5 0 1 1 2 8.5 1.5 1.5 0 0 1 3.5 7m5 1A1.5 1.5 0 1 1 7 9.5 1.5 1.5 0 0 1 8.5 8m5 2a1.5 1.5 0 0 1 0 3 1.5 1.5 0 0 1-1.5-1.5 1.5 1.5 0 0 1 1.5-1.5M8 13a1.5 1.5 0 1 1-1.5 1.5A1.5 1.5 0 0 1 8 13z"/></svg></span>');
+				span.innerHTML = header[0].firstChild.textContent.replace("Temporary", "Guest").replace("🍪", '<span title="Cookies">' + SVG.guest + '</span>');
 				header[0].replaceChild(span, header[0].firstChild);
 			}
 			let content = $("#account-popup-content").find("div.content");
@@ -10106,7 +10114,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			});
 
 			accountOverview.unbind("click", loop);
-			content.find("div:first-of-type > span").html('<svg viewBox="0 0 24 24"><path d="M10.59,13.41C11,13.8 11,14.44 10.59,14.83C10.2,15.22 9.56,15.22 9.17,14.83C7.22,12.88 7.22,9.71 9.17,7.76V7.76L12.71,4.22C14.66,2.27 17.83,2.27 19.78,4.22C21.73,6.17 21.73,9.34 19.78,11.29L18.29,12.78C18.3,11.96 18.17,11.14 17.89,10.36L18.36,9.88C19.54,8.71 19.54,6.81 18.36,5.64C17.19,4.46 15.29,4.46 14.12,5.64L10.59,9.17C9.41,10.34 9.41,12.24 10.59,13.41M13.41,9.17C13.8,8.78 14.44,8.78 14.83,9.17C16.78,11.12 16.78,14.29 14.83,16.24V16.24L11.29,19.78C9.34,21.73 6.17,21.73 4.22,19.78C2.27,17.83 2.27,14.66 4.22,12.71L5.71,11.22C5.7,12.04 5.83,12.86 6.11,13.65L5.64,14.12C4.46,15.29 4.46,17.19 5.64,18.36C6.81,19.54 8.71,19.54 9.88,18.36L13.41,14.83C14.59,13.66 14.59,11.76 13.41,10.59C13,10.2 13,9.56 13.41,9.17Z"></path></svg>');
+			content.find("div:first-of-type > span").html(SVG.link);
 
 			hideNode("importColors");
 			let a = document.createElement("a"),
@@ -10129,7 +10137,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			a.id = "";
 			delete a.className;
 			delete a.id;
-			i.innerHTML = '<svg viewBox="0 0 6 6"><path d="M2.23 0a2.23 2.23 0 0 1 1.7 3.68l.08.1h.28L6 5.47 5.49 6 3.77 4.29V4l-.1-.09A2.23 2.23 0 1 1 2.24 0m0 .69a1.54 1.54 0 1 0 1.54 1.54A1.54 1.54 0 0 0 2.23.69z"/></svg>';
+			i.innerHTML = SVG.search;
 			a.href = '#myshows';
 			a.addEventListener("click", function(e)
 			{
@@ -10144,7 +10152,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			span = span.cloneNode(true);
 			a = span.lastChild;
 			i = span.firstChild;
-			i.innerHTML = '<svg viewBox="0 0 6 6"><path d="M2.23 0a2.23 2.23 0 0 1 1.7 3.68l.08.1h.28L6 5.47 5.49 6 3.77 4.29V4l-.1-.09A2.23 2.23 0 1 1 2.24 0m0 .69a1.54 1.54 0 1 0 1.54 1.54A1.54 1.54 0 0 0 2.23.69z"/></svg>';
+			i.innerHTML = SVG.search;
 			a.href = '#hidden';
 			span.className = "search";
 			a.addEventListener("click", function(e)
@@ -10162,7 +10170,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			delete span.className;
 			a = span.lastChild;
 			i = span.firstChild;
-			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3,5H9V11H3V5M5,7V9H7V7H5M11,7H21V9H11V7M11,15H21V17H11V15M5,20L1.5,16.5L2.91,15.09L5,17.17L9.59,12.59L11,14L5,20Z" /></svg>';
+			i.innerHTML = SVG.customlinks;
 			a.href = '#';
 			a.id = "manage-links-open";
 			a.addEventListener("click", function(e)
@@ -10183,7 +10191,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			delete span.className;
 			a = span.lastChild;
 			i = span.firstChild;
-			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M2,6V8H14V6H2M2,10V12H14V10H2M20.04,10.13C19.9,10.13 19.76,10.19 19.65,10.3L18.65,11.3L20.7,13.35L21.7,12.35C21.92,12.14 21.92,11.79 21.7,11.58L20.42,10.3C20.31,10.19 20.18,10.13 20.04,10.13M18.07,11.88L12,17.94V20H14.06L20.12,13.93L18.07,11.88M2,14V16H10V14H2Z" /></svg>';
+			i.innerHTML = SVG.customshows;
 			a.href = '#';
 			a.id = "manage-cushows-open";
 			a.addEventListener("click", function(e)
@@ -10203,7 +10211,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			span.className = "";
 			a = span.lastChild;
 			i = span.firstChild;
-			i.innerHTML = '<svg viewBox="0 0 24 24"><path d="M3,17V19H9V17H3M3,5V7H13V5H3M13,21V19H21V17H13V15H11V21H13M7,9V11H3V13H7V15H9V9H7M21,13V11H11V13H21M15,9H17V7H21V5H17V3H15V9Z" /></svg>';
+			i.innerHTML = SVG.settings;
 			a.href = '#';
 			a.id = "settings-open";
 			a.addEventListener("click", function(e)
@@ -10243,13 +10251,13 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 		})
 		.attr("title", "Main menu")
 		.html((accountOverview.html() || "").replace(/Account/, ''))
-		.prepend('<svg xmlns="http://www.w3.org/2000/svg" class="menuIcon" viewBox="0 0 18 12"><path d="M0 0h18v2H0V0m0 5h18v2H0V5m0 5h18v2H0z"/></svg>');//account-overview
+		.prepend(SVG.menu);//account-overview
 		accountOverview.parent().parent().prepend(accountOverview.parent());
 
 		let ul = $("#menu").find("ul"),
 				li = ul.find("li");
 
-		accountOverview.parent().parent().append('<li><a id="searchIcon" href="#searchBecauseNoOneChecks" title="Search"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 6 6"><path d="M2.23 0a2.23 2.23 0 0 1 1.7 3.68l.08.1h.28L6 5.47 5.49 6 3.77 4.29V4l-.1-.09A2.23 2.23 0 1 1 2.24 0m0 .69a1.54 1.54 0 1 0 1.54 1.54A1.54 1.54 0 0 0 2.23.69z"/></svg>Search</a></li>').find("li:last-child").click(function(e)
+		accountOverview.parent().parent().append('<li><a id="searchIcon" href="#searchBecauseNoOneChecks" title="Search">' + SVG.search + 'Search</a></li>').find("li:last-child").click(function(e)
 		{
 			e.originalEvent.preventDefault();
 			$("#searchBecauseNoOneChecks").focus();
@@ -10278,18 +10286,12 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			let li = $(multiline(function(){/*
 	<li>Viewing as
 		<span class="user">
-			<svg viewBox="0 0 24 24">
-				<path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"></path>
-			</svg>
+			{SVG-VIEWAS}
 		</span>
 		<span class="nu"></span>
 		<a class="close" title="Close" href="*/}) + window.location.href.replace(/\/u\/[^?#]+/, "") + multiline(function(){/*">
-			<svg viewBox="0 0 24 24">
-				<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
-			</svg>
-			<svg viewBox="0 0 24 24">
-				<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
-			</svg>
+			{SVG-CLOSEHOVER}
+			{SVG-CLOSE}
 		</a>
 	</li>
 	*/})).appendTo(ul);
@@ -10337,7 +10339,7 @@ px)
 				monkey.title = "Colors saved locally in browser's cookies";
 //cookies svg
 	//			monkey.innerHTML = '<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve" style="vertical-align: middle;"><circle style="fill:#5d433f;" cx="66.06" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="66.06" cy="222.97" r="41.29"/><circle style="fill:#5d433f;" cx="445.94" cy="222.97" r="66.06"/><circle style="fill:#f7b189;" cx="445.94" cy="222.97" r="41.29"/><path style="fill:#543e3b;" d="M442.589,262.049c-8.366-14.436-13.169-30.655-13.169-47.34v-0.001c0-72.373-44.364-134.33-107.355-160.318V24.774l-41.29,16.516l-8.258-33.032c-21.781,7.261-40.361,22.498-54.356,37.298c-77.557,17.283-135.58,86.39-135.58,169.154c0,16.685-4.803,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,93.496,92.431,169.29,206.452,169.29s206.452-75.794,206.452-169.29C462.452,308.532,455.308,283.997,442.589,262.049z"/><path style="fill:#543e3b;" d="M140.387,364.043c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-84.035,43.969-155.956,106.493-186.502l-7.396-29.584c-21.781,7.261-40.361,22.498-54.357,37.298C140.604,62.839,82.581,131.946,82.581,214.71c0,16.685-4.802,32.904-13.169,47.34c-12.72,21.948-19.863,46.482-19.863,72.402c0,75.465,60.232,139.37,143.415,161.223C160.282,460.734,140.387,414.619,140.387,364.043z"/><path style="fill:#f7b189;" d="M256,470.71c68.412,0,123.871-44.367,123.871-99.097c0-11.354-2.414-22.245-6.835-32.386c-6.41-14.707-4.228-31.587,6.07-43.889c13.134-15.691,19.908-36.877,16.333-59.635c-4.91-31.259-30.182-56.486-61.448-61.353c-23.892-3.719-46.037,3.968-61.903,18.439c-4.51,4.113-10.3,6.17-16.087,6.17c-5.79,0-11.581-2.056-16.091-6.17c-15.866-14.471-38.011-22.158-61.903-18.439c-31.266,4.866-56.537,30.094-61.448,61.353c-3.575,22.757,3.199,43.943,16.333,59.635c10.298,12.303,12.48,29.182,6.07,43.889c-4.42,10.142-6.835,21.033-6.835,32.386C132.129,426.342,187.588,470.71,256,470.71z"/><path style="fill:#f7b189;" d="M132.129,371.612c0,18.522,6.468,35.795,17.524,50.625c-5.938-18.411-9.266-37.916-9.266-58.195c0-30.24,7.143-58.864,19.863-84.469c8.367-16.841,13.169-35.764,13.169-55.23c0-17.307,1.96-34.056,5.468-50.08c-0.295,0.042-0.583,0.04-0.879,0.086c-31.266,4.866-56.536,30.094-61.448,61.352c-3.575,22.758,3.2,43.944,16.333,59.635c10.298,12.302,12.481,29.181,6.071,43.889C134.543,349.368,132.129,360.259,132.129,371.612z"/><g><path style="fill:#5D5360;" d="M239.476,330.323c-1.242,0-2.5-0.278-3.685-0.871l-16.516-8.258c-4.081-2.04-5.734-7-3.694-11.081c2.048-4.081,7-5.734,11.081-3.694l16.516,8.258c4.081,2.04,5.734,7,3.694,11.081C245.419,328.653,242.508,330.323,239.476,330.323z"/><path style="fill:#5D5360;" d="M272.524,330.323c-3.032,0-5.944-1.669-7.395-4.565c-2.04-4.081-0.387-9.04,3.694-11.081l16.516-8.258c4.073-2.04,9.032-0.387,11.081,3.694c2.04,4.081,0.387,9.04-3.694,11.081l-16.516,8.258C275.024,330.044,273.766,330.323,272.524,330.323z"/></g><path style="fill:#4B3F4E;" d="M182.319,363.355c-5.001,0-8.941,4.431-8.248,9.384c5.126,36.617,39.853,64.938,81.929,64.938c42.077,0,76.803-28.321,81.929-64.938c0.693-4.953-3.247-9.384-8.248-9.384H182.319z"/><path style="fill:#E6646E;" d="M208.417,424.038c13.457,8.563,29.849,13.639,47.583,13.639s34.126-5.076,47.583-13.639c-5.966-20.666-25.063-35.909-47.583-35.909S214.383,403.371,208.417,424.038z"/><path style="fill:#4B3F4E;" d="M181.677,272.516L181.677,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C206.452,261.424,195.36,272.516,181.677,272.516z"/><path style="fill:#5D5360;" d="M181.677,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C206.452,225.801,195.36,214.71,181.677,214.71z"/><circle style="fill:#FFFFFF;" cx="181.68" cy="231.23" r="8.258"/><path style="fill:#4B3F4E;" d="M330.323,272.516L330.323,272.516c-13.682,0-24.774-11.092-24.774-24.774v-8.258c0-13.682,11.092-24.774,24.774-24.774l0,0c13.682,0,24.774,11.092,24.774,24.774v8.258C355.097,261.424,344.005,272.516,330.323,272.516z"/><path style="fill:#5D5360;" d="M330.323,214.71v28.903c0,6.841,5.546,12.387,12.387,12.387s12.387-5.546,12.387-12.387v-4.129C355.097,225.801,344.005,214.71,330.323,214.71z"/><circle style="fill:#FFFFFF;" cx="330.32" cy="231.23" r="8.258"/><path style="fill:#FF8087;" d="M256,437.677c2.792,0,5.538-0.169,8.258-0.415v-16.101c0-4.56-3.694-8.258-8.258-8.258s-8.258,3.698-8.258,8.258v16.101C250.462,437.508,253.208,437.677,256,437.677z"/></svg>';
-				monkey.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="cookieIcon" viewBox="0 0 18 18"><rect class="cookieIconHoles" width="10.27" height="14.58" x="3.04" y="2.49" rx="3.33" ry="3.33" transform="rotate(-41.95 8.18 9.78)"/><path d="M9 0a9 9 0 1 0 9 9 8.44 8.44 0 0 0-.13-1.5A1.05 1.05 0 0 0 17 7h-2V6a.98.98 0 0 0-1-1h-2V4a.98.98 0 0 0-1-1h-1V1a.98.98 0 0 0-1-1M6.5 3A1.5 1.5 0 1 1 5 4.5 1.5 1.5 0 0 1 6.5 3m-3 4A1.5 1.5 0 1 1 2 8.5 1.5 1.5 0 0 1 3.5 7m5 1A1.5 1.5 0 1 1 7 9.5 1.5 1.5 0 0 1 8.5 8m5 2a1.5 1.5 0 0 1 0 3 1.5 1.5 0 0 1-1.5-1.5 1.5 1.5 0 0 1 1.5-1.5M8 13a1.5 1.5 0 1 1-1.5 1.5A1.5 1.5 0 0 1 8 13z"/></svg></svg>(Guest)';
+				monkey.innerHTML = SVG.guest + '(Guest)';
 			}
 		}
 		let list = ls("info") || {},
@@ -10408,7 +10410,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			{
 				span.title = "Colors saved remotely on server";
 //cloud svg
-				span.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12,4C15.64,4 18.67,6.59 19.35,10.04C21.95,10.22 24,12.36 24,15A5,5 0 0,1 19,20H6A6,6 0 0,1 0,14C0,10.91 2.34,8.36 5.35,8.04C6.6,5.64 9.11,4 12,4M7.5,9.69C6.06,11.5 6.2,14.06 7.82,15.68C8.66,16.5 9.81,17 11,17V18.86L13.83,16.04L11,13.21V15C10.34,15 9.7,14.74 9.23,14.27C8.39,13.43 8.26,12.11 8.92,11.12L7.5,9.69M9.17,8.97L10.62,10.42L12,11.79V10C12.66,10 13.3,10.26 13.77,10.73C14.61,11.57 14.74,12.89 14.08,13.88L15.5,15.31C16.94,13.5 16.8,10.94 15.18,9.32C14.34,8.5 13.19,8 12,8V6.14L9.17,8.97Z"></path></svg>' + span.innerHTML;
+				span.innerHTML = SVG.user + span.innerHTML;
 			}
 		}
 //fix paste via right click: adding input event
@@ -11018,18 +11020,12 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 	<div id="changesLogBox">
 		<div id="changesLogHead" class="header">
 			<div class="back" title="Back">
-				<svg viewBox="0 0 24 24">
-					<path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" />
-				</svg>
+				{SVG-BACK}
 			</div>
 			<h4>Airdates.tv enhancer v# Changes Log</h4>
 			<div class="close" title="Close">
-				<svg viewBox="0 0 24 24">
-					<path d="M19,3H16.3H7.7H5A2,2 0 0,0 3,5V7.7V16.4V19A2,2 0 0,0 5,21H7.7H16.4H19A2,2 0 0,0 21,19V16.3V7.7V5A2,2 0 0,0 19,3M15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4L13.4,12L17,15.6L15.6,17Z"></path>
-				</svg>
-				<svg viewBox="0 0 24 24">
-					<path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,8.4L13.4,12L17,15.6L15.6,17L12,13.4L8.4,17L7,15.6L10.6,12L7,8.4L8.4,7L12,10.6L15.6,7L17,8.4Z"></path>
-				</svg>
+				{SVG-CLOSEHOVER}
+				{SVG-CLOSE}
 			</div>
 		</div>
 		<div id="changesLogLegend">
@@ -11734,7 +11730,7 @@ if (isFrame)
 		$("<li/>")
 			.attr("class", "nav-tab nav-tab--secondary reload")
 			.attr("title", "Reload comments")
-			.append('<a><svg viewBox="0 0 24 24"><path d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"></path></svg><span>Reload</span></a>')
+			.append('<a>' + SVG.reload + '</a>')
 			.insertAfter( $("#thread-share-menu, #thread-share-bar"))
 			.click(function()
 			{
