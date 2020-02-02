@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.66.1
+// @version     1.67b1
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -20,6 +20,11 @@ var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
+1.67 (2020--)
+	+ ability change some colors of the website
+	+ ability enter RGB and HSB volues in colorpicker
+	! accounts with hundereds "my shows" could fail properly sort shows
+	! colorpicker not shown in Custom Shows settings
 1.66.1 (2020-01-14)
 	! option's misalignment in default theme
 	* color picker for today's color now shows the color value in option's field
@@ -688,7 +693,16 @@ let mainFunc = function(event)
 			archiveBottom: 1, //show next/prev month links below calendar
 			popupBlur: 1, //blur background when popups are shown
 			myShowsTop: 0, //move my shows on top of the list
-			todayColor: "",
+			themeColors: {
+				text: "",
+				bg: "",
+//				day: "",
+				date: "",
+				dateBg: "",
+				today: "",
+				todayBg: "",
+				todayBorder: ""
+			},
 /*			colorsCustom: {
 				"807fff": {name: ""},
 				"ff7fff": {name: ""},
@@ -714,12 +728,18 @@ let mainFunc = function(event)
 			return val;
 		},
 
-		pref: function(id, val)
+		pref: function(id, val, prefs)
 		{
+			prefs = prefs || this.prefs;
+			let ids = id.split(".");
+			if (ids.length > 1)
+			{
+				return this.pref(ids[1], val, prefs[ids[0]]);
+			}
 			if (typeof(val) == "undefined")
-				return typeof(this.prefs[id]) == "undefined" ? null : this.prefs[id];
+				return typeof(prefs[id]) == "undefined" ? null : prefs[id];
 
-			this.prefs[id] = this.filter(id, val);
+			prefs[id] = this.filter(id, val);
 			this.save();
 		},
 
@@ -740,11 +760,18 @@ let mainFunc = function(event)
 			}
 
 			//add any missing settings
-			for(let i in this.prefsDef)
+			function fixPref(pref, def)
 			{
-				if (!(i in this.prefs))
-					this.prefs[i] = this.prefsDef[i];
+				for(let i in def)
+				{
+					if (!(i in pref))
+						pref[i] = def[i];
+
+					if (typeof(def[i]) == "object")
+						fixPref(pref[i], def[i]);
+				}
 			}
+			fixPref(this.prefs, this.prefsDef);
 			if (this.prefs.theme === 1)
 				this.prefs.theme = "dark";
 
@@ -856,7 +883,8 @@ let mainFunc = function(event)
 			this.themes.init();
 			this.create();
 			this.inited = true;
-		},
+		},//Settings.init()
+
 		create: function(callback)
 		{
 			if (Settings.box)
@@ -991,92 +1019,7 @@ let mainFunc = function(event)
 				if (!e.isTrigger)
 					Settings.colors.init();
 
-			}, ['Use all available width, or show 7 custom colors per line'], ""));
-			opt = $(multiline(function(){/*
-<span>Theme: <select id="theme"></select></span>
-			*/}))
-				.appendTo(content)
-				.find("select")
-				.each(function(i, el)
-				{
-					let option = document.createElement("option");
-					for(let id in Settings.themes.list)
-					{
-						option = option.cloneNode(false);
-						option.value = id;
-						let name = id;
-						if ("name" in Settings.themes.list[name])
-							name = Settings.themes.list[name].name;
-
-						if (name === "")
-							name = "Default";
-
-						option.innerHTML = name;
-						el.appendChild(option);
-					}
-					el.value = Settings.prefs.theme;
-				})
-				.on("change", function(evt)
-				{
-					Settings.themes.load(evt.target.value);
-				})
-				.trigger("change");
-
-			opt = $(multiline(function(){/*
-<li id="todayColorBox">
-	<label>Today color #</label><input id="todayColor" size="6" placeholder="Theme" title="Leave empty to use theme's color"><div class="color picker picker-light self" callback="todayColor" title="Set Color"></div>
-</li>
-*/}))
-				.appendTo(content)
-				.find("input")
-				.val(Settings.pref("todayColor"))
-				.on("input", function(evt)
-				{
-					let s = this.selectionStart || 0,
-							e = this.selectionEnd || 0,
-							o = this.value.toUpperCase(),
-							a = o.substr(0, s),
-							b = o.substr(e),
-							fa = a.replace(/[^0-9A-F]/g, ""),
-							fb = b.replace(/[^0-9A-F]/g, ""),
-							val = fa + fb,
-							that = this;
-
-					if (val.length > 6)
-						val = fa.substr(0, s - (s + fb.length - 6)) + fb
-
-					this.value = val;
-					this.selectionEnd = e - (o.length - val.length);
-					this.selectionStart = s - (o.length - val.length);
-
-					if (!val.length || val.length == 3 || val.length == 6)
-					{
-						Settings.pref("todayColor", val);
-						todayColor(val);
-					}
-					if (evt.isTrigger)
-					{
-						pickerCallbacks.todayColor = function(val, temp)
-						{
-							if (val && !temp)
-							{
-								Settings.pref("todayColor", val);
-							}
-							if (val !== null)
-								that.value = val;
-
-							if (val === null)
-							{
-								val = Settings.prefs.todayColor;
-								that.value = val;
-							}
-
-							todayColor(val);
-						}
-					}
-
-				})
-				.trigger("input");
+			}, ['Use all available width, or show 7 custOm colors per line'], ""));
 
 			opt = $(multiline(function(){/*
 <span id="timeOffsetBox">
@@ -1138,6 +1081,152 @@ let mainFunc = function(event)
 					})
 					.trigger("input");
 			}
+
+			opt = $(multiline(function(){/*
+<span>Theme: <select id="theme"></select></span>
+			*/}))
+				.appendTo(content)
+				.find("select")
+				.each(function(i, el)
+				{
+					let option = document.createElement("option");
+					for(let id in Settings.themes.list)
+					{
+						option = option.cloneNode(false);
+						option.value = id;
+						let name = id;
+						if ("name" in Settings.themes.list[name])
+							name = Settings.themes.list[name].name;
+
+						if (name === "")
+							name = "Default";
+
+						option.innerHTML = name;
+						el.appendChild(option);
+					}
+					el.value = Settings.prefs.theme;
+				})
+				.on("change", function(evt)
+				{
+					Settings.themes.load(evt.target.value);
+				})
+				.trigger("change");
+
+			let themeColorsInput = function(evt)
+			{
+				let s = this.selectionStart || 0,
+						e = this.selectionEnd || 0,
+						o = this.value.toUpperCase(),
+						a = o.substr(0, s),
+						b = o.substr(e),
+						fa = a.replace(/[^0-9A-F]/g, ""),
+						fb = b.replace(/[^0-9A-F]/g, ""),
+						val = fa + fb,
+						name = this.id.split("_")[1],
+						that = this,
+						data = {};
+
+				if (val.length > 6)
+					val = fa.substr(0, s - (s + fb.length - 6)) + fb
+
+				this.value = val;
+				this.selectionEnd = e - (o.length - val.length);
+				this.selectionStart = s - (o.length - val.length);
+
+				if (!val.length || val.length == 3 || val.length == 6)
+				{
+					Settings.pref("themeColors." + name, val);
+					data[name] = val;
+					Settings.themes.quickOverride(data)
+				}
+				if (evt.isTrigger)
+				{
+					pickerCallbacks["themeColor_" + name] = function(val, temp)
+					{
+						let c = (typeof(val) == "boolean") ? val : temp ? true :false;
+						that.parentNode.classList.toggle("colorpicker", c);
+						that.parentNode.parentNode.classList.toggle("colorpicker", c);
+						let b = document.getElementById("themeColorBox_" + that.parentNode._example),
+								s = b.getElementsByClassName("example")[0];
+						if (c)
+							b.setAttribute("down", that.parentNode._down);//(~~b.getAttribute("items") - (~~b.getAttribute("items") - ~~that.parentNode.getAttribute("item"))));
+						else
+							b.removeAttribute("down");
+
+						if (typeof(val) == "boolean")
+							val = null;
+
+						if (val && !temp)
+						{
+							Settings.pref("themeColors." + name, val);
+
+						}
+						if (val !== null)
+							that.value = val;
+
+						if (val === null)
+						{
+							val = Settings.prefs.themeColors[name];
+							that.value = val;
+						}
+						let data = {};
+						data[name] = val;
+						Settings.themes.quickOverride(data);
+					}
+				}
+			}//themeColorsInput()
+			let box = $('<div class="themeColorsSettings">'),
+					info = Settings.themes.quickOverrideTempl,
+					samples = {}
+					sampleGroup = 1;
+
+			let templ = multiline(function(){/*
+<span id="themeColorBox_{ID}" class="themeColorsBox">
+	<label>{LABEL} <span>#</span></label>
+	<input id="themeColor_{ID}" size="6" placeholder="Theme" title="{TITLE}">
+	<div class="color picker picker-light self" callback="themeColor_{ID}" title="Set Color"></div>
+</span>
+			*/});
+			for(let i in Settings.prefsDef.themeColors)
+			{
+				opt = $(templ
+						.replace(/\{ID\}/g, i)
+						.replace(/\{LABEL\}/g, info[i].label || "")
+						.replace(/\{TITLE\}/g, info[i].title || ""))
+
+					.appendTo(box)
+					.find("input")
+					.val(Settings.pref("themeColors." + i))
+					.on("input", themeColorsInput)
+					.trigger("input");
+
+				if (info[i].sample)
+				{
+					let p = opt.parent();
+					let s = info[i].sample.split(",");
+					for(let i = 0; i < s.length; i++)
+					{
+						if (typeof(samples[s[i]]) == "undefined")
+							samples[s[i]] = [0, sampleGroup++];
+
+						samples[s[i]][0]++;
+						p[0]._down = samples[s[i]][0];
+					}
+					p[0]._example = info[i].sample;
+				}
+			}
+			box.appendTo(content);
+			for (let s in samples)
+			{
+				let b = $("#themeColorBox_" + s);
+				b.append($('<span class="example example_' + s + ' example_down_' + samples[s][0] + '">Example</span>'));
+				for(let i = 1; i < samples[s][0]; i++)
+				{
+					b = b.next();
+					b[0]._down = samples[s][0] - (samples[s][0] - ~~b[0]._down);
+				}
+			}
+
 			content.append('<div class="spacer"/>');
 
 			a.href = "#";
@@ -1689,6 +1778,15 @@ Dark Theme
 body
 {
 	background-color: #191919 !important;
+}
+body,
+.header h4,
+#account-popup-content,
+#settings-popup .content,
+#manage-cushows-popup-content,
+#manage-links-popup-content,
+#changesLogBox
+{
 	color: #b9b2b2;
 }
 
@@ -1786,7 +1884,6 @@ span.button,
 .header h4
 {
 	background: rgb(112, 112, 112) !important;
-	color: inherit;
 }
 
 .details a,
@@ -1814,18 +1911,17 @@ body.collapseMulti div.day:not(.expand):not(.opened) div.entry.multif div.title:
 
 div.date
 {
-	background-color: #4c4c4c;
 	color: #8c8c8c;
+	background-color: #4c4c4c;
 }
-
-#todayColorBox > div.picker,
-#todayColorBox > input,
 div.today div.date
 {
 	background-color: rgb(190, 150, 0);
+}
+div.today div.date
+{
 	color: black;
 }
-
 div.day,
 body.archive div.day
 {
@@ -1939,7 +2035,7 @@ END DARK THEME
 
 			},//themes.list._default
 
-			list:{},
+			list: {},
 
 			init: function themesInit()
 			{
@@ -1974,7 +2070,8 @@ END DARK THEME
 					style.innerHTML = this.list[cssName].css.replace(/^(?!\*\/)(body|\w|[\.#\[\:\$@\*])/gm, reg).replace(/(\/\*([\s\S]*?)\*\/)|(\/\/(.*)$)/gm, '').replace(/[\n\t]*/g, "");
 					head.appendChild(style);
 				}
-				todayColor();
+				this.quickOverrideInit();
+//				this.quickOverride();
 			},
 
 			load: function themesLoad(theme)
@@ -2021,6 +2118,241 @@ END DARK THEME
 				}
 				return themes;
 			},
+
+			quickOverrideStyle: [],
+			quickOverrideInit: function()
+			{
+				if (this.quickOverride.inited)
+					return;
+
+				for( let i in Settings.prefs.themeColors)
+				{
+					let id = "CSS_override_" + i;
+					if (document.getElementById(id))
+						continue;
+
+					this.quickOverrideStyle[i] = document.createElement("style");
+					this.quickOverrideStyle[i].id = id;
+					document.getElementsByTagName("head")[0].appendChild(this.quickOverrideStyle[i]);
+				}
+				this.quickOverride.inited = true;
+			},
+
+			quickOverride: function(data, commonOnly)
+			{
+
+				if (typeof(data) != "object")
+					data = Settings.prefs.themeColors;
+
+				for(let i in data)
+				{
+
+					let val = "" + data[i],
+							c1 = "",
+							c2 = "",
+							r = this.quickOverrideTempl._common.css,
+							css = "";
+
+					if (val.length == 3)
+					{
+						val = val[0] + val[0] + val[1] + val[1] + val[2] + val[2];
+					}
+					c1 = val;
+					if (val)
+						c2 = new Colors().setColor(val).rgbaMixBlack.luminance > 0.22 ? "000" : "FFF";
+
+					if (val && !commonOnly)
+						r += this.quickOverrideTempl[i].css || "";
+
+					r = r	.replace(/\{ID\}/g, i)
+								.replace(/\{C1\}/g, c1)
+								.replace(/\{C2\}/g, c2)
+
+					if (val)
+						css += r;
+
+					this.quickOverrideStyle[i].innerHTML = css;
+					if (this.quickOverrideStyle[i].nextSibling)
+					{
+						document.getElementsByTagName("head")[0].appendChild(this.quickOverrideStyle[i]);
+					}
+				}
+			},//quickOverride()
+
+			quickOverrideTempl:
+			{
+				_common:
+				{
+					css: multiline(function(){/*
+#themeColorBox_{ID} > input
+{
+	background-color: #{C1} !important;
+	color: #{C2} !important;
+}
+/*
+#themeColorBox_{ID} > input
+{
+	border-color: #{C2} !important;
+}*//*
+				*/})
+				},
+
+				today:
+				{
+					css: multiline(function(){/*
+.example_today,
+div.today > .date
+{
+	color: #{C1} !important;
+	fill: #{C1} !important;
+}
+				*/}),
+					title: "Leave empty to use theme's color",
+					label: "Today text",
+					sample: "today"
+				},
+
+				todayBg:
+				{
+					css: multiline(function(){/*
+.example_today,
+div.today > .date
+{
+	background-color: #{C1} !important;
+}
+				*/}),
+					title: "Leave empty to use theme's color",
+					label: "Today background",
+					sample: "today"
+				},
+
+				todayBorder:
+				{
+					css: multiline(function(){/*
+.example_today,
+div.today
+{
+	border-color: #{C1} !important;
+	-webkit-box-shadow: 0px 0px 10px 0px #{C1} !important;
+	-moz-box-shadow:    0px 0px 10px 0px #{C1} !important;
+	box-shadow:         0px 0px 10px 0px #{C1} !important;
+}
+				*/}),
+					title: "Leave empty to use theme's color",
+					label: "Today border",
+					sample: "today"
+				},
+
+				bg:
+				{
+					css: multiline(function(){/*
+
+.example_text,
+.example_day,
+body,
+body[class*="theme_"]
+{
+	background-color: #{C1} !important;
+}
+				*/}),
+					title: "Leave empty to use theme's color",
+					label: "Background",
+//					sample: "text,day"
+					sample: "text"
+				},
+
+				text:
+				{
+					css: multiline(function(){/*
+.example_text,
+body > :not(.popup) #searchIcon > svg,
+body[class*="theme_"] > :not(.popup) #searchIcon > svg,
+body > :not(.popup),
+body[class*="theme_"] > :not(.popup)  svg,
+body > :not(.popup)  svg
+body[class*="theme_"] > :not(.popup),
+body > :not(.popup)  a
+{
+	color: #{C1} !important;
+	fill: #{C1} !important;
+}
+				*/}),
+
+/*					css: multiline(function(){/*
+.example_text,
+body > :not(.popup) > *:not(.days),
+body > :not(.popup) > *:not(.days) *,
+body[class*="theme_"] > :not(.popup) > *:not(.days) *,
+body > :not(.popup) > :not(.days),
+body > :not(.popup) > :not(.days) a,
+body[class*="theme_"] > :not(.popup) > :not(.days) a
+{
+	color: #{C1} !important;
+	fill: #{C1} !important;
+}
+*/
+//					}),
+					title: "Leave empty to use theme's color",
+					label: "Text",
+					sample: "text"
+				},
+
+/*				day:
+				{
+					css: multiline(function(){/*
+.example_day,
+div.entry:not([color]),
+body[class*="theme_"] div.entry:not([color])
+{
+	color: #{C1} !important;
+	fill: #{C1} !important;
+}
+*/
+/*					}),
+					title: "Leave empty to use theme's color",
+					label: "Day text",
+					sample: "day"
+
+				},
+*/
+				date:
+				{
+					css: multiline(function(){/*
+						
+.example_date,
+body div.day:not(.today) div.date,
+body[class*="theme_"] div.day:not(.today) div.date
+{
+	color: #{C1} !important;
+	fill: #{C1} !important;
+}
+				*/}),
+					title: "Leave empty to use theme's color",
+					label: "Date text",
+					sample: "date"
+				},
+
+				dateBg:
+				{
+					css: multiline(function(){/*
+.example_date,
+body div.day:not(.today) div.date,
+body[class*="theme_"] div.day:not(.today) div.date
+{
+	background-color: #{C1} !important;
+}
+.example_date,
+body div.day:not(.today),
+body[class*="theme_"] div.day:not(.today)
+{
+	border-color: #{C1} !important;
+}
+				*/}),
+					title: "Leave empty to use theme's color",
+					label: "Date background",
+					sample: "date"
+				}
+			},//quickOverrideTempl
 
 			save: function themesSave()
 			{
@@ -3543,55 +3875,6 @@ END DARK THEME
 		return Math.floor(Math.random() * (max - min + 1)) + min;
 	}
 
-	function todayColor(val)
-	{
-		let style = todayColor.style;
-		if (!style)
-		{
-			style = document.createElement("style");
-			style.id = "CSS_todayColor";
-			todayColor.style = style;
-			todayColor.templ = multiline(function(){/*
-	div.today{DEFAULT}
-	{
-		border-color: #{BGCOLOR} !important;
-		-webkit-box-shadow: 0px 0px 10px 0px #{BGCOLOR} !important;
-		-moz-box-shadow:    0px 0px 10px 0px #{BGCOLOR} !important;
-		box-shadow:         0px 0px 10px 0px #{BGCOLOR} !important;
-	}
-	#todayColorBox{DEFAULT} > div.picker,
-	#todayColorBox{DEFAULT} > input,
-	div.today{DEFAULT} > .date
-	{
-		background-color: #{BGCOLOR} !important;
-		color: #{COLOR} !important;
-	}
-	#todayColorBox{DEFAULT} > div.picker,
-	#todayColorBox{DEFAULT} > input
-	{
-		border-color: #{COLOR} !important;
-	}
-	*/});
-			document.getElementsByTagName("head")[0].appendChild(style);
-		}
-		val = typeof(val) == "undefined" ? Settings.prefs.todayColor : val;
-		let color = "";
-		if (val.length == 3)
-		{
-			val = val[0]+val[0]+val[1]+val[1]+val[2]+val[2];
-		}
-		if (val)
-		{
-			color = new Colors().setColor(val).rgbaMixBlack.luminance > 0.22 ? "000" : "FFF";
-		}
-		style.innerHTML = todayColor.templ
-											.replace(/\{DEFAULT\}/g, val ? "" : "DEFAULT")
-											.replace(/\{BGCOLOR\}/g, val || "000")
-											.replace(/\{COLOR\}/g, color || "000");
-
-	}//todayColor()
-
-
 	(function loop()
 	{
 		if ((typeof(engines) == "undefined" || !engines.length) && --loopWait)
@@ -3604,7 +3887,7 @@ END DARK THEME
 		customLinksAdd();
 	})();
 
-//	Settings.init();
+	Settings.init();
 	/*logo*/
 	$("body > h1 > img").click(function()
 	{
@@ -3750,8 +4033,9 @@ END DARK THEME
 							entries[n]._iOrig = n;
 							watched.attach(i, entries[n]);
 					}
-					sortMyShows(entries);
 					collapseMulti(i, e, c);
+					sortMyShows(entries);
+
 				});
 			});
 			showHideLoad();
@@ -3790,7 +4074,7 @@ END DARK THEME
 
 			return r;
 		});
-		if (Settings.prefs.myShowsTop)
+		if (Settings.prefs.myShowsTop && Object.keys(DB.savedColors).length)
 		{
 			entries.sort(function(a, b)
 			{
@@ -4467,7 +4751,6 @@ div.today
 	box-shadow:         0px 0px 10px 0px #FFC800D0;
 }
 
-
 /* higlighted title under cursor *//*
 div.title > input[type="checkbox"]:hover + div.title,
 div.title:hover
@@ -4801,6 +5084,10 @@ body.prompt #account-popup
 body.popup .popup
 {
 	z-index: 1234;
+}
+body.popup .cp-color-picker
+{
+	z-index: 1235;
 }
 body.prompt > .popup
 {
@@ -5417,14 +5704,11 @@ div[id*="-popup"]
 	white-space: nowrap;
 }
 
-.cp-color-picker
-{
-	z-index: 9999;
-}
 
 #changesLogBox,
 div[id*="-popup"],
-body:not(.popup) .cp-color-picker
+/*body:not(.popup) .cp-color-picker*//*
+.cp-color-picker
 {
 	-webkit-box-shadow: 0px 0px 40px 0px black;
 	-moz-box-shadow:    0px 0px 40px 0px black;
@@ -5446,7 +5730,8 @@ body:not(.popup) div.entry[opened]
 @-moz-document url-prefix() {
 	#changesLogBox,
 	div[id*="-popup"],
-	body:not(.popup) .cp-color-picker
+/*	body:not(.popup) .cp-color-picker*//*
+	.cp-color-picker
 	{
 		box-shadow:         0px 0px 30px 0px black;
 		-webkit-box-shadow: 0px 0px 30px 0px black;
@@ -5699,26 +5984,84 @@ div.undoBar > div > .close
 }
 
 
+.cp-color-picker
+{
+	box-sizing: content-box;
+	width: 214px;
+	border: 1px solid black;
+}
+.cp-color-picker .cp-panel
+{
+	line-height: 21px;
+	float:right;
+	padding: 0 1px 0 8px;
+	margin-top: -1px;
+	overflow: visible;
+}
+.cp-xy-slider:active
+{
+	cursor: none;
+}
+.cp-panel,
+.cp-panel input
+{
+	color: #bbb;
+	font-family: Monaco, "DejaVu Sans Mono", "Courier New", "Lucida Console", Courier, fixed, monospace;
+	font-size: 1em;
+}
+.cp-panel input
+{
+	width: 28px;
+	height: 12px;
+	padding: 2px 3px 1px;
+	text-align: right;
+	line-height: 12px;
+	background: transparent;
+	border: 1px solid;
+	border-color: #222 #666 #666 #222;
+}
+.cp-panel hr
+{
+	margin: 0 -2px 2px;
+	height: 1px;
+	border: 0;
+	background: #666;
+	border-top: 1px solid #222;
+}
+.cp-alpha
+{
+	width: 155px;
+}
 .cp-disp
 {
 	padding-bottom: 5px;
 	clear: both;
 	text-align: center;
-	display: flex;
+	display: inline-block;
 }
 .cp-disp > input
 {
 	margin-right: 3px;
+	line-height: 1.2em;
+	
+}
+.cp-hex
+{
+	position: absolute;
+	left: 0;
+	bottom: -1.9em;
+	text-align: start;
+	display: inline-block;
+	width: 5em;
 }
 #colorpicker-hex
 {
 	margin-right: 0;
-	width: 4.3em;
-	font-size: 1em;
-	font-family: 'courier new', Monaco,"DejaVu Sans Mono",'times new roman', fixed, monospace;
+	width: 3.6em;
 	padding-left: 3px;
-	padding-right: 2px;
-
+	padding-right: 3px;
+	border-width: 1px;
+	text-align: start;
 }
 
 #timeOffsetBox
@@ -6541,49 +6884,110 @@ body.prompt.scrollbar
 {
 	position: absolute;
 }
-
-#todayColorBox > div.color
+.themeColorsSettings
 {
-	width: 1.2em;
-	height: 1.3em;
+	display: table;
+}
+.themeColorsBox > div.color
+{
+	width: 1em;
+	height: 1em;
 	border: 1px solid black;
 	margin: 0;
-	vertical-align: top;
 	display: inline-block !important;
 	float: unset;
+	vertical-align: middle;
+	text-align: center;
+	border-left: none;
+	padding: 0.1em;
 	position: relative;
-	left: -1px;
-	vertical-align: bottom;
+	border-bottom-left-radius: 0;
+	border-top-left-radius: 0;
 }
-#todayColorBox
+.themeColorsBox
 {
-	display: inline-block !important;
+	display: table-row !important;
+	line-height: 2em;
+	height: 2em;
 }
-#todayColorBox > label
+	
+.themeColorsBox > *
 {
-	vertical-align: text-bottom;
+	display: table-cell !important;
+	vertical-align: middle;
+}
+.themeColorsBox > label
+{
+	text-align: end;
+}
+.themeColorsBox > label > span
+{
+	float: right;
+	margin-left: .5em;
 }
 
-#todayColorBox > input
+.themeColorsBox > input
 {
 	display: inline-block;
 	height: 1em;
-	padding: 0.1em 0.3em;
+	padding: 0.04em 0.3em;
 	margin-left: 0.2em;
 	border: 0;
 	border-color: inherit;
 	border-style: solid;
 	border-width: 1px;
 	border-color: inherit;
-	vertical-align: top;
-	font-family: "Lucida Console", Courier, Monaco, monospace;;
+	font-family: Monaco,"DejaVu Sans Mono","Courier New", "Lucida Console", Courier, fixed, monospace;
+}
+
+.themeColorsSettings.colorpicker > .colorpicker input
+{
+	border: 1px solid black;
+	-webkit-box-shadow: 0px 0px 10px 0px white;
+	-moz-box-shadow:    0px 0px 10px 0px white;
+	box-shadow:         0px 0px 10px 0px white;
+}
+.themeColorsSettings .example
+{
+	display: inline-block !important;
+	margin-left: 1em;
+	padding: 0.2em;
+	line-height: 1em;
+	vertical-align: middle;
+	position: relative;
+}
+.themeColorsSettings .example.example_down_1
+{
+	bottom: 0;
+}
+.themeColorsSettings .example.example_down_2
+{
+	bottom: -1em;
+}
+.themeColorsSettings .example.example_down_3
+{
+	bottom: -2em;
+}
+
+.themeColorsSettings .themeColorsBox[down="1"] .example
+{
+	bottom: 1em;
+}
+.themeColorsSettings .themeColorsBox[down="2"] .example
+{
+	bottom: -1em;
+}
+.themeColorsSettings .themeColorsBox[down="3"] .example
+{
+	bottom: -3em;
 }
 */});//css
 
 	style.innerHTML = css;
 	style.id = "mainCSS";
-	$("head").append(style);
-	Settings.themes.init();
+	let s = document.getElementsByTagName("head")[0].getElementsByTagName("style")[0];
+	s.parentNode.insertBefore(style, s);
+
 	//fix incorrect initial color in colorpicker
 	//fix clicking outside of colorpicker saves selected color instead of discarding
 	//fix close colorpicker by pressing escape button
@@ -6596,6 +7000,382 @@ body.prompt.scrollbar
 
 	$("#colorPickerHolder").remove();
 	var picker = clone.length && clone.colorPicker(
+{
+		customBG: '#222',
+		margin: '4px -2px 0',
+		doRender: 'div div',
+		animationSpeed: 0,
+		opacity: false,
+
+		buildCallback: function($elm) {
+			$elm.toggleClass("popup", true);
+			let cp = this;
+/*			$elm
+				.append('<div class="cp-disp"><input type="button" value="Save"> <input type="button" value="Cancel"><input type="text" spellcheck="false" id="colorpicker-hex"></div>')
+				.on( "click", "input", function()
+				{
+					if (!this.value || this.id == 'colorpicker-hex')
+						return;
+
+					if (this.value == 'Save')
+					{
+						if (editingSeriesId != -2)
+						{
+							Settings.colors.add(cp.color.colors.HEX, cp.color.colors.HEX.toUpperCase() != "FFFFFF");
+							assignColor( editingSeriesId, "#" + cp.color.colors.HEX, true );
+						}
+						if (pickerCallback && pickerCallback in pickerCallbacks && typeof(pickerCallbacks[pickerCallback]) == "function")
+						{
+							pickerCallbacks[pickerCallback](cp.color.colors.HEX);
+						}
+						Settings.colors.init();
+						editingSeriesId = -1;
+						pickerCallback = "";
+						pickerColor = "";
+					}
+					cp.toggle();
+				})
+*/
+			var colorInstance = this.color,
+				colorPicker = this;
+
+			$elm.prepend(multiline(function(){/*
+<div class="cp-panel">
+	R <input type="text" class="cp-r" /><br>
+	G <input type="text" class="cp-g" /><br>
+	B <input type="text" class="cp-b" /><hr>
+	H <input type="text" class="cp-h" /><br>
+	S <input type="text" class="cp-s" /><br>
+	B <input type="text" class="cp-v" /><hr>
+		<span class="cp-hex">#<input id="colorpicker-hex" type="text" spellcheck="false" class="cp-HEX" /></span>
+</div>
+<div class="cp-disp">
+	<input id="colorpicker_save" type="button" value="Save">
+	<input type="button" value="Cancel">
+</div>
+*/
+			})).on( "input keydown keyup click", 'input', function(e)
+				{
+					if (this.type == 'button')
+					{
+						if (this.value == 'Save')
+						{
+							if (editingSeriesId != -2)
+							{
+								Settings.colors.add(cp.color.colors.HEX, cp.color.colors.HEX.toUpperCase() != "FFFFFF");
+								assignColor( editingSeriesId, "#" + cp.color.colors.HEX, true );
+							}
+							if (pickerCallback && pickerCallback in pickerCallbacks && typeof(pickerCallbacks[pickerCallback]) == "function")
+							{
+								pickerCallbacks[pickerCallback](cp.color.colors.HEX);
+							}
+							Settings.colors.init();
+							editingSeriesId = -1;
+							pickerCallback = "";
+							pickerColor = "";
+						}
+						cp.toggle();
+						return;
+					}
+					if (e.key == "Enter" || e.which == 13) //ENTER(13)
+					{
+						$elm.find('input[value="Save"]').click();
+						return;
+					}
+					if (this.id != "colorpicker-hex")
+					{
+						let value = this.value.replace(/[^0-9]/g, ""),
+								className = this.className,
+								type = className.split('-')[1],
+								color = {};
+
+						color[type] = value;
+						colorInstance.setColor(type === 'HEX' ? value : color,
+							type === 'HEX' ? 'HEX' : /(?:r|g|b)/.test(type) ? 'rgb' : 'hsv');
+						colorPicker.render();
+						return;
+					}
+					let start = this.selectionStart,
+							end = this.selectionEnd;
+
+					if (e.type == "keydown")
+					{
+						if (!e.shiftKey &&
+								((start == 1 && end == 1 && (e.key == "ArrowLeft" || e.which == 37))
+									|| (e.key == "ArrowUp" || e.which == 38)
+									|| (e.key == "Home" || e.which == 36)))
+						{
+							e.preventDefault();
+							start = end = 0;
+						}
+						if ((e.ctrlKey || e.metaKey))
+						{
+							let k = 0;
+							if (e.key == "z" || e.which == 90)
+								k = -1;
+							else if (e.key == "y" || e.which == 89)
+								k = 1;
+
+							if (k)
+							{
+								let u = cp.undo(k);
+								if (u)
+								{
+									this.value = u.v;
+									this.selectionStart = u.s || start-1;
+									this.selectionEnd = u.e || end-1;
+								}
+								e.preventDefault();
+								$(this).trigger("input");
+							}
+						}
+					}
+					if (!start && !end)
+					{
+						this.selectionStart = ++start;
+						this.selectionEnd = ++end;
+					}
+					if (e.type != "input")
+						return;
+
+					let rs = 0,
+							re = 0,
+							r = "",
+							val = this.value.toUpperCase();
+
+					for(let i = 0; i < val.length && r.length < 6; i++)
+					{
+						if (val.charAt(i).match(/[A-F0-9]/))
+						{
+							r += val[i];
+						}
+						else
+						{
+							if (i < start)
+								rs++
+
+							if (i < end)
+								re++
+						}
+					}
+					if (r != this.value)
+					{
+						this.value = r;
+						this.selectionStart = start - rs;
+						this.selectionEnd = end - re;
+					}
+
+					if (!e.isTrigger)
+						cp.undo({v: this.value, s: this.selectionStart, e: this.selectionEnd});
+
+					try
+					{
+						var col = "#" + new Colors().setColor(this.value).HEX;
+log(col);
+						if(col.length == 7)
+						{
+							if (editingSeriesId != -2)
+								assignColor(editingSeriesId, col, false);
+
+							if (pickerCallback && pickerCallback in pickerCallbacks && typeof(pickerCallbacks[pickerCallback]) == "function")
+							{
+								pickerCallbacks[pickerCallback](col, true);
+							}
+							cp.color.setColor(col);
+							cp.render(undefined);
+						}
+					}
+					catch(err)
+					{
+//log(err);
+					}
+				}).find(".cp-disp").appendTo($elm);//.on( "input keydown keyup click", '#colorpicker-hex'
+/*
+			this.keyhandle = function(obj, e)
+			{
+log(arguments);
+				let start = obj.selectionStart,
+						end = obj.selectionEnd;
+
+				if (e.type == "keydown")
+				{
+					if (!e.shiftKey &&
+							((start == 1 && end == 1 && (e.key == "ArrowLeft" || e.which == 37))
+								|| (e.key == "ArrowUp" || e.which == 38)
+								|| (e.key == "Home" || e.which == 36)))
+					{
+						e.preventDefault();
+						start = end = 0;
+					}
+					if ((e.ctrlKey || e.metaKey))
+					{
+						let k = 0;
+						if (e.key == "z" || e.which == 90)
+							k = -1;
+						else if (e.key == "y" || e.which == 89)
+							k = 1;
+
+						if (k)
+						{
+							let u = cp.undo(k);
+							if (u)
+							{
+								obj.value = u.v;
+								obj.selectionStart = u.s || start-1;
+								obj.selectionEnd = u.e || end-1;
+							}
+							e.preventDefault();
+							$(obj).trigger("input");
+						}
+					}
+				}
+				if (!start && !end)
+				{
+					obj.selectionStart = ++start;
+					obj.selectionEnd = ++end;
+				}
+				if (e.type != "input")
+					return;
+
+				let rs = 0,
+						re = 0,
+						r = "",
+						val = obj.value.toUpperCase();
+
+				for(let i = 0; i < val.length && r.length < 6; i++)
+				{
+					if (val.charAt(i).match(/[A-F0-9]/))
+					{
+						r += val[i];
+					}
+					else
+					{
+						if (i < start)
+							rs++
+
+						if (i < end)
+							re++
+					}
+				}
+				if (r != obj.value)
+				{
+					obj.value = r;
+					obj.selectionStart = start - rs;
+					obj.selectionEnd = end - re;
+				}
+
+				if (!e.isTrigger)
+					cp.undo({v: obj.value, s: obj.selectionStart, e: obj.selectionEnd});
+			}
+*/
+			$("body").on("keydown", function(e)
+			{
+
+	//ESC(27) = cancel
+				if ((e.key == "Esc" || e.which == 27) && $elm.is(":visible"))
+					cp.toggle();
+			});
+//for some reason Chrome has issues with undo/redo after value was changed by the filter
+			this.undo = function (val, init)
+			{
+				if (!this.store || init)
+				{
+					this.store = [];
+					this.index = -1;
+				}
+
+				if (typeof(val) == "object")
+				{
+					let p = this.store[this.index];
+					if (p)
+					{
+						if (val.v == p.v)
+						{
+							this.store[this.index] = val;
+							return;
+						}
+					}
+					this.store[++this.index] = val;
+					if (this.store.length > this.index + 1)
+						this.store.splice(this.index + 1);
+				}
+				else
+				{
+					let i = this.index + val;
+					if (i > -1 && i < this.store.length)
+						this.index = i;
+
+					return this.store[i];
+				}
+
+				return this;
+			}//undo()
+		},
+
+		renderCallback: function($elm, toggled) {
+			let colors = this.color.colors,
+					cpHex = $("#colorpicker-hex"),
+					modes = {
+						r: colors.RND.rgb.r, g: colors.RND.rgb.g, b: colors.RND.rgb.b,
+						h: colors.RND.hsv.h, s: colors.RND.hsv.s, v: colors.RND.hsv.v,
+	//					HEX: "#" + this.color.colors.HEX
+					};
+
+			$('input', '.cp-panel').each(function()
+			{
+				let val = modes[this.className.substr(3)];
+				if (typeof(val) != "undefined")
+					this.value = val;
+			});
+			if (pickerCallback && pickerCallback in pickerCallbacks && typeof(pickerCallbacks[pickerCallback]) == "function")
+			{
+				pickerCallbacks[pickerCallback](typeof(toggled) == "undefined" ? colors.HEX : toggled , true);
+			}
+			// on show
+			if( toggled === true ){
+				let col = editingSeriesId == -2 ? pickerColor : coalesce(DB.getColor(editingSeriesId), colors.HEX),
+						val = colFix(col).replace(/[^0-9a-f]/gi, "");
+
+				cpHex.val(val);
+				this.undo({v: val, s: 0, e: 0});
+				document.body.classList.toggle("colorpicker", true);
+			}
+			// on change
+			else if( typeof(toggled) == "undefined" ){
+	//preview new color
+				if (editingSeriesId != -2)
+					assignColor( editingSeriesId, "#" + colors.HEX, false );
+
+				if (colors.HEX != new Colors().setColor(cpHex.val()).HEX)
+				{
+//					this.undo({v: "#" + colors.HEX, s: cpHex.selectionStart, e: cpHex.selectionEnd});
+//					cpHex.val("#" + colors.HEX);
+					this.undo({v: colors.HEX, s: cpHex.selectionStart, e: cpHex.selectionEnd});
+					cpHex.val(colors.HEX);
+				}
+			}
+			// on hide
+			else if( toggled === false ){
+				document.body.classList.toggle("colorpicker", false);
+				document.body.classList.toggle("colorpickerclose", true); //work around click firing on other elements
+				setTimeout(function()
+				{
+					document.body.classList.toggle("colorpickerclose", false);
+				}, 500);
+	//restore entry color
+				if( editingSeriesId > 0 )
+					loadColor( editingSeriesId );
+
+
+				editingSeriesId = -1;
+				pickerCallback = "";
+				pickerColor = "";
+				picker.detach().appendTo("body");
+			}
+		}//renderCallback()
+	}
+
+/*
 	{
 		animationSpeed: 0,
 		opacity: false,
@@ -6625,7 +7405,6 @@ body.prompt.scrollbar
 						editingSeriesId = -1;
 						pickerCallback = "";
 						pickerColor = "";
-
 					}
 					cp.toggle();
 				})
@@ -6784,6 +7563,10 @@ log(err);
 		renderCallback: function($elm, toggled) {
 			var colors = this.color.colors;
 			let cpHex = $("#colorpicker-hex");
+			if (pickerCallback && pickerCallback in pickerCallbacks && typeof(pickerCallbacks[pickerCallback]) == "function")
+			{
+				pickerCallbacks[pickerCallback](typeof(toggled) == "undefined" ? colors.HEX : toggled , true);
+			}
 			// on show
 			if( toggled === true ){
 				var col = editingSeriesId == -2 ? "#" + pickerColor : coalesce(DB.getColor(editingSeriesId), "#FFFFFF");
@@ -6793,15 +7576,11 @@ log(err);
 				document.body.classList.toggle("colorpicker", true);
 			}
 			// on change
-			else if( toggled === undefined ){
+			else if( typeof(toggled) == "undefined" ){
 	//preview new color
 				if (editingSeriesId != -2)
 					assignColor( editingSeriesId, "#" + colors.HEX, false );
 
-				if (pickerCallback && pickerCallback in pickerCallbacks && typeof(pickerCallbacks[pickerCallback]) == "function")
-				{
-					pickerCallbacks[pickerCallback](colors.HEX, true);
-				}
 				if (colors.HEX != new Colors().setColor(cpHex.val()).HEX)
 				{
 					this.undo({v: "#" + colors.HEX, s: cpHex.selectionStart, e: cpHex.selectionEnd});
@@ -6820,19 +7599,16 @@ log(err);
 				if( editingSeriesId > 0 )
 					loadColor( editingSeriesId );
 
-				if (pickerCallback && pickerCallback in pickerCallbacks && typeof(pickerCallbacks[pickerCallback]) == "function")
-				{
-					pickerCallbacks[pickerCallback](null);
-				}
 
 				editingSeriesId = -1;
 				pickerCallback = "";
 				pickerColor = "";
 				picker.detach().appendTo("body");
 			}
-
 		}
-	}).attr("id", "colorPickerHolderNew"); //replace ID so it won't initialize in main.js
+	}
+*/
+	).attr("id", "colorPickerHolderNew"); //replace ID so it won't initialize in main.js
 
 //log(picker);
 	function colFix(c)
@@ -6853,7 +7629,7 @@ log(err);
 		{
 			editingSeriesId = -2;
 			pickerCallback = this.getAttribute("callback");
-			col = new Colors().setColor($(this).css("background-color")).HEX;
+			col = new Colors().setColor(coalesce($(this.previousSibling).css("background-color"), "#FFFFFF")).HEX;
 			col = coalesce(col, "#FFFFFF");
 		}
 	//set initial color in colorpicker based on current entry or default to white
@@ -7145,7 +7921,7 @@ log("hide");
 				$entry = $(obj).parent(),
 				details = $entry.find(".details");
 
-		$entry.attr("color", $entry.css("color") == "rgb(0, 0, 0)" ? "black" : "white");
+//		$entry.attr("color", $entry.css("color") == "rgb(0, 0, 0)" ? "black" : "white");
 		if (!details.length )
 		{
 			if( $entry.children( "div.details" ).length == 0 )
@@ -9621,6 +10397,8 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			DB.infoLoaded = true;
 			if (added)
 				DB.infoSave();
+
+			sortMyShows();
 		});//DB.getColors
 
 		if (DB.loggedInUsername)
