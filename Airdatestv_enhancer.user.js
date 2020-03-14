@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.67
+// @version     1.68
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -20,6 +20,9 @@ var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
+1.68 (2020-03-13)
+	+ option "Sunday is first day of the week"
+	! some show's name incorrectly truncated in links in the search result
 1.67 (2020-02-02)
 	+ ability change some colors of the website
 	+ ability enter RGB and HSB values in colorpicker
@@ -733,6 +736,7 @@ let mainFunc = function(event)
 				todayBg: "",
 				todayBorder: ""
 			},
+			weekSunday: 0, //week starts on Sunday
 /*			colorsCustom: {
 				"807fff": {name: ""},
 				"ff7fff": {name: ""},
@@ -965,6 +969,11 @@ let mainFunc = function(event)
 				that.callback(e, id, check);
 				sortMyShows();
 			}, ['Move My Shows to the top of the list'], ""));
+			content.append(createCheckbox("weekSunday", "Sunday is first day of the week", this.prefs.weekSunday ? true : false, function(e, id, check)
+			{
+				that.callback(e, id, check);
+				pastLoaded();
+			}, null, ""));
 
 			opt = $(multiline(function(){/*
 <span id="weeksBox">Show number of weeks:
@@ -4521,9 +4530,8 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 
 	function weekDay()
 	{
-		let week = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+		let week = Settings.prefs.weekSunday ? ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] : ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
 				match = $(_today).find(".date").text().toLowerCase().match(/([^,]{3})/);
-
 		return match ? week.indexOf(match[1]) : -1;
 	}
 
@@ -4531,7 +4539,8 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 	{
 		let	hasLoaded = $("#pastWeeks").length,
 				stop = false,
-				days = $("div.days").children();
+				days = $("div.days").children(),
+				that = this;
 
 		days.each(function(i, o)
 		{
@@ -4567,6 +4576,10 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 		{
 			prev = prev.prev();
 		}
+		if (!that.weekSunday)
+		{
+			that.weekSunday = Settings.prefs.weekSunday ? prev : prev.prev();
+		}
 		if (prev.length)
 		{
 			let found = false,
@@ -4580,13 +4593,22 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 						let $this = $(this);
 						if ($this.is(prev))
 							found = true;
-						else
-							remove[remove.length] = this;
+						else if (!$this.is(that.weekSunday))
+								remove[remove.length] = this;
 					};
 			days.each(func);
 			for(let i = 0; i < remove.length; i++)
 				remove[i].parentNode.removeChild(remove[i]);
+
 		}
+
+		if (Settings.prefs.weekSunday)
+		{
+			that.weekSunday.prependTo($("div.days"));
+		}
+		else
+			that.weekSunday = that.weekSunday.detach();
+
 		$("div.days").children().each(function(i)
 		{
 			this.setAttribute("week", (Math.ceil((i+1) / 7)))
@@ -7700,7 +7722,6 @@ log(err);
 		};
 		parent.each(func);
 	}//middleClick()
-
 	function parseLink(div, engine)
 	{
 //on middle click
@@ -7953,7 +7974,7 @@ log("hide");
 				}
 				var e = $( $.parseHTML($( "#detailsTemplate" ).html()) ).appendTo( $entry );
 
-				let _MONKEY = $entry.children("div.title").text(),
+			let _MONKEY = $entry.children("div.title").text().trim().replace(/^[0-9]{4}-[0-9]{2}-[0-9]{2}/, "").trim(),
 						_MONKEY_N = _MONKEY.replace( /(S[0-9]+)?E[0-9]+$/g, '' ),
 						_WIKI_TITLE = $entry.data("series-source"),
 						_MONKEY_ID = $entry.data("series-id");
@@ -7997,7 +8018,6 @@ log("hide");
 										.replace( "{MONTH}", date[2] )
 										.replace( "{DAY}", date[3] )
 										.replace( "{WIKI_TITLE}", WIKI_TITLE );
-
 					if (regexp.length && engine.href.indexOf("MONKEY_N_REGEXP") == -1 && engine.href.indexOf("MONKEY_REGEXP") == -1)
 					{
 
@@ -8069,7 +8089,7 @@ log("hide");
 					});
 				} );
 				inited = true;
-			}
+			} //if( $entry.children( "div.details" ).length == 0 )
 			if (_engs)
 				return;
 
@@ -8234,7 +8254,7 @@ log("hide");
 				customShows.show(showId, data);
 			}, false);
 			showHideBox.parentNode.insertBefore(editBox, showHideBox.nextSibling);
-		}
+		}//if (!details.length )
 		if (_engs)
 			return;
 
@@ -8280,7 +8300,7 @@ log("hide");
 	}//entryOpen()
 	function fixLink(link, engine)
 	{
-		link = link.replace("%3F", "").replace(/[0-9]+-[0-9]+-[0-9]+(%20)?/, "").replace(/( |%20)E[0-9]+/, "");
+		link = link.replace("%3F", "").replace(/( |%20)E[0-9]+/, "");
 		if (engine.name == "Piratebay")
 			link = link.replace(/['"`!]/g, '');
 
