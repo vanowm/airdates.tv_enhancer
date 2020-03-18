@@ -2,13 +2,13 @@
 // @name        Airdates.tv enhancer
 // @namespace   V@no
 // @author      V@no
-// @description Control how many past weeks you want to see and many other enhancements
+// @description 2.5 tons of enhancements
 // @include     http://www.airdates.tv/*
 // @include     https://www.airdates.tv/*
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.68
+// @version     1.69
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -20,6 +20,9 @@ var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
+1.69 (2020-03-18)
+	* option "Sunday is first day of the week" changed to "First day of the week" with ability select Monday, Sunday or Saturday.
+	! missing days in the past in some situations
 1.68 (2020-03-13)
 	+ option "Sunday is first day of the week"
 	! some show's name incorrectly truncated in links in the search result
@@ -736,7 +739,7 @@ let mainFunc = function(event)
 				todayBg: "",
 				todayBorder: ""
 			},
-			weekSunday: 0, //week starts on Sunday
+			weekStart: 0, //0=Mon, 1=Sun, 2=Sat
 /*			colorsCustom: {
 				"807fff": {name: ""},
 				"ff7fff": {name: ""},
@@ -908,6 +911,12 @@ let mainFunc = function(event)
 						})
 					}
 				}
+				if ("weekSunday" in this.prefs)
+				{
+					this.prefs.weekStart = this.prefs.weekSunday;
+					delete this.prefs.weekSunday;
+					this.save();
+				}
 				this.prefs.version = adeVersion;
 				s = true;
 			}
@@ -969,14 +978,30 @@ let mainFunc = function(event)
 				that.callback(e, id, check);
 				sortMyShows();
 			}, ['Move My Shows to the top of the list'], ""));
-			content.append(createCheckbox("weekSunday", "Sunday is first day of the week", this.prefs.weekSunday ? true : false, function(e, id, check)
-			{
-				that.callback(e, id, check);
-				pastLoaded();
-			}, null, ""));
 
 			opt = $(multiline(function(){/*
-<span id="weeksBox">Show number of weeks:
+<span id="weekStartBox">First day of the week: 
+	<select>
+		<option value="2">Saturday</option>
+		<option value="1">Sunday</option>
+		<option value="0">Monday</option>
+	</select>
+</span>
+			*/}))
+				.appendTo(content)
+				.find("select")
+				.val(Settings.pref("weekStart"))
+				.on("input", function(evt)
+				{
+					Settings.pref("weekStart", ~~this.value);
+					if (!evt.isTrigger)
+						pastLoaded();
+				})
+				.trigger("input");
+
+
+			opt = $(multiline(function(){/*
+<span id="weeksBox">Show number of weeks: 
 	<select id="weeks">
 		<option value="">Default</option>
 		<option value="1">1</option>
@@ -4465,9 +4490,10 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 	function showPast(callback)
 	{
 	// hide all past days
-		let	d = new Date();
+		let	d = new Date(),
+				_todayDate = d.getFullYear() + pad((new Date()).getMonth() + 1) + pad((new Date()).getDate());
 
-		_today = $("div.day[data-date='" + d.getFullYear() + pad((new Date()).getMonth() + 1) + pad((new Date()).getDate()) + "']");
+		_today = $("div.day[data-date='" + _todayDate + "']");
 
 		if (!_today || $(".archive").length)
 		{
@@ -4487,8 +4513,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 				y = firstDate.slice(0, 4),
 				m = firstDate.slice(4, 6);
 
-//		if (parseInt(firstDate.slice(6, 8)) < 15)
-		if (parseInt(firstDate.slice(6, 8)) - weekDay() < 15)
+		if (~~firstDate.slice(6, 8) - weekDay() < 15)
 			div.push(document.createElement("div"));
 
 		let c = div.length;
@@ -4502,22 +4527,29 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 			if (--c > 0)
 				return;
 
-			let found = false,
-					remove = [];
-					func = function (i, o)
-					{
-						if (this.getAttribute("data-date") == firstDate)
-							found = true;
+			let stop = false,
+					prev = 0,
+					dayDiv = $("div.days"),
+					remove = [],
+					_tD = ~~_todayDate;
 
-						if (found)
-							remove[remove.length] = this;
-					};
 			for (let n = 0; n < div.length; n++)
+				dayDiv.prepend(div[n].children);
+
+
+			//remove any duplicate dates;
+			for(let i = 0; i < dayDiv[0].children.length; i++)
 			{
-				found = false;
-			//remove any duplicate dates that already exist;
-				$(div[n]).children().each(func);
-				$(div[n]).children().prependTo($("div.days"));
+				let day = dayDiv[0].children[i],
+						date = ~~day.getAttribute("data-date");
+
+				if (_today[0] == day)
+					break;
+
+				if (date <= prev || date >= _tD)
+					remove[remove.length] = day;
+				else
+					prev = date;
 			}
 			for(let i = 0; i < remove.length; i++)
 				remove[i].parentNode.removeChild(remove[i]);
@@ -4530,44 +4562,56 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 
 	function weekDay()
 	{
-		let week = Settings.prefs.weekSunday ? ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] : ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+		let week =  ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
 				match = $(_today).find(".date").text().toLowerCase().match(/([^,]{3})/);
+
+		week = week.concat(week.splice(0, 7 - Settings.prefs.weekStart));
 		return match ? week.indexOf(match[1]) : -1;
 	}
 
+	function removeClass(node, c)
+	{
+		let n = node.prop("classList");
+		for(let i = 0; i < n.length; i++)
+			if (n[i].match(c))
+				node.removeClass(n[i]);
+	}
 	function pastLoaded()
 	{
 		let	hasLoaded = $("#pastWeeks").length,
 				stop = false,
-				days = $("div.days").children(),
+				days = $("div.days")[0],
+				today = _today[0],
 				that = this;
 
-		days.each(function(i, o)
+		for(let i = 0; i < days.children.length; i++)
 		{
-			let $this = $(this);
-			if ($this.is(_today))
+			let day = days.children[i];
+			day.classList.toggle("today", day == today);
+			if (day == today)
 			{
-				$this.addClass("today").attr("id", "today").attr("today", "true");
+				day.setAttribute("id", "today");
+				day.setAttribute("today", true);
 				stop = true;
 			}
 			if (stop)
 			{
-				$this.removeClass("past");
+				removeClass($(day), /^past[0-9]?/);
 			}
 			else
 			{
-				$this.addClass("past");
+				day.classList.toggle("past", true);
 			}
-		});
-		let daysNum = weekDay();
+		};
+		let daysNum = weekDay(),
+				prev = _today.prev();
 
-		let prev = _today.prev();
 		//there is no identication of which week a day belong to, so we must make sure that previous days of current week don't count as previous week.
 		if (daysNum > 0)
 		{
 			for(let i = 0; i < daysNum && prev; i++)
 			{
-				prev.removeClass("past");
+				removeClass(prev, /^past[0-9]?/);
 				prev = prev.prev();
 			}
 		}
@@ -4576,45 +4620,46 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 		{
 			prev = prev.prev();
 		}
-		if (!that.weekSunday)
+		if (!that.weekStart)
 		{
-			that.weekSunday = Settings.prefs.weekSunday ? prev : prev.prev();
+			that.weekStart = [];
+			that.weekStart[0] = Settings.prefs.weekStart ? Settings.prefs.weekStart == 1 ? prev : prev.next() : prev.prev(); //Sunday
+			that.weekStart[1] = that.weekStart[0].prev(); // Saturday
 		}
 		if (prev.length)
 		{
 			let found = false,
-					days = $("div.days").children(),
 					remove = [],
-					func = function(i, o)
-					{
-						if (found)
-							return;
+					_prev = prev[0];
 
-						let $this = $(this);
-						if ($this.is(prev))
-							found = true;
-						else if (!$this.is(that.weekSunday))
-								remove[remove.length] = this;
-					};
-			days.each(func);
+			for(let i = 0; i < days.children.length; i++)
+			{
+				let day = days.children[i];
+
+				if (_prev == day)
+					break;
+
+				if (day != that.weekStart[0] && day != that.weekStart[1])
+					remove[remove.length] = day;
+			}
 			for(let i = 0; i < remove.length; i++)
-				remove[i].parentNode.removeChild(remove[i]);
+				days.removeChild(remove[i]);
 
 		}
-
-		if (Settings.prefs.weekSunday)
+		for(let i = 0; i < that.weekStart.length; i++)
 		{
-			that.weekSunday.prependTo($("div.days"));
+			if (Settings.prefs.weekStart && i + 1 <= Settings.prefs.weekStart)
+				that.weekStart[i].prependTo(days);
+			else
+				that.weekStart[i] = that.weekStart[i].detach();
 		}
-		else
-			that.weekSunday = that.weekSunday.detach();
 
-		$("div.days").children().each(function(i)
+		for(let i = 0; i < days.children.length; i++)
 		{
-			this.setAttribute("week", (Math.ceil((i+1) / 7)))
-		});
+			days.children[i].setAttribute("week", (Math.ceil((i+1) / 7)))
+		};
 		let	daysPast = $('div.past'),
-				daysCount = Math.round((days.length) / 7) + 1,
+				daysCount = Math.round((days.children.length) / 7) + 1,
 				weeks = ~~Settings.pref("weeksPast"),
 				weeksPastMax = Math.round((daysPast.length) / 7);//how many past weeks do we have available?
 
@@ -4627,7 +4672,6 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 		//main function that shows/hides past days
 		function showWeeks()
 		{
-
 			let weeksMax = ~~Settings.pref("weeks") || daysCount;
 
 			//get week numbers from dropdown
