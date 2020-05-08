@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.69
+// @version     1.70
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -20,6 +20,12 @@ var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
+1.70 (2020-05-08)
+	+ date of content's last update at the bottom of the page
+	* table min width decreased to allow display without scrollbars on low resolution screens
+	! old unused settings were not deleted
+	! messages under search bar displayed in one line
+	! custom links not properly sorted
 1.69 (2020-03-18)
 	* option "Sunday is first day of the week" changed to "First day of the week" with ability select Monday, Sunday or Saturday.
 	! missing days in the past in some situations
@@ -796,7 +802,7 @@ let mainFunc = function(event)
 				this.prefs.weeks = this.prefsDef.weeks;
 			}
 
-			//add any missing settings
+			//add any missing settings and remove any non-existing
 			function fixPref(pref, def)
 			{
 				for(let i in def)
@@ -804,8 +810,13 @@ let mainFunc = function(event)
 					if (!(i in pref))
 						pref[i] = def[i];
 
-					if (typeof(def[i]) == "object")
+					if (typeof(def[i]) == "object" && !Array.isArray(def[i]))
 						fixPref(pref[i], def[i]);
+				}
+				for(let i in pref)
+				{
+					if (!(i in def))
+						delete pref[i];
 				}
 			}
 			fixPref(this.prefs, this.prefsDef);
@@ -925,6 +936,7 @@ let mainFunc = function(event)
 
 			this.themes.init();
 			this.create();
+			this.lastUpdateShow();
 			this.inited = true;
 		},//Settings.init()
 
@@ -1761,9 +1773,13 @@ let mainFunc = function(event)
 				box.className = "customColors";
 				$("head").append(style);
 				$("head").append(style2);
+				let c = [];
 				for(let i = 0; i < colors.length; i++)
-					colors[i] = colors[i].toUpperCase();
-
+				{
+					if (colors[i] && (""+colors[i]).match(/^([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/))
+						c[c.length] = colors[i].toUpperCase();
+				}
+				Settings.prefs.lastColors = c;
 				let that = Settings.colors;
 				that.css();
 
@@ -2410,6 +2426,18 @@ body[class*="theme_"] div.day:not(.today)
 			},
 		},//themes
 
+		lastUpdate: new Date(),
+		lastUpdateDiv: null,
+		lastUpdateShow: function()
+		{
+			if (!this.lastUpdateDiv)
+			{
+				this.lastUpdateDiv = document.createElement("span");
+				this.lastUpdateDiv.className = "lastupdate";
+				document.querySelector("div.footer").appendChild(this.lastUpdateDiv);
+			}
+			this.lastUpdateDiv.textContent = "Page updated " + this.lastUpdate;
+		}
 	}//Settings
 
 	function fileLoad(callback, ext)
@@ -2550,12 +2578,12 @@ body[class*="theme_"] div.day:not(.today)
 		return -1;
 	};
 
-	function enginesFind(id, obj)
+	function enginesFind(id, obj, field)
 	{
 		obj = typeof(obj) == "undefined" ? window.engines : obj;
 		for(let i = 0; i < obj.length; i++)
 		{
-			if (obj[i].name == id || obj[i].host == id)
+			if ((field && obj[i][field] == id) || (!field && (obj[i].name == id || obj[i].host == id)))
 				return i;
 		}
 		return -1;
@@ -2570,16 +2598,21 @@ body[class*="theme_"] div.day:not(.today)
 		}
 
 		let newList = [],
-				newEnginesList = [];
+				newEnginesList = [],
+				engs = [window.engines, customLinks._list];
 
 		for(let i = 0; i < list.length; i++)
 		{
-			let index = enginesFind(list[i]);
-			if (index == -1 || newList.indexOf(window.engines[index].host) != -1)
-				continue;
+			for(let n = 0; n < engs.length; n++)
+			{
+				let index = enginesFind(list[i], engs[n], "host");
+				if (index == -1 || newList.indexOf(engs[n][index].host) != -1)
+					continue;
 
-			newEnginesList[newEnginesList.length] = window.engines[index];
-			newList[newList.length] = window.engines[index].host;
+				newEnginesList[newEnginesList.length] = engs[n][index];
+				newList[newList.length] = engs[n][index].host;
+				break;
+			}
 		}
 		for(let i = 0; i < window.engines.length; i++)
 		{
@@ -2597,6 +2630,7 @@ body[class*="theme_"] div.day:not(.today)
 				newList[newList.length] = i;
 			}
 		}
+
 		if (save)
 			enginesSort._list = newList;
 
@@ -3968,7 +4002,7 @@ body[class*="theme_"] div.day:not(.today)
 		{
 			if (permanent)
 			{
-				Settings.prefs.lastColor = html.match(/background-color:#([0-9a-zA-Z]{6})/)[1];
+				Settings.prefs.lastColor = html.match(/background-color:#([0-9a-fA-F]{6})/)[1];
 				Settings.save();
 			}
 			css.html(html.replace(/(\s+)(\.activeOnly)([^\{]+)\{/, "$1$2$3:not(.multi),body:not(.collapseMulti) $2$3,$2 .day.expand $3,$2 .day.opened $3{"));
@@ -4077,6 +4111,8 @@ body[class*="theme_"] div.day:not(.today)
 				});
 			});
 			showHideLoad();
+			Settings.lastUpdate = new Date();
+			Settings.lastUpdateShow();
 		};//whenDone()
 
 		if(window.ymCurrent != ym)
@@ -4092,7 +4128,7 @@ body[class*="theme_"] div.day:not(.today)
 			whenDone();
 		}
 		_loadArchiveFromPathname.firstRun = true;
-	}
+	}//_loadArchiveFromPathname(originalPath,highlightSelector)
 	let sortMyShows = function(entries)
 	{
 		if (typeof(entries) == "undefined")
@@ -4125,7 +4161,7 @@ body[class*="theme_"] div.day:not(.today)
 		}
 		if (changed);
 			$(entries.context).append(entries);
-	}
+	}//sortMyShows()
 	window.loadArchiveFromPathname = _loadArchiveFromPathname;
 	/*
 	end fixing browser history inflating after each page refresh and prev/next history jump don't work
@@ -4516,6 +4552,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 		if (~~firstDate.slice(6, 8) - weekDay() < 15)
 			div.push(document.createElement("div"));
 
+
 		let c = div.length;
 		for (let n = 0; n < c; n++)
 		{
@@ -4554,10 +4591,11 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 			for(let i = 0; i < remove.length; i++)
 				remove[i].parentNode.removeChild(remove[i]);
 
-		pastLoaded();
+			pastLoaded();
+
 			if (callback)
 				callback();
-		}
+		}//pastLoadDone()
 	}//showPast()
 
 	function weekDay()
@@ -7061,6 +7099,11 @@ body.prompt.scrollbar
 {
 	height: 1em;
 }
+.lastupdate
+{
+	font-size: 0.9em;
+	opacity: 0.5;
+}
 */});//css
 
 	style.innerHTML = css;
@@ -8491,6 +8534,7 @@ log("hide");
 						_entries = day.querySelectorAll('[data-title="' + name + '"], [data-series-id="' + data.id + '"]'),
 						_entry = null,
 						titleDiv = null;
+
 				for(let e = 0; e < _entries.length; e++)
 				{
 //					if (_entries[e]._title && _entries[e]._title._titleDefault == name)
@@ -9462,7 +9506,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 
 			}
 		}
-		let colorsBox = $( "#detailsTemplate" ).find(".colors").first().clone();
+		let colorBox = $( "#detailsTemplate" ).find(".colors").first().clone()[0];
 		function customShowsCreate(id, callback)
 		{
 			let data = {
@@ -9482,12 +9526,10 @@ log([a, a.dataset.title, a.children[0].innerText])
 					entry = document.createElement("li"),
 					editBox = document.createElement("span"),
 					colorPicker = document.createElement("div"),
-					nameBox = document.createElement("span"),
-					colorBox = colorsBox[0].cloneNode(true);
+					nameBox = document.createElement("span");
 
 			nameBox.className = "name";
 			nameBox.textContent = data.name;
-			colorPicker.appendChild(colorBox);
 			colorPicker.className = "color entry colorbox";
 			colorPicker.setAttribute("data-series-id", id + customShows.id);
 			colorPicker.title = "Set Color";
@@ -9502,6 +9544,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 			{
 				if (e.target.classList.contains("colorbox") || (entry.classList.contains("opened") && !$(e.target).parents('.colorbox').get().length))
 				{
+					colorPicker.appendChild(colorBox);
 					$(cushBox).find(':not([id="cush_' + id +'"]).opened').toggleClass("opened", false);
 					e.target.parentNode.classList.toggle("opened");
 					let opened = e.target.parentNode.classList.contains("opened");
@@ -10509,6 +10552,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 
 								if (isCustomSearch(e,q))
 									return;
+
 								$("#searchResults").load("/s?"+$.param({q:q}), function(){
 									customShows.search("", q);
 									lastQ = q;
@@ -10607,7 +10651,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 							$(" #searchStatus").css("visibility","hidden");
 						}
 						return r;
-					};
+					};//isCustomSearch()
 
 			if (index != -1)
 			{
@@ -11561,8 +11605,10 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		$(window).trigger("hashchange")
 	});
 
-	$("#searchResults").parent().find("br:not(:last-of-type)").remove();
-	$("#searchResults").siblings().filter("a").filter(function(i, o)
+	let sr = $("#searchResults").siblings();
+//	sr.filter("br:not(:last-of-type)").remove();
+	sr.filter("br").next("br").remove(); //#searchbar remove <br>
+	sr.filter("a").filter(function(i, o)
 	{
 		if (o.href.match(/^http:/) && !o.hash)
 		{
