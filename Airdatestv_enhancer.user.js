@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.70.1
+// @version     1.71
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -20,6 +20,9 @@ var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
+1.71 (2020-06-26)
+	+ new option "number of opisodes per day" for custom shows
+	! menu popup did not change size with page zoom
 1.70.1 (2020-05-13)
 	! links incorrectly selected for middle click in some cases
 	! watched incorrectly set on shows with changed "Episode # offset"
@@ -421,26 +424,28 @@ let log = console.log.bind(console),
 /*work around for some SVG pictures shown huge before page is fully loaded*/
 (function loop()
 {
-	let head = document.getElementsByTagName("head");
-	if (!head.length)
+	let head = document.head;
+	if (!head)
+	{
 		return setTimeout(loop, 0);
+	}
 
 	let style = document.createElement("style");
-	head[0].appendChild(style);
+	head.appendChild(style);
 	style.innerHTML = "svg{max-width:1.2em;max-height:1.2em;}";
-if (!isFrame && window.location.href.match(/^http:/))
-{
-	let s = document.createElement("script");
-	s.src = "/public/javascripts/db.js";
-	head[0].appendChild(s);
-	s = document.createElement("script");
-	s.src = "/public/javascripts/main.js";
-	head[0].appendChild(s);
-	s = document.createElement("script");
-	s.src = "/public/javascripts/jqColorPicker.min.js";
-	head[0].appendChild(s);
-	window.engines = [];
-}
+	if (!isFrame && window.location.href.match(/^http:/))
+	{
+		let s = document.createElement("script");
+		s.src = "/public/javascripts/db.js";
+		head.appendChild(s);
+		s = document.createElement("script");
+		s.src = "/public/javascripts/main.js";
+		head.appendChild(s);
+		s = document.createElement("script");
+		s.src = "/public/javascripts/jqColorPicker.min.js";
+		head.appendChild(s);
+		window.engines = [];
+	}
 })();
 
 if (!isFrame)
@@ -921,6 +926,28 @@ let mainFunc = function(event)
 					this.prefs.weekStart = this.prefs.weekSunday;
 					delete this.prefs.weekSunday;
 					this.save();
+				}
+				if (versionsCompare(this.pref("version"), "1.71") < 0)
+				{
+					let l = ls("customShows") || {i:1,l:{}},
+							changed = false;
+					for (let obj in l.l)
+					{
+						for (let i = 0; i < l.l[obj][1].length; i++)
+						{
+							let data = l.l[obj][1][i];
+							if (data.length == 6)
+							{
+								data[6] = data[5]; //custom show days of the week
+								data[5] = 1;
+								changed = true;
+							}
+						}
+					}
+					if (changed)
+					{
+						ls("customShows", l);
+					}
 				}
 				this.prefs.version = adeVersion;
 				s = true;
@@ -1495,11 +1522,24 @@ let mainFunc = function(event)
 					}
 					if ("customShows" in json)
 					{
-						let changed = false;
+						let changed = false,
+								upgrade = versionsCompare(json.version, "1.71") < 0;
+
 						for(let i in json.customShows.l)
 						{
-
-							customShows._list.l[i] = json.customShows.l[i];
+							let data = json.customShows.l[i];
+							if (upgrade)
+							{
+								for (let n = 0; n < data[1].length; n++)
+								{
+									if (data[1][n].length == 6)
+									{
+										data[1][n][6] = data[1][n][5]; //custom show days of the week
+										data[1][n][5] = 1;
+									}
+								}
+							}
+							customShows._list.l[i] = data;
 							changed = true;
 							customShowsNum++;
 						}
@@ -3537,7 +3577,7 @@ body[class*="theme_"] div.day:not(.today)
 				}
 
 				$(div).append(img);
-				$(div).append($("<div></div>").attr("title", a[0].textContent + "\n" + a[0].href).append(a).append('<span title="New">*</span>'));
+				$(div).append($("<div></div>").attr("title", a[0].textContent + "\n" + a[0].href).append(a).append('<span title="Custom">*</span>'));
 				if (def)
 					$(div).toggleClass("def", true);
 
@@ -3743,6 +3783,7 @@ body[class*="theme_"] div.day:not(.today)
 		_enginesList = Settings.pref("middleClick") || [];
 		if (!(_enginesList instanceof Array))
 			_enginesList = [];
+
 		let engines = enginesBackup.backup ? enginesBackup.backup : window.engines,
 				del = [],
 				add = [];
@@ -3782,9 +3823,16 @@ body[class*="theme_"] div.day:not(.today)
 		{
 			_enginesList = Array.from(new Set(_enginesList));
 		}catch(e){}
-		if (l != _enginesList)
-			Settings.pref("middleClick", _enginesList);
 
+		if (l != _enginesList.length)
+		{
+/*
+log(l);
+log(_enginesList);
+alert("middleClick");
+*/
+			Settings.pref("middleClick", _enginesList);
+		}
 	}//customLinksAdd()
 
 	function customLinksAddCss(id)
@@ -5132,8 +5180,8 @@ div.moreOpt:not([opened]) > div
 }
 #manage-links-popup-content .content > div > div
 {
-	min-width: 18em;
-	max-width: 18em;
+	min-width: 21em;
+	max-width: 21em;
 	overflow: hidden;
 	vertical-align: bottom;
 }
@@ -5206,7 +5254,7 @@ body.prompt > .popup
 	left: 0px;
 	background-color: whitesmoke !important;
 	border: 1px dotted black;
-	min-width: 350px;
+	min-width: 30.4em;
 	min-height: 10px;
 	max-width: 100%;
 	max-height: 100%;
@@ -5258,7 +5306,7 @@ div:not(#account-popup-content) > .header
 	padding: 3px 10px;
 	overflow-x: hidden;
 	overflow-y: auto;
-	max-height: 30.7em;
+	max-height: 100em;
 }
 #settings-popup .content
 {
@@ -5384,6 +5432,11 @@ body.colorbox:not(.colorpicker) li.opened div.color *
 	text-align: right;
 	min-width: 5.5em;
 }
+#cushows-edit > div.info > label
+{
+	vertical-align: top;
+}
+
 #engine-edit > div:last-child > label
 {
 	vertical-align: top;
@@ -6380,7 +6433,7 @@ disqus notificaiton badge
 }
 #cushows-edit > div > span
 {
-	width: 20em;
+	width: 22em;
 	padding: 0.1em 0 0.1em 0.5em;
 }
 
@@ -6492,7 +6545,7 @@ body.ff #cushows-edit textarea
 #cushows-list > li > :nth-child(2)
 {
 	width: 100%;
-	max-width: 21.5em;
+	max-width: 24.5em;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	display: inline-block;
@@ -8691,8 +8744,10 @@ log([a, a.dataset.title, a.children[0].innerText])
 						date = data[n][2],
 						num = data[n][3],
 						days = data[n][4],
-						weekDays = "" + (data[n][5] || 1234567),
-						_date = new _Date(0);
+						weekDays = "" + (data[n][6] || 1234567),
+						perDay = data[n][5] || 1
+						_date = new _Date(0),
+						newId = id + customShows.id;
 
 				weekDays = weekDays.replace("7", "0");
 				_date.setFullYear(this.d2y(date), this.d2m(date)-1, this.d2d(date));
@@ -8704,28 +8759,32 @@ log([a, a.dataset.title, a.children[0].innerText])
 					{
 						_date = new _Date(_date.getTime() + 86400000);
 					}
-					let newDate = "" + _date.getFullYear() + pad(_date.getMonth()+1) + pad(_date.getDate()),
-							newId = id + customShows.id;
-					if (!customShows.list[newId])
-						customShows.list[newId] = [];
+					let newDate = "" + _date.getFullYear() + pad(_date.getMonth()+1) + pad(_date.getDate());
+							
+					for (let p = 0; p < perDay && p + e <= num ; p++)
+					{
+						if (!customShows.list[newId])
+							customShows.list[newId] = [];
 
-					customShows.list[newId][customShows.list[newId].length] = {
-						date: newDate,
-						season: season,
-						episode: episode,
-						d: data[n]
-					}
-					if (!customShows.listDate[newDate])
-						customShows.listDate[newDate] = [];
+						customShows.list[newId][customShows.list[newId].length] = {
+							date: newDate,
+							season: season,
+							episode: episode,
+							d: data[n]
+						}
+						if (!customShows.listDate[newDate])
+							customShows.listDate[newDate] = [];
 
-					customShows.listDate[newDate][customShows.listDate[newDate].length] = {
-						id: newId,
-						season: season,
-						episode: episode,
-						d: data[n]
+						customShows.listDate[newDate][customShows.listDate[newDate].length] = {
+							id: newId,
+							season: season,
+							episode: episode,
+							d: data[n]
+						}
+						episode++;
+						if (p) e++
 					}
 					_date.setDate(_date.getDate() + days);
-					episode++;
 				}
 			}
 			customShows.listNames[name.toLowerCase()] = i;
@@ -8736,9 +8795,9 @@ log([a, a.dataset.title, a.children[0].innerText])
 
 	}//customShows.init()
 
-	customShows.save = function()
+	customShows.save = function(list)
 	{
-		ls("customShows", customShows._list);
+		ls("customShows", list || customShows._list);
 	}
 
 	customShows.remove = function(id)
@@ -8916,6 +8975,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 			customShows.div.scrollIntoView(false);
 			let _data = $("#cushows-data");
 					data = _data[0]._data;
+
 			if (dataId && data)
 			{
 				for (let i = 0; i < data.length; i++)
@@ -9015,7 +9075,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 			<div class="data">
 				<label>Episodes:</label>
 				<div>
-					<textarea id="cushows-data" title="One entry per line" placeholder="S0E0 | YYYYMMDD | n | i"></textarea>
+					<textarea id="cushows-data" title="One entry per line" placeholder="S0E0 | YYYYMMDD | n | i | p | 1234567"></textarea>
 				</div>
 			</div>
 			<div>
@@ -9024,7 +9084,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 			</div>
 			<div class="info">
 				<label>Format:</label>
-				<span><i>S0E0</i> | <i>YYYYMMDD</i> | <i>n</i> | <i>i</i> | <i>1234567</i></span>
+				<span><i>S0E0</i> | <i>YYYYMMDD</i> | <i>n</i> | <i>i</i> | <i>p</i> | <i>1234567</i></span>
 			</div>
 			<div class="info">
 				<label><i>S0E0</i></label>
@@ -9043,16 +9103,20 @@ log([a, a.dataset.title, a.children[0].innerText])
 				<span>= Interval between episodes (in days) (0+)</span>
 			</div>
 			<div class="info">
+				<label><i>p</i></label>
+				<span>= (optional) number of episodes per day</span>
+			</div>
+			<div class="info">
 				<label><i>1234567</i></label>
-				<span>= (optional) day of the week,<br>&nbsp;&nbsp;&nbsp;where 1 = Monday and 7 = Sunday</span>
+				<span class="break">= (optional) day of the week,<br>&nbsp;&nbsp;&nbsp;where 1 = Monday and 7 = Sunday (this setting will superseed the interval between episodes)</span>
 			</div>
 			<div class="info">
 				<label></label>
 				<span class="break"><i>Any non-numerical characters (space, coma, slash, letters, etc) can be used as fields separator</i></span>
 			</div>
 			<div class="info">
-				<label>Example:</label>
-				<div id="cushows-example"></div>
+				<label id="cushows-example" class="pointer">Example:</label>
+				<div></div>
 			</div>
 			<div>
 				<label></label>
@@ -9078,7 +9142,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 				_today = new Date(),
 				cushBox = document.createElement("div"),
 //				dataRegex = /^([^0-9]*([0-9]+)[^0-9]+([0-9]+))[^0-9]+((([0-9]{4})[^0-9]+([0-9]{1,2})[^0-9]+([0-9]{1,2}))|(([0-9]{4})[^0-9]*([0-9]{2})[^0-9]*([0-9]{2}))|(([0-9]{4})[^0-9]*([0-9]{1,2})[^0-9]+([0-9]{1,2})))[^0-9]+([0-9]+)[^0-9]+([0-9]+)[^0-9]*([0-9]+)?[^0-9]*$/,
-				dataRegex = /^([^0-9]*([0-9]+)|([^0-9]*([0-9]+)[^0-9]+([0-9]+)))[^0-9]+((([0-9]{4})[^0-9]+([0-9]{1,2})[^0-9]+([0-9]{1,2}))|(([0-9]{4})[^0-9]*([0-9]{2})[^0-9]*([0-9]{2}))|(([0-9]{4})[^0-9]*([0-9]{1,2})[^0-9]+([0-9]{1,2})))[^0-9]+([0-9]+)[^0-9]+([0-9]+)[^0-9]*([1-7]+)?[^0-9]*$/,
+				dataRegex = /^([^0-9]*([0-9]+)|([^0-9]*([0-9]+)[^0-9]+([0-9]+)))[^0-9]+((([0-9]{4})[^0-9]+([0-9]{1,2})[^0-9]+([0-9]{1,2}))|(([0-9]{4})[^0-9]*([0-9]{2})[^0-9]*([0-9]{2}))|(([0-9]{4})[^0-9]*([0-9]{1,2})[^0-9]+([0-9]{1,2})))[^0-9]+([0-9]+)[^0-9]+([0-9]+)[^0-9]*(([0-9]+)?[^0-9]*)?(([1-7]+)?[^0-9]*)?$/,
 				dr = function(d)
 				{
 					let r = d.match(dataRegex);
@@ -9093,7 +9157,8 @@ log([a, a.dataset.title, a.children[0].innerText])
 						d: ~~(r[10] || r[14] || r[18]),
 						n: ~~r[19],
 						i: ~~r[20],
-						w: r[21] || null
+						p: ~~r[22] || null,
+						w: r[23] || null
 					};
 				};
 
@@ -9143,9 +9208,10 @@ log([a, a.dataset.title, a.children[0].innerText])
 		{
 			let t = new Date(),
 					sel, range,
-					el = this,
+					el = this.nextSibling,
 					n = rand(1, 7),
 					i = rand(0, 2) ? 7 : 1,
+					p = rand(0, 5),
 					remDup = function(a)
 					{
 						let b = {};
@@ -9157,6 +9223,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 					},
 					w = remDup((Array(n+1).join((Math.random().toString(7)+'0000000').slice(2, 18)).slice(0, n)).replace(/[0]/g, 7).split("")).sort(),
 					tooltip = [],
+					perDay = 1,
 					days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 			for(let c = 0; c < w.length; c++)
@@ -9166,8 +9233,16 @@ log([a, a.dataset.title, a.children[0].innerText])
 			tooltip = tooltip.join("\n");
 			w = w.join("");
 			t = new Date(t.getTime() - (86400000 * rand(-2, 2)));
-			
-			this.innerHTML = "S" + pad(rand(0, 15)) + "E" + pad(rand(0, 22)) + " | " + t.getFullYear() + "-" + pad(t.getMonth() + 1) + "-" + pad(t.getDate()) + " | " + rand(1, 22) + " | " + i + (w && i == 1 ?  ' | <span title="' + tooltip + '">' + w + "</span>": "");
+			if (!p && w && i == 1)
+				p = 1
+
+			el.innerHTML =	'S<span title="Season">' + pad(rand(0, 15)) + "</span>" +
+											'E<span title="Episode">' + pad(rand(0, 22)) + "</span> " +
+											'|<span title="Start date"> ' + t.getFullYear() + "-" + pad(t.getMonth() + 1) + "-" + pad(t.getDate()) + " </span>" +
+											'|<span title="Total number of episodes"> ' + rand(1, 22) + " </span>" +
+											'|<span title="Interval between episodes"> ' + i + " </span>" +
+											(p ? '|<span title="number of episodes per day"> ' + p + " </span>" : "") +
+											(w && i == 1 ?  '|<span title="' + tooltip + '"> ' + w + " </span>": "");
 
 			if (e.isTrigger)
 				return;
@@ -9365,8 +9440,12 @@ log([a, a.dataset.title, a.children[0].innerText])
 				a[2] = ~~a[2];
 				a[3] = ~~r.n;
 				a[4] = ~~r.i;
+				if (r.p)
+					a[5] = ~~r.p;
+
 				if (r.w)
-					a[5] = ~~r.w;
+					a[6] = ~~r.w;
+
 
 				if (a[3] < 1)
 					return;
