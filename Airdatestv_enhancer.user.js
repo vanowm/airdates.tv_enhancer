@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.72
+// @version     1.72.1
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -20,8 +20,10 @@ var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
+1.72.1 (2020-10-10)
+	* tooltip on watched checkboxes now show additional info if SHIFT+click available
 1.72 (2020-10-10)
-	+ holding SHIFT key while clicking on "watched" checkbox in "all episodes" list will select/deselect all previous episodes
+	+ while "Show all episodes" list is opened, holding SHIFT key and clicking on "watched" checkbox will select/deselect all previous episodes
 	+ filter to hide watched episodes
 	! duplicate week days for custom shows were not removed and not in order
 	! in some browsers (Tor Browser) after clicking left mouse button on a link that opens link in a new tab it would delete some of the user settings (that was some WTF bug)
@@ -486,7 +488,7 @@ if (!Date.now)
 }
 
 function createCookie(name,value){ document.cookie = name+"="+encodeURIComponent(value)+"; path=/; expires="+new Date( (new Date()).getTime()+3153600000000).toGMTString()+";"; }
-function readCookie(n,r){return(r=document.cookie.match('(^|; )'+encodeURIComponent(n)+'=([^;]*)'))?r[2]:null}
+function readCookie(n,r){return(r=document.cookie.match('(^|;)\\s*'+encodeURIComponent(n)+'\\s*=\\s*([^;]+)'))?r[2]:null}
 function eraseCookie( name ){ document.cookie = name+"=; path=/; expires="+new Date((new Date()).getTime()+(-1)).toGMTString()+";"; }
 
 function ls(id, data, callback)
@@ -3004,24 +3006,23 @@ body[class*="theme_"] div.day:not(.today)
 
 	watched.update = function(entry, enable)
 	{
-		let text = "Watched";
 		if (enable)
-		{
 			entry.setAttribute("watched", "");
-		}
 		else
-		{
-			text = "Not watched";
 			entry.removeAttribute("watched");
-		}
-		if (entry.parentNode.id == "searchResults")
-			text += "\n\nHold SHIFT key to check/uncheck all previous episides";
 
 		let span = $(entry).find(".title > span")[0];
 		entry.title = span.lastChild ? span.lastChild.textContent : span.textContent;// + " (" + text + ")";
-		$(entry).find(".title > input").prop("title", text);
 		entry._input.checked = enable;
+		watched.checkboxTooltip(entry);
+	};
 
+	watched.checkboxTooltip = function(entry)
+	{
+		let input = entry.querySelector('input[type="checkbox"]');
+		input.title = input.checked ? "Watched" : "Not watched";
+		if (entry.parentNode.id == "searchResults" || entry.classList.contains("searchResult"))
+			input.title += "\n\nHold SHIFT key to check/uncheck all previous episides";
 	};
 
 	watched.attach = function(i,entry)
@@ -3035,6 +3036,10 @@ body[class*="theme_"] div.day:not(.today)
 		input.checked = watched.has(entry);
 		entry._input = input;
 
+		input.addEventListener("mouseover", function(e)
+		{
+			watched.checkboxTooltip(entry);
+		}, false);
 		input.addEventListener("click", function(ev)
 		{
 			let episode = watched.episode(entry, 1).split("E"),
