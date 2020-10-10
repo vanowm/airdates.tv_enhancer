@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.71
+// @version     1.72
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -20,6 +20,11 @@ var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
+1.72 (2020-10-10)
+	+ holding SHIFT key while clicking on "watched" checkbox in "all episodes" list will select/deselect all previous episodes
+	+ filter to hide watched episodes
+	! duplicate week days for custom shows were not removed and not in order
+	! in some browsers (Tor Browser) after clicking left mouse button on a link that opens link a new tab it would delete some of the user settings (that was some WTF bug)
 1.71 (2020-06-26)
 	+ new option "number of opisodes per day" for custom shows
 	! menu popup did not change size with page zoom
@@ -481,8 +486,9 @@ if (!Date.now)
 }
 
 function createCookie(name,value){ document.cookie = name+"="+encodeURIComponent(value)+"; path=/; expires="+new Date( (new Date()).getTime()+3153600000000).toGMTString()+";"; }
-function readCookie(name) {	var n = name + "="; return $.merge( $.map( document.cookie.split(';'), function(e,i){ e=e.trim(); return e.indexOf( n ) == 0? decodeURIComponent(e.substring(n.length).replace(/\+/,' ')):null;} ), [null] )[0];}
+function readCookie(n,r){return(r=document.cookie.match('(^|; )'+encodeURIComponent(n)+'=([^;]*)'))?r[2]:null}
 function eraseCookie( name ){ document.cookie = name+"=; path=/; expires="+new Date((new Date()).getTime()+(-1)).toGMTString()+";"; }
+
 function ls(id, data, callback)
 {
 	let r;
@@ -592,24 +598,96 @@ function receiveMessage(event)
 	}
 }
 
-function cloneObj(obj)
+function cloneObj(obj, exclude, _map)
 {
-	let r = [];
-	if (Array.isArray(obj))
+	if(obj == null || (typeof obj != "object" && typeof obj != "function"))
+		return obj;
+
+	let map = _map ? _map : new WeakMap(),
+			m = map.get(obj);
+
+	if (m)
+		return m;
+
+	let objNew,
+			type = Object.prototype.toString.call(obj).slice(8, -1);
+
+	if (typeof(exclude) == "undefined")
+		exclude = [];
+
+	if (_map && exclude.indexOf(type) != -1)
 	{
-		for (let i = 0; i < obj.length; i++)
+		return obj;
+	}
+	try
+	{
+		objNew = new obj.constructor();
+	}
+	catch(e)
+	{
+		objNew = obj;
+	}
+	if (type == "Date")
+	{
+		objNew.setTime(obj.getTime());
+	}
+	else if (type == "Set")
+	{
+		for (let i of obj)
 		{
-			r[i] = typeof(obj[i]) == "object" ? cloneObj(obj[i]) : obj[i];
+			objNew.add(cloneObj(i, exclude, map));
 		}
 	}
-	else
+	else if (type == "Map")
 	{
-		for (let i in obj)
+		for (let i of obj)
 		{
-			r[i] = typeof(obj[i]) == "object" ? cloneObj(obj[i]) : obj[i];
+			objNew.set(cloneObj(i[0], exclude, map), cloneObj(i[1], exclude, map));
 		}
 	}
-	return r;
+	else if (type == "Symbol")
+	{
+		objNew = Object(Symbol(obj.description));
+	}
+	else if (type == "Function" || type == "WeakMap")
+	{
+		objNew = obj;
+	}
+	else if (type == "Error")
+	{
+		objNew = new obj.constructor(obj);
+		objNew.stack = obj.stack;
+	}
+	else if (type == "Boolean"
+				|| type == "Number"
+				|| type == "String"
+				|| type == "RegExp")
+	{
+		objNew = new obj.constructor(obj);
+	}
+
+	if (typeof obj == "object" //is HTML?
+			&& ( obj instanceof Window
+				|| obj instanceof Document
+				|| obj.ownerDocument instanceof HTMLDocument))
+	{
+		let h = map.get(obj);
+		if (h)
+			return h;
+
+		map.set(obj, obj);
+		return obj;
+	}
+	map.set(obj, objNew);
+
+	let k = Object.keys(obj),
+			l = k.length;
+
+	for (let i = -1; ++i < l;)
+	{
+		objNew[k[i]] = cloneObj(obj[k[i]], exclude, map);
+	}
+	return objNew;
 }
 
 
@@ -646,6 +724,9 @@ window.addEventListener("message", receiveMessage, false);
 
 let mainFunc = function(event)
 {
+	if (typeof($) == "undefined")
+		return;
+
 	let browser = window.browser;
 	if (browser)
 		document.body.classList.toggle(browser, true);
@@ -735,6 +816,7 @@ let mainFunc = function(event)
 			showHidden: 0,
 			showNew: 0,
 			showReturn: 0,
+			showWatched: 1,
 			smallLogo: 0,
 			sortBy: 0,
 			theme: "",
@@ -790,9 +872,8 @@ let mainFunc = function(event)
 			if (this.inited)
 				return;
 
-//cloneObject
-			this.prefs = ls("settings") || Object.assign({}, this.prefsDef);
-			if (typeof(this.prefs) != "object")
+			this.prefs = ls("settings");
+			if (!this.prefs || typeof(this.prefs) != "object")
 				this.prefs = Object.assign({}, this.prefsDef);
 
 			if ("weeks" in this.prefs && !("weeksPast" in this.prefs))
@@ -875,6 +956,7 @@ let mainFunc = function(event)
 				let n = cs("n") ? 1 : 0;
 				this.prefs.showNew = n;
 				this.prefs.showReturn = n;
+				s = true;
 			}
 			else if (c !== null)
 			{
@@ -949,9 +1031,27 @@ let mainFunc = function(event)
 						ls("customShows", l);
 					}
 				}
+				if (versionsCompare(this.pref("version"), "1.72") < 0)
+				{
+					let w = watched._list;
+					for (let i in w)
+					{
+						let l = w[i],
+								n = [];
+
+						for (let e = 0; e < l.length; e++)
+						{
+							n[n.length] = watched.episode2short(l[e]);
+						}
+						w[i] = n;
+					}
+					watched.save(1);
+				}
 				this.prefs.version = adeVersion;
 				s = true;
 			}
+
+
 			if (s)
 				this.save();
 
@@ -1373,7 +1473,7 @@ let mainFunc = function(event)
 								watchedNum++;
 								$('div.entry[data-series-id="' + id + '"]').each(function(n, entry)
 								{
-									if (watched.title(entry) == ep)
+									if (watched.episode(entry) == ep)
 										watched.update(entry, true);
 								});
 							}
@@ -2816,9 +2916,9 @@ body[class*="theme_"] div.day:not(.today)
 	function watched(entry)
 	{
 		if (entry._input.checked)
-			watched.add(entry.getAttribute("data-series-id"), watched.title(entry));
+			watched.add(entry.getAttribute("data-series-id"), watched.episode(entry));
 		else
-			watched.remove(entry.getAttribute("data-series-id"), watched.title(entry));
+			watched.remove(entry.getAttribute("data-series-id"), watched.episode(entry));
 
 		watched.update(entry, entry._input.checked);
 	}
@@ -2827,6 +2927,8 @@ body[class*="theme_"] div.day:not(.today)
 	watched._saving = false;
 	watched.add = function(id, episode)
 	{
+		episode = watched.episode2short(episode);
+
 		if (!watched._list[id])
 			watched._list[id] = [];
 
@@ -2840,6 +2942,8 @@ body[class*="theme_"] div.day:not(.today)
 	{
 		if (!watched._list[id])
 			return;
+
+		episode = watched.episode2short(episode);
 
 		let n = watched._list[id].indexOf(episode);
 		if (n == -1)
@@ -2872,13 +2976,30 @@ body[class*="theme_"] div.day:not(.today)
 	watched.has = function(entry)
 	{
 		let id = entry.getAttribute("data-series-id");
-		return watched._list[id] && watched._list[id].indexOf(watched.title(entry)) != -1;
+		return watched._list[id] && watched._list[id].indexOf(watched.episode(entry, 1)) != -1;
 	};
 
-	watched.title = function(entry)
+	watched.episode = function(entry, short)
 	{
 		let txt = entry._title && entry._title._titleDefault ? entry._title._titleDefault : $(entry).find("div.title").text();
-		return txt.substring(txt.lastIndexOf(" ") + 1).replace(/\s+$/g, "");
+		txt = txt.substring(txt.lastIndexOf(" ") + 1).replace(/\s+$/g, "");
+		if (short)
+			return watched.episode2short(txt);
+
+		return txt;
+	};
+
+	watched.episode2short = function(txt)
+	{
+		return txt.replace(/(S?0*([0-9]+))?E0*([0-9]+)|0*([0-9]+)\.0*([0-9]+)/, "$2$4E$3$5").replace(/^E/, "");
+	};
+
+	watched.short2episode = function(txt)
+	{
+		return txt.replace(/(([0-9]+)E)?([0-9]+)/, function(a, b, c, d)
+		{
+			return (~~c ? "S" + pad(c) : "") + "E" + pad(d);
+		});
 	};
 
 	watched.update = function(entry, enable)
@@ -2893,6 +3014,9 @@ body[class*="theme_"] div.day:not(.today)
 			text = "Not watched";
 			entry.removeAttribute("watched");
 		}
+		if (entry.parentNode.id == "searchResults")
+			text += "\n\nHold SHIFT key to check/uncheck all previous episides";
+
 		let span = $(entry).find(".title > span")[0];
 		entry.title = span.lastChild ? span.lastChild.textContent : span.textContent;// + " (" + text + ")";
 		$(entry).find(".title > input").prop("title", text);
@@ -2911,15 +3035,24 @@ body[class*="theme_"] div.day:not(.today)
 		input.checked = watched.has(entry);
 		entry._input = input;
 
-		input.addEventListener("change", function(e)
+		input.addEventListener("click", function(ev)
 		{
-			let title = watched.title(entry);
-			$('div.entry[data-series-id="' + id + '"]').each(function(i, entry)
+			let episode = watched.episode(entry, 1).split("E"),
+					se = episode.length > 1 ? ~~episode[0] * 1000000 + ~~episode[1] : ~~episode[0];
+					isBatch = ev.shiftKey && (entry.parentNode.id == "searchResults" || entry.classList.contains("searchResult") && document.getElementById("searchBecauseNoOneChecks").value.trim() == "info:" + id);
+
+			$('div.entry[data-series-id="' + id + '"]').each(function(i, _entry)
 			{
-				if (watched.title(entry) == title)
-					watched.update(entry, input.checked);
+				let _episode = watched.episode(_entry, 1).split("E"),
+						_se = _episode.length > 1 ? ~~_episode[0] * 1000000 + ~~_episode[1] : ~~_episode[0];
+
+				if (_se == se || (isBatch && _se < se))
+				{
+					_entry._input.checked = input.checked;
+					watched(_entry);
+				}
+
 			});
-			watched(entry);
 		}, false);
 		let title = $(entry).find(".title")[0],
 				text = "",
@@ -2957,7 +3090,7 @@ body[class*="theme_"] div.day:not(.today)
 		}
 		entry._title.textContent = episodeNumberFix(id, entry._title.textContent);
 		watched.update(entry, input.checked);
-	};
+	}; //watched.attach()
 
 
 	/* custom links */
@@ -4388,7 +4521,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 			if (Settings.prefs.collapseMulti && !_day.hasClass("opened"))
 				$(day.list[i]).html(day.list[i]._titleCollapsed);
 		}
-	};
+	}; //collapseMulti()
 
 
 	collapseMulti.setTitle = function(list, title)
@@ -4657,6 +4790,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 			if (n[i].match(c))
 				node.removeClass(n[i]);
 	}
+
 	function pastLoaded()
 	{
 		let	hasLoaded = $("#pastWeeks").length,
@@ -4701,12 +4835,14 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 		{
 			prev = prev.prev();
 		}
+
 		if (!that.weekStart)
 		{
 			that.weekStart = [];
 			that.weekStart[0] = Settings.prefs.weekStart ? Settings.prefs.weekStart == 1 ? prev : prev.next() : prev.prev(); //Sunday
 			that.weekStart[1] = that.weekStart[0].prev(); // Saturday
 		}
+
 		if (prev.length)
 		{
 			let found = false,
@@ -4727,6 +4863,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 				days.removeChild(remove[i]);
 
 		}
+
 		for(let i = 0; i < that.weekStart.length; i++)
 		{
 			if (Settings.prefs.weekStart && i + 1 <= Settings.prefs.weekStart)
@@ -4739,6 +4876,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 		{
 			days.children[i].setAttribute("week", (Math.ceil((i+1) / 7)))
 		};
+
 		let	daysPast = $('div.past'),
 				daysCount = Math.round((days.children.length) / 7) + 1,
 				weeks = ~~Settings.pref("weeksPast"),
@@ -5063,6 +5201,8 @@ div.calendar.showReturn div.entry.season-premiere:not(.searchResult)
 
 
 /*Watched*//*
+body.enableWatched:not(.showWatched) :not(#searchResults) > div.entry[watched],
+body:not(.enableWatched) div.calendar > a.showWatched,
 body:not(.enableWatched) div.title > input[type="checkbox"]
 {
 	display: none;
@@ -7171,7 +7311,7 @@ body.prompt.scrollbar
 
 	$("#colorPickerHolder").remove();
 	var picker = clone.length && clone.colorPicker(
-{
+	{
 		customBG: '#222',
 		margin: '4px -2px 0',
 		doRender: 'div div',
@@ -8459,6 +8599,7 @@ log(err);
 
 		$(".days").before(createCheckbox("showHidden", "Hidden shows", Settings.prefs.showHidden ? true : false, Settings.callback));
 		$(".days").before(createCheckbox("collapseMulti", "Collapse multiple", Settings.prefs.collapseMulti ? true : false, collapseMulti.onOff));
+		$(".days").before(createCheckbox("showWatched", "Watched shows", Settings.prefs.showWatched ? true : false, Settings.callback));
 		for(let i = 0; i < _hidden.length; i++)
 		{
 			showHide(_hidden[i], 1);
@@ -9444,7 +9585,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 					a[5] = ~~r.p;
 
 				if (r.w)
-					a[6] = ~~r.w;
+					a[6] = ~~Array.from(new Set(r.w.split("").sort())).join("");//remove duplicates
 
 
 				if (a[3] < 1)
@@ -10660,7 +10801,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 					{
 						let q = val.trim(),
 								r = false,
-								id = q.match(/^info:([0-9]+)/);
+								id = q.match(/^info:([0-9]+)$/);
 
 						id = id ? id[1] : 0;
 						if (id > customShows.id || q == "info:myshows" || q.match(/^info:([a-zA-Z]+|$)/))
@@ -10831,7 +10972,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 							watched.add(id, ep);
 							$('div.entry[data-series-id="' + id + '"]').each(function(n, entry)
 							{
-								if (watched.title(entry) == ep)
+								if (watched.episode(entry) == ep)
 									watched.update(entry, true);
 							});
 						}
