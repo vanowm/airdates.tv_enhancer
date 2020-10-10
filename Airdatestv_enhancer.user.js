@@ -24,7 +24,7 @@ var changesLogText = multiline(function(){/*
 	+ holding SHIFT key while clicking on "watched" checkbox in "all episodes" list will select/deselect all previous episodes
 	+ filter to hide watched episodes
 	! duplicate week days for custom shows were not removed and not in order
-	! in some browsers (Tor Browser) after clicking left mouse button on a link that opens link a new tab it would delete some of the user settings (that was some WTF bug)
+	! in some browsers (Tor Browser) after clicking left mouse button on a link that opens link in a new tab it would delete some of the user settings (that was some WTF bug)
 1.71 (2020-06-26)
 	+ new option "number of opisodes per day" for custom shows
 	! menu popup did not change size with page zoom
