@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.72.2
+// @version     1.73b1
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -19,6 +19,10 @@
 var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
+
+1.73b1 (2020-10-15)
+	+ ability set date offset for episodes
+	! wrong svg icons color on light background
 
 1.72.2 (2020-10-10)
 	! watched filter didn't work properly when show highlighted by search or marked as new/returned
@@ -429,6 +433,7 @@ let log = console.log.bind(console),
 			viewas: '<svg viewBox="0 0 24 24"><path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"></path></svg>',
 			back: '<svg viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>',
 		};
+
 
 /*work around for some SVG pictures shown huge before page is fully loaded*/
 (function loop()
@@ -1045,7 +1050,7 @@ let mainFunc = function(event)
 
 						for (let e = 0; e < l.length; e++)
 						{
-							n[n.length] = watched.episode2short(l[e]);
+							n[n.length] = episodeTools.short(l[e]);
 						}
 						w[i] = n;
 					}
@@ -1477,7 +1482,7 @@ let mainFunc = function(event)
 								watchedNum++;
 								$('div.entry[data-series-id="' + id + '"]').each(function(n, entry)
 								{
-									if (watched.episode(entry) == ep)
+									if (episodeTools.short(entry) == ep)
 										watched.update(entry, true);
 								});
 							}
@@ -2578,6 +2583,101 @@ body[class*="theme_"] div.day:not(.today)
 		}
 	}//Settings
 
+	let episodeTools = {
+		SEID: 1000000,
+
+		id: function episodeTools_id(s, e)
+		{
+			s = this.split(s, e);
+			e = s[1]
+			s = ~~s[0];
+			return typeof(e) == "undefined" ? s : s * this.SEID + ~~e;
+		},
+
+		id2se: function episodeTools_id2se(se)
+		{
+			se = ~~se;
+			return  [Math.floor(se / this.SEID), se % this.SEID];
+		},
+
+		full: function episodeTools_full(s, e)
+		{
+			if (s instanceof HTMLElement)
+				s = this.fromNode(s)
+
+			if (typeof(e) == "undefined" && typeof(s) == "number" && s >= this.SEID)
+				s = this.id2se(s)
+
+			if (s instanceof Array)
+				e = s[1], s = s[0];
+
+			if (typeof(e) == "undefined" && typeof(s) == "string")
+				return s.replace(/^\s*(S?0*([0-9]+)?E)?0*([0-9]+)\s*$/i, function(a, b, c, d)
+				{
+					return (~~c ? "S" + pad(~~c) : "") + "E" + pad(~~d);
+				});
+
+			if (typeof(e) == "undefined")
+				e = s, s = 0;
+
+			s = ~~s, e = ~~e
+			return (s ? "S" + pad(s) : "") + "E" + pad(e);
+		},
+
+		short: function episodeTools_short(s, e)
+		{
+			if (s instanceof HTMLElement)
+				s = this.fromNode(s)
+
+			if (typeof(e) == "undefined" && typeof(s) == "number" && s >= this.SEID)
+				s = this.id2se(s)
+
+			if (s instanceof Array)
+				e = s[1], s = s[0];
+			
+				
+
+			if (typeof(e) == "undefined" && typeof(s) == "string")
+				return s.replace(/^\s*(S?0*([0-9]+))?E0*([0-9]+)|0*([0-9]+)\.0*([0-9]+)\s*$/i, "$2$4E$3$5").replace(/^E/, "");
+
+			return ("" + (typeof(e) == "undefined" ? ~~s : ~~s + "E" + ~~e)).replace(/^0*E*/, "");
+		},
+
+		split: function episodeTools_split(s, e)
+		{
+			if (s instanceof HTMLElement)
+				s = this.fromNode(s)
+
+			if (typeof(e) == "undefined" && typeof(s) == "number" && s >= this.SEID)
+				s = this.id2se(s)
+
+			if (s instanceof Array)
+				e = s[1], s = s[0];
+
+			let m = ("" + (typeof(e) == "undefined" ? s : s + "E" + e)).match(/^\s*(S?0*([0-9]+)?E+)?0*([0-9]+)\s*$/i);
+			if (m)
+				return [~~m[2], ~~m[3]];
+
+			return typeof(e) == "undefined" ? [0, ~~s] : [~~s, ~~e];
+		},
+
+		fromNode: function episodeTools_fromNode(node)
+		{
+			let r;
+			if (node._episode)
+				r = node._episode;
+			else
+			{
+				r = node._title && node._title._titleDefault ? node._title._titleDefault : $(node).find("div.title").text();
+				r = r.substring(r.lastIndexOf(" ") + 1).replace(/\s+$/g, "").trim();
+				if (!r.match(/(^S[0-9]+)?E[0-9]+$/i))
+					return "";
+			}
+			return r;
+		}
+	}
+
+
 	function fileLoad(callback, ext)
 	{
 		let f = document.createElement("input");
@@ -2920,9 +3020,9 @@ body[class*="theme_"] div.day:not(.today)
 	function watched(entry)
 	{
 		if (entry._input.checked)
-			watched.add(entry.getAttribute("data-series-id"), watched.episode(entry));
+			watched.add(entry.getAttribute("data-series-id"), entry);
 		else
-			watched.remove(entry.getAttribute("data-series-id"), watched.episode(entry));
+			watched.remove(entry.getAttribute("data-series-id"), entry);
 
 		watched.update(entry, entry._input.checked);
 	}
@@ -2931,7 +3031,7 @@ body[class*="theme_"] div.day:not(.today)
 	watched._saving = false;
 	watched.add = function(id, episode)
 	{
-		episode = watched.episode2short(episode);
+		episode = episodeTools.short(episode);
 
 		if (!watched._list[id])
 			watched._list[id] = [];
@@ -2947,7 +3047,7 @@ body[class*="theme_"] div.day:not(.today)
 		if (!watched._list[id])
 			return;
 
-		episode = watched.episode2short(episode);
+		episode = episodeTools.short(episode);
 
 		let n = watched._list[id].indexOf(episode);
 		if (n == -1)
@@ -2980,30 +3080,7 @@ body[class*="theme_"] div.day:not(.today)
 	watched.has = function(entry)
 	{
 		let id = entry.getAttribute("data-series-id");
-		return watched._list[id] && watched._list[id].indexOf(watched.episode(entry, 1)) != -1;
-	};
-
-	watched.episode = function(entry, short)
-	{
-		let txt = entry._title && entry._title._titleDefault ? entry._title._titleDefault : $(entry).find("div.title").text();
-		txt = txt.substring(txt.lastIndexOf(" ") + 1).replace(/\s+$/g, "");
-		if (short)
-			return watched.episode2short(txt);
-
-		return txt;
-	};
-
-	watched.episode2short = function(txt)
-	{
-		return txt.replace(/(S?0*([0-9]+))?E0*([0-9]+)|0*([0-9]+)\.0*([0-9]+)/, "$2$4E$3$5").replace(/^E/, "");
-	};
-
-	watched.short2episode = function(txt)
-	{
-		return txt.replace(/(([0-9]+)E)?([0-9]+)/, function(a, b, c, d)
-		{
-			return (~~c ? "S" + pad(c) : "") + "E" + pad(d);
-		});
+		return watched._list[id] && watched._list[id].indexOf(episodeTools.short(entry)) != -1;
 	};
 
 	watched.update = function(entry, enable)
@@ -3033,7 +3110,10 @@ body[class*="theme_"] div.day:not(.today)
 			return;
 
 		let input = document.createElement("input"),
-				id = entry.getAttribute("data-series-id");
+				id = entry.dataset.seriesId,
+				episodeID = episodeTools.id(entry);
+
+		setEpisodes([entry]);
 		input.type = "checkbox";
 		input.checked = watched.has(entry);
 		entry._input = input;
@@ -3044,16 +3124,13 @@ body[class*="theme_"] div.day:not(.today)
 		}, false);
 		input.addEventListener("click", function(ev)
 		{
-			let episode = watched.episode(entry, 1).split("E"),
-					se = episode.length > 1 ? ~~episode[0] * 1000000 + ~~episode[1] : ~~episode[0];
-					isBatch = ev.shiftKey && (entry.parentNode.id == "searchResults" || entry.classList.contains("searchResult") && document.getElementById("searchBecauseNoOneChecks").value.trim() == "info:" + id);
+			let isBatch = ev.shiftKey && (entry.parentNode.id == "searchResults" || entry.classList.contains("searchResult") && document.getElementById("searchBecauseNoOneChecks").value.trim() == "info:" + id);
 
 			$('div.entry[data-series-id="' + id + '"]').each(function(i, _entry)
 			{
-				let _episode = watched.episode(_entry, 1).split("E"),
-						_se = _episode.length > 1 ? ~~_episode[0] * 1000000 + ~~_episode[1] : ~~_episode[0];
+				let _episodeID = episodeTools.id(_entry);
 
-				if (_se == se || (isBatch && _se < se))
+				if (_episodeID == episodeID || (isBatch && _episodeID < episodeID))
 				{
 					_entry._input.checked = input.checked;
 					watched(_entry);
@@ -4197,14 +4274,22 @@ alert("middleClick");
 			try
 			{
 				let c = html.match(/ color\:([^;}]+)[;}]/i)[1];
-				$('div.entry[data-series-id="' + seriesId + '"]').attr("color", c);
+				css.attr("color", c);
+				setTimeout(function()
+				{
+					$('div.entry[data-series-id="' + seriesId + '"]').attr("color", c);
+				}, 1000);
 			}
 			catch(e){log(e);}
 
 		}
 		else
 		{
-			$('div.entry[data-series-id="' + seriesId + '"]').removeAttr("color");
+			delete css._color;
+			setTimeout(function()
+			{
+				$('div.entry[data-series-id="' + seriesId + '"]').removeAttr("color");
+			}, 1000);
 		}
 
 		if (permanent && Settings.prefs.myShowsTop)
@@ -4288,8 +4373,10 @@ alert("middleClick");
 							entries[n]._iOrig = n;
 							watched.attach(i, entries[n]);
 					}
+epDateFix(entries);
 					collapseMulti(i, e, c);
-					sortMyShows(entries);
+					sortMyShows();
+//					sortMyShows(entries);
 
 				});
 			});
@@ -4312,6 +4399,128 @@ alert("middleClick");
 		}
 		_loadArchiveFromPathname.firstRun = true;
 	}//_loadArchiveFromPathname(originalPath,highlightSelector)
+
+function epDateFix(_entries)
+{
+	if (typeof(_entries) == "undefined")
+		_entries = $('div.calendar > div.days > div.day > div.entry');
+
+	_entries = _entries.add(epDateFix.div.childNodes);
+	if (typeof(epDateFix._list) == "undefined")
+		epDateFix._list = ls("epDateFix") || {};
+
+	let list = epDateFix._list,
+			days = [];
+
+	for(let id in list)
+	{
+		let entries = _entries.filter('[data-series-id="' + id + '"]');
+//		setEpisodes(entries);
+		for (let i = 0; i < entries.length; i++)
+		{
+			let data = epDateFix.check(id, entries[i]._episodeID);
+			if (!data.offset && entries[i]._episode == entries[i].parentNode.dataset.date)
+				continue;
+
+			let day = epDateFix.move(entries[i], data.episode, data.offset);
+			if (day)
+			{
+				days[days.length] = day;
+			}
+		}
+	}
+	return days;
+}
+
+epDateFix.move = function epDateFix_move(entry, episodeID, offset)
+{
+	offset = ~~offset;
+	let newDate = new Date(entry._episodeDate.substr(0, 4), entry._episodeDate.substr(4,2) - 1, ~~entry._episodeDate.substr(6,2) + offset);
+	newDate = newDate.getFullYear() * 10000 + (newDate.getMonth() + 1) * 100 + newDate.getDate();
+
+	if (entry._episodeID < episodeID)
+		return false;
+
+	let day = $('div.calendar > div.days > div.day[data-date="' + newDate + '"]')[0] || epDateFix.div;
+	day.appendChild(entry);
+	return day;
+}
+
+epDateFix.check = function epDateFix_check(id, episodeID)
+{
+	let data = epDateFix._list[id] || [],
+			offset = 0,
+			offsetRelative = 0,
+			index = -1,
+			episode = -1
+	
+	for(let i = 0; i < data.length; i++)
+	{
+		let epID = episodeTools.id(data[i][0], data[i][1]);
+		if (episodeID >= epID)
+		{
+			let o = ~~data[i][2];
+
+			if (episodeID == epID)
+			{
+				index = i;
+				offsetRelative = ~~data[i][2];
+				episode = epID;
+			}
+			else
+				offset += o;
+
+		}
+	}
+	return {
+		index: index,
+		offset: offset + offsetRelative,
+		offsetPrev: offset,
+		offsetRelative: offsetRelative,
+		episode: episode
+	};
+}
+
+epDateFix.update = function epDateFix_update(id, episode, offset)
+{
+	episode = episodeTools.id(episode);
+	offset = ~~offset;
+
+	let ep = episodeTools.split(episode),
+			data = this.check(id, episode);
+
+	if (data.index == -1 && !offset)
+		return;
+
+	if (!this._list[id])
+		this._list[id] = [];
+
+	if (data.index != -1)
+	{
+		if (!offset)
+		{
+			this._list[id].splice(data.index, 1);
+		}
+		else
+			this._list[id][data.index][2] = offset;
+	}
+	else
+		this._list[id][this._list[id].length] = [ep[0], ep[1], offset];
+
+}
+
+epDateFix.save = function epDateFix_save()
+{
+	for(let id in this._list)
+		if (!this._list[id].length)
+			delete this._list[id];
+
+	ls("epDateFix", this._list);
+}
+
+epDateFix.div = document.createElement("div");
+epDateFix.div.id = "epDateFix";
+document.body.appendChild(epDateFix.div);
 	let sortMyShows = function(entries)
 	{
 		if (typeof(entries) == "undefined")
@@ -4322,6 +4531,7 @@ alert("middleClick");
 			});
 			return;
 		}
+
 		let changed = false;
 		entries.sort(function(a, b)
 		{
@@ -4502,6 +4712,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 //			entry._title = $(entry).find(".title > span")[0];
 			if (!entry._title)
 				return;
+
 			if (!entry._title._titleOrig)
 			{
 				entry._title._titleOrig = entry._title.textContent || "";
@@ -4716,6 +4927,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 
 		if (!_today || $(".archive").length)
 		{
+			setEpisodes();
 			if (callback)
 				return callback();
 
@@ -4781,6 +4993,32 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 		}//pastLoadDone()
 	}//showPast()
 
+	function setEpisodes(entries)
+	{
+		if (typeof(entries) == "undefined")
+			entries = document.querySelectorAll("div.entry");
+
+		for (let e = 0; e < entries.length; e++)
+		{
+			let entry = entries[e],
+					episode = episodeTools.split(entry);
+
+			if (!entry._episode)
+			{
+				entry._episode = episodeTools.full(episode);
+				if (entry._episode == "E00")
+					entry._episode = "";
+
+				entry.setAttribute("data-episode", entry._episode);
+			}
+			if (!entry._episodeID)
+				entry._episodeID = episodeTools.id(episode);
+
+			if (!entry._episodeDate)
+				entry._episodeDate = entry.parentNode.dataset.date || entry.dataset.date || "";
+		}
+	}
+
 	function weekDay()
 	{
 		let week =  ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
@@ -4800,6 +5038,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 
 	function pastLoaded()
 	{
+		setEpisodes();
 		let	hasLoaded = $("#pastWeeks").length,
 				stop = false,
 				days = $("div.days")[0],
@@ -4824,6 +5063,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 			{
 				day.classList.toggle("past", true);
 			}
+
 		};
 		let daysNum = weekDay(),
 				prev = _today.prev();
@@ -5208,7 +5448,7 @@ div.calendar.showReturn div.entry.season-premiere:not(.searchResult)
 
 
 /*Watched*//*
-body.enableWatched:not(.showWatched) :not(#searchResults) > div.entry[watched]:not(.searchResult),
+body.enableWatched:not(.showWatched) :not(#searchResults) > div.entry[watched]:not(.searchResult):not(:hover),
 body:not(.enableWatched) div.calendar > a.showWatched,
 body:not(.enableWatched) div.title > input[type="checkbox"]
 {
@@ -6497,6 +6737,39 @@ div.entry[color="white"] .epNumFix .input
 {
 	border: 1px solid white;
 }
+
+div.entry[data-episode=""] .epDateFix
+{
+	display: none;
+}
+.epDateFix
+{
+	margin: 0.3em 0 !important;
+	display: table;
+	text-align: center;
+}
+.epDateFix input
+{
+	width: 100%;
+	max-width: 100%;
+	border: 0;
+}
+.epDateFix .input
+{
+	width: 8em;
+	background-color: white;
+	color: black;
+	border: 1px solid black;
+}
+div.entry[color="white"] .epDateFix .input
+{
+	border: 1px solid white;
+}
+#epDateFix
+{
+	display: none;
+}
+
 div.days
 {
 	min-width: 1001px;
@@ -8236,7 +8509,6 @@ log(err);
 		let obj = ev.target,
 				$entry = $(obj).parent(),
 				details = $entry.find(".details");
-
 //		$entry.attr("color", $entry.css("color") == "rgb(0, 0, 0)" ? "black" : "white");
 		if (!details.length )
 		{
@@ -8451,6 +8723,7 @@ log(err);
 //	log(episodeNumberFix.list[showId]);
 
 					let days = {};
+					
 					$('div.entry[data-series-id="' + showId + '"]').each(function(i, entry)
 					{
 /*
@@ -8511,6 +8784,71 @@ log(err);
 				showHideBox.parentNode.insertBefore(epNumFixBox, showHideBox.nextSibling);
 			}
 
+
+			let epDateFixBox = document.createElement("div"),
+					epDateFixInput = document.createElement("input");
+
+				epDateFixBox.className = "epDateFix";
+				epDateFixInput.value = 999;
+				epDateFixInput.type = "number";
+				epDateFixInput.min = -999;
+				epDateFixInput.max = 999;
+				function epDateFixEvt(evt)
+				{
+					try
+					{
+						let s = this.selectionStart,
+								e = this.selectionEnd,
+								num = Math.min(1000, Math.max(-1000, Number(this.value.replace(/[^0-9\-]/g, ""))));
+
+						this.value = num;
+
+						if (e !== null)
+							this.selectionEnd = e;
+						if (s !== null)
+							this.selectionStart = s;
+
+						if (!evt.isTrigger)
+						{
+							epDateFixSave();
+						}
+	//					Settings.pref("timeOffset", timeOffset);
+	//					if (!evt.isTrigger)
+	//						todayChange(timeOffset);
+				}
+					catch(e){log(e)}
+				}
+				function epDateFixSave()
+				{
+					let data = epDateFix.check(showId, entry._episodeID),
+							offset = ~~epDateFixInput.value;
+				
+//					epDateFix.move(entry, entry._episodeID, offset);
+					offset = offset - data.offsetPrev;
+					epDateFix.update(showId, entry._episodeID, offset);
+					let days = epDateFix();
+					epDateFix.save();
+					for (let i = 0; i < days.length; i++)
+					{
+						sortMyShows($(days[i]).find(".entry"));
+					}
+					epDateFixInput.focus();
+				}
+				$(epDateFixInput).on("input", epDateFixEvt)
+				.trigger("input");
+
+				let txt = document.createElement("div");
+				txt.textContent = "Date offset (in days)";
+				epDateFixBox.appendChild(txt);
+				let box = document.createElement("div");
+				box.className = "input";
+				box.appendChild(epDateFixInput);
+				epDateFixBox.appendChild(box);
+				showHideBox.parentNode.insertBefore(epDateFixBox, showHideBox.nextSibling);
+
+
+
+
 			let editBox = document.createElement("div"),
 					editObj = document.createElement("a"),
 					editIcon = document.createElement("span");
@@ -8536,6 +8874,7 @@ log(err);
 			}, false);
 			showHideBox.parentNode.insertBefore(editBox, showHideBox.nextSibling);
 		}//if (!details.length )
+
 		if (_engs)
 			return;
 
@@ -8564,6 +8903,8 @@ log(err);
 		});
 		if( !open )
 		{
+			let entry = obj.parentNode;
+			entry.querySelector("div.epDateFix > .input > input").value = epDateFix.check(entry.dataset.seriesId, entry._episodeID).offset || 0;
 			function callbackOpen()
 			{
 				$entry.attr("opened", "");
@@ -8720,11 +9061,12 @@ log(err);
 			for(let n = 0; n < list[i].length; n++)
 			{
 				let data = list[i][n],
-						id = data.id - customShows.id;
+						id = data.id - customShows.id,
+						episode = (data.season ? "S" + pad(data.season) : "") + "E" + pad(data.episode);
 
 				data.name = customShows._list.l[id][0];
 				data.wiki = customShows._list.l[id][2];
-				let name = data.name + " " + (data.season ? "S" + pad(data.season) : "") + "E" + pad(data.episode),
+				let name = data.name + " " + episode,
 //						_entries = day.querySelectorAll('[data-series-id="' + data.id + '"]'),
 						_entries = day.querySelectorAll('[data-title="' + name + '"], [data-series-id="' + data.id + '"]'),
 						_entry = null,
@@ -8758,6 +9100,9 @@ log(err);
 				entry.classList.toggle("season-premiere", data.episode == 1 && data.season > 1);
 				entry.classList.toggle("series-premiere", data.season == 1 && data.episode == 1);
 				entry._cushowId = data.d;
+				entry._episode = episode;
+				entry._episodeID = episodeTools.id(episode);
+				entry._episodeDate = i;
 				day.appendChild(entry);
 				added = true;
 			}
@@ -9688,6 +10033,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 			showPast(function()
 			{
 				customShows();
+				epDateFix();
 				let obj = $('div[data-series-id="' + (id + customShows.id) + '"]');
 				if (obj.parent().attr("id") == "searchResults")
 					return;
@@ -10979,7 +11325,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 							watched.add(id, ep);
 							$('div.entry[data-series-id="' + id + '"]').each(function(n, entry)
 							{
-								if (watched.episode(entry) == ep)
+								if (episodeTools.short(entry) == ep)
 									watched.update(entry, true);
 							});
 						}
@@ -11739,6 +12085,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			showPast(function()
 			{
 				customShows();
+				epDateFix();
 				$("div.day").each(function(i)
 				{
 	//adding watched checkboxes
