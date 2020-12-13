@@ -8,7 +8,7 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.73b2
+// @version     1.73b3
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
@@ -20,10 +20,12 @@ var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
+1.73b3 (2020-12-13)
+	+ hide "Also on" section of disqus
+
 1.73b2 (2020-10-15)
 	+ ability set date offset for episodes
 	! wrong svg icons color on light background
-
 1.72.2 (2020-10-10)
 	! watched filter didn't work properly when show highlighted by search or marked as new/returned
 1.72.1 (2020-10-10)
@@ -12838,6 +12840,11 @@ li.reload
 	margin-left: 15px;
 }
 
+/* Also On section *//*
+[data-tracking-area="discovery-north"]
+{
+	display: none;
+}
 */
 		});//disqus css
 		document.getElementsByTagName("head")[0].appendChild(style);
