@@ -1,4 +1,4 @@
-﻿// ==UserScript==
+// ==UserScript==
 // @name        Airdates.tv enhancer
 // @namespace   V@no
 // @author      V@no
@@ -8,21 +8,39 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.73b3
+// @version     1.73b4
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
 
 //tab = 2 spaces
 
+"use strict";
 
 var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
+1.73b4 (2021-07-25)
+  + setting to activate date offset
+	+ date offset of displays in tooltip which episode it's inherit current position
+	+ filter in changes log by clicking at legend titles
+	+ archive date to website title
+	! disqus reload button didn't scroll down properly
+	! disqus message count didn't work
+	! disqus theme didn't change together with main site
+	! opened details would get closed when "today" is changed
+	! date offset + time offset = incorrect date offset position
+	! errors on "_u" pages
+	* changes log will not longer popup when script first installed or when localStorage data deleted
+	* legend in changes log is always visible
+	- ability enable/disable episode offset feature via #epdatefix0 and #epdatefix1 hashtags
+	- disqus recommendations b.s.
+	? date offset + collapsemulti = hidden/incorrect title
+//enableEpDateFixMenu
+	
 1.73b3 (2020-12-13)
 	+ hide "Also on" section of disqus
-
 1.73b2 (2020-10-15)
 	+ ability set date offset for episodes
 	! wrong svg icons color on light background
@@ -412,6 +430,7 @@ let log = console.log.bind(console),
 		timeOffset = 0,
 		isFrame = window.top !== window.self,
 		_Date = Date,
+		today = undefined,
 		blankFunc = function(){},
 		SVG = {
 			del: '<svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"></path></svg>',
@@ -464,6 +483,24 @@ let log = console.log.bind(console),
 	}
 })();
 
+receiveMessage.f = {};//list of functions
+receiveMessage.f.reloadDisqus = function messageFunc_reloadDisqus(r)
+{
+	if (typeof(r) == "undefined")
+	{
+		this.r = true;
+		DISQUS.reset({
+			reload: true,
+		});
+	}
+	else if (this.r)
+	{
+		$("html, body").animate({scrollTop: $("#disqus_thread").find("iframe")[0].offsetTop + r }, 300);
+	}
+}
+
+window.self.addEventListener("message", receiveMessage, false);
+
 if (!isFrame)
 {
 	try
@@ -496,211 +533,6 @@ if (!Date.now)
 	}
 }
 
-function createCookie(name,value){ document.cookie = name+"="+encodeURIComponent(value)+"; path=/; expires="+new Date( (new Date()).getTime()+3153600000000).toGMTString()+";"; }
-function readCookie(n,r){return(r=document.cookie.match('(^|;)\\s*'+encodeURIComponent(n)+'\\s*=\\s*([^;]+)'))?r[2]:null}
-function eraseCookie( name ){ document.cookie = name+"=; path=/; expires="+new Date((new Date()).getTime()+(-1)).toGMTString()+";"; }
-
-function ls(id, data, callback)
-{
-	let r;
-	if (typeof(data) == "undefined")
-	{
-		try
-		{
-			r = localStorage.getItem(id);
-		}
-		catch(e)
-		{
-			window.top.postMessage({id: "ade", func: "ls", args: [id], return: callback}, "https://www.airdates.tv");
-			log(e);
-			return r;
-		}
-		try
-		{
-			r = JSON.parse(r);
-		}catch(e){}
-	}
-	else
-	{
-		try
-		{
-			r = localStorage.setItem(id, JSON.stringify(data));
-		}
-		catch(e)
-		{
-			window.top.postMessage({id: "ade", func: "ls", args: [id, data], return: callback}, "https://www.airdates.tv");
-			log(e);
-			return r;
-		}
-	}
-	return r;
-}
-
-function cs(id, data)
-{
-	let r;
-	if (typeof(data) == "undefined")
-	{
-		try
-		{
-			r = readCookie(id);
-			r = JSON.parse(r);
-		}catch(e){}
-	}
-	else
-	{
-		try
-		{
-			r = createCookie(id, JSON.stringify(data));
-		}
-		catch(e){}
-	}
-	return r;
-}
-
-function multiline(func, ws)
-{
-	func = func.toString();
-	func = func.slice(func.indexOf("/*") + 2, func.lastIndexOf("*/")).split("*//*").join("*/");
-	func = func.replace(/{SVG-([A-Z]+)}/g, function(a, b)
-	{
-		b = b.toLowerCase();
-		if (SVG[b])
-			return SVG[b];
-
-		return a;
-	});
-	return ws ? func : func.replace(/[\n\t]*/g, "");
-}
-
-function removeHash()
-{
-	history.replaceState({}, "", location.href.replace(/#.*/, ''));
-}
-
-this._scrollTo = function(y)
-{
-	$("html, body").animate({scrollTop: $("#disqus_thread").find("iframe")[0].offsetTop + y }, 300);
-//	$("html, body").prop("scrollTop", $("#disqus_thread").find("iframe")[0].offsetTop + y);
-}
-
-function receiveMessage(event)
-{
-	if (["https://disqus.com", "https://www.airdates.tv"].indexOf(event.origin) == -1 || typeof(event.data) != "object" || event.data.id != "ade")
-	{
-		return;
-	}
-
-	let func = typeof(self[event.data.func]) != "undefined" ? self[event.data.func] : typeof(this[event.data.func]) != "undefined" ? this[event.data.func] : null;
-	if (func)
-	{
-		let r;
-		try
-		{
-			r = func.apply(null, event.data.args);
-		}
-		catch(e){log(e)};
-
-		event.source.postMessage({id: "ade", return: event.data.return, val: r}, event.origin);
-	}
-	if ("val" in event.data && "return" in event.data && typeof(self[event.data.return]) == "function")
-	{
-		self[event.data.return](event.data.val);
-	}
-}
-
-function cloneObj(obj, exclude, _map)
-{
-	if(obj == null || (typeof obj != "object" && typeof obj != "function"))
-		return obj;
-
-	let map = _map ? _map : new WeakMap(),
-			m = map.get(obj);
-
-	if (m)
-		return m;
-
-	let objNew,
-			type = Object.prototype.toString.call(obj).slice(8, -1);
-
-	if (typeof(exclude) == "undefined")
-		exclude = [];
-
-	if (_map && exclude.indexOf(type) != -1)
-	{
-		return obj;
-	}
-	try
-	{
-		objNew = new obj.constructor();
-	}
-	catch(e)
-	{
-		objNew = obj;
-	}
-	if (type == "Date")
-	{
-		objNew.setTime(obj.getTime());
-	}
-	else if (type == "Set")
-	{
-		for (let i of obj)
-		{
-			objNew.add(cloneObj(i, exclude, map));
-		}
-	}
-	else if (type == "Map")
-	{
-		for (let i of obj)
-		{
-			objNew.set(cloneObj(i[0], exclude, map), cloneObj(i[1], exclude, map));
-		}
-	}
-	else if (type == "Symbol")
-	{
-		objNew = Object(Symbol(obj.description));
-	}
-	else if (type == "Function" || type == "WeakMap")
-	{
-		objNew = obj;
-	}
-	else if (type == "Error")
-	{
-		objNew = new obj.constructor(obj);
-		objNew.stack = obj.stack;
-	}
-	else if (type == "Boolean"
-				|| type == "Number"
-				|| type == "String"
-				|| type == "RegExp")
-	{
-		objNew = new obj.constructor(obj);
-	}
-
-	if (typeof obj == "object" //is HTML?
-			&& ( obj instanceof Window
-				|| obj instanceof Document
-				|| obj.ownerDocument instanceof HTMLDocument))
-	{
-		let h = map.get(obj);
-		if (h)
-			return h;
-
-		map.set(obj, obj);
-		return obj;
-	}
-	map.set(obj, objNew);
-
-	let k = Object.keys(obj),
-			l = k.length;
-
-	for (let i = -1; ++i < l;)
-	{
-		objNew[k[i]] = cloneObj(obj[k[i]], exclude, map);
-	}
-	return objNew;
-}
-
 
 Object.defineProperty(window, 'browser', { get: function()
 {
@@ -731,9 +563,8 @@ Object.defineProperty(window, 'browser', { get: function()
 	}
 	return browser;
 }});
-window.addEventListener("message", receiveMessage, false);
 
-let mainFunc = function(event)
+let mainFunc = function mainFunc(event)
 {
 	if (typeof($) == "undefined")
 		return;
@@ -742,7 +573,7 @@ let mainFunc = function(event)
 	if (browser)
 		document.body.classList.toggle(browser, true);
 
-	window.disqusMessageCount = function disqusMessageCount(count)
+	let disqusMessageCount = function disqusMessageCount(count)
 	{
 		if (count)
 		{
@@ -759,6 +590,7 @@ let mainFunc = function(event)
 
 		disqusMessageCount.el.textContent = count;
 	}
+	receiveMessage.f.disqusMessageCount = disqusMessageCount;
 	let adeName = "Airdates.tv enhancer",
 			adeVersion = "n/a",
 			prevVersion = null,
@@ -769,8 +601,6 @@ let mainFunc = function(event)
 			loopWait = 1000,
 			_enginesList = [],
 			pickerCallbacks = {};
-
-
 
 	try
 	{
@@ -807,7 +637,6 @@ let mainFunc = function(event)
 		prefs: {},
 		prefsDef: {
 			animSpeed: 2,
-	//		animateExpand: 0,
 			archiveBottom: 1, //show next/prev month links below calendar
 			collapseMulti: 0,
 			cushowsHelp: 0,
@@ -856,7 +685,7 @@ let mainFunc = function(event)
 			},
 		},
 
-		filter: function(id, val)
+		filter: function Settings_filter(id, val)
 		{
 			if (id in this.prefsFilter)
 				return this.prefsFilter[id](val);
@@ -864,7 +693,7 @@ let mainFunc = function(event)
 			return val;
 		},
 
-		pref: function(id, val, prefs)
+		pref: function Settings_pref(id, val, prefs)
 		{
 			prefs = prefs || this.prefs;
 			let ids = id.split(".");
@@ -879,14 +708,14 @@ let mainFunc = function(event)
 			this.save();
 		},
 
-		init: function()
+		init: function Settings_init()
 		{
 			if (this.inited)
 				return;
 
 			this.prefs = ls("settings");
 			if (!this.prefs || typeof(this.prefs) != "object")
-				this.prefs = Object.assign({}, this.prefsDef);
+				this.prefs = cloneObj(this.prefsDef);
 
 			if ("weeks" in this.prefs && !("weeksPast" in this.prefs))
 			{
@@ -921,8 +750,10 @@ let mainFunc = function(event)
 				if (!(i in this.prefsDef) || typeof(this.prefs[i]) !== typeof(this.prefsDef[i]))
 					delete this.prefs[i];
 			}
-			let c = cs("wa"),
+			let c,// = cs("wa"),
 					s = false;
+/*
+//too old compatibility to care?
 
 			if (c !== null)
 			{
@@ -961,6 +792,14 @@ let mainFunc = function(event)
 				s = true;
 			}
 
+			c = cs("w");
+			if (c !== null)
+			{
+				this.prefs.weeks = c;
+				eraseCookie("w");
+				s = true;
+			}
+*/
 			/* splitting New/Returning into two separate filters */
 			c = cs("sn");
 			if (c === null && this.pref("showNew") === null)
@@ -985,13 +824,6 @@ let mainFunc = function(event)
 				s = true;
 			}
 
-			c = cs("w");
-			if (c !== null)
-			{
-				this.prefs.weeks = c;
-				eraseCookie("w");
-				s = true;
-			}
 			window.createCookie = createCookie
 //			window.eraseCookie = eraseCookie;
 //			window.readCookie = readCookie;
@@ -1000,10 +832,13 @@ let mainFunc = function(event)
 				if (!Settings.prefs.noChangesLog && Settings.prefs.version != adeVersion)
 				{
 					prevVersion = Settings.prefs.version;
-					setTimeout(function()
+					if (Settings.prefs.version !== "")
 					{
-						changesLog.show(true);
-					});
+						setTimeout(function()
+						{
+							changesLog.show(true);
+						});
+					}
 					if (!DB.loggedInUsername)
 					{
 						setTimeout(function()
@@ -1073,7 +908,7 @@ let mainFunc = function(event)
 			this.inited = true;
 		},//Settings.init()
 
-		create: function(callback)
+		create: function Settings_create(callback)
 		{
 			if (Settings.box)
 				return callback ? callback() : true;
@@ -1102,7 +937,7 @@ let mainFunc = function(event)
 					a = document.createElement("a"),
 					i = document.createElement("span"),
 					span = document.createElement("div"),
-					that = this,
+					that = self,
 					opt;
 
 			span.appendChild(i);
@@ -1110,9 +945,13 @@ let mainFunc = function(event)
 
 			Settings.box = popup;
 			content.append(createCheckbox("enableWatched", "Enable watched", this.prefs.enableWatched ? true : false, this.callback, null, ""));
+//enableEpDateFixMenu
+			content.append(createCheckbox("enableEpDateFix", "Enable Episode Date Offset", this.prefs.enableEpDateFix ? true : false, function(e, id, check)
+			{
+				epDateFix.init(check);
+			}, ['Warning! This will increase page loading time.\n\nRequires page reload'], ""));
 			content.append(createCheckbox("shortTitle", "Truncate long titles", this.prefs.shortTitle ? true : false, this.callback, ["Shorten titles to fit into single row."], ""));
 			content.append(createCheckbox("shortTitleExpand", "Auto expand truncated titles", this.prefs.shortTitleExpand ? true : false, this.callback, ["Show full title when cursor over it. If disabled you still be able see full title in tooltip or when show is opened."], ""));
-	//		content.append(createCheckbox("animateExpand", "Animate during expanding", this.prefs.animateExpand ? true : false, this.callback, null, ""));
 			content.append(createCheckbox("smallLogo", "Small logo", this.prefs.smallLogo ? true : false, this.callback, null, ""));
 			content.append(createCheckbox("searchScroll", "Auto scroll to the top", this.prefs.searchScroll ? true : false, this.callback, ["Scroll to the top on search and page refresh"], ""));
 			content.append(createCheckbox("todayChange", "Track today", this.prefs.todayChange ? true : false, this.callback, ['Automatically change "today" at midnight'], ""));
@@ -1317,14 +1156,14 @@ let mainFunc = function(event)
 
 			let box = $('<div class="themeColorsSettings"><label>Theme colors:</label></div>'),
 					info = Settings.themes.quickOverrideTempl,
-					samples = {}
+					samples = {},
 					sampleGroup = 0;
 
 			let templ = multiline(function(){/*
 <span id="themeColorBox_{ID}" class="themeColorBox">
 	<label>{LABEL}</label>
 	<div id="themeColor_{ID}" class="color picker picker-light self" callback="themeColor_{ID}" title="Set Color"></div>
-	<div class="del" title="Clear">{DEL}</div>
+	<div class="del" title="Clear">{SVG-DEL}</div>
 </span>
 			*/});
 			for(let i in Settings.prefsDef.themeColors)
@@ -1332,8 +1171,7 @@ let mainFunc = function(event)
 				opt = $(templ
 						.replace(/\{ID\}/g, i)
 						.replace(/\{LABEL\}/g, info[i].label || "")
-						.replace(/\{TITLE\}/g, info[i].title || "")
-						.replace(/\{DEL\}/g, SVG.del))
+						.replace(/\{TITLE\}/g, info[i].title || ""))
 
 					.appendTo(box)
 					.find(".color")
@@ -1429,7 +1267,7 @@ let mainFunc = function(event)
 			a.textContent = "Backup settings";
 			a.id = "settingsBackup";
 			span.title = "Backup all settings, including links manager data, watched and hidden shows lists, middle click selection, last custom colors and custom shows.";
-			a.addEventListener("click", function(e)
+			a.addEventListener("click", function backupSettings_link_evtClick(e)
 			{
 				e.preventDefault();
 				Settings.backup();
@@ -1449,6 +1287,7 @@ let mainFunc = function(event)
 			{
 				let reload = false,
 						txt = "Error restoring settings";
+
 				if(!str)
 					return;
 
@@ -1706,7 +1545,7 @@ let mainFunc = function(event)
 				if (reload)
 					window.location.reload();
 			}
-			a.addEventListener("click", function(e)
+			a.addEventListener("click", function restoreSettings_link_evtClick(e)
 			{
 				e.preventDefault();
 
@@ -1743,7 +1582,7 @@ let mainFunc = function(event)
 			}
 		},//Settings.create()
 
-		_backup: function()
+		_backup: function Settings__backup()
 		{
 			let cookies = {},
 					str = "",
@@ -1783,7 +1622,7 @@ let mainFunc = function(event)
 			return str;
 		},
 
-		backup: function()
+		backup: function Settings_backup()
 		{
 				let str = this._backup();
 
@@ -1797,18 +1636,18 @@ let mainFunc = function(event)
 						alert("Nothing to backup");
 		},
 
-		callback: function(e, id, check)
+		callback: function Settings_callback(e, id, check)
 		{
 			Settings.prefs[id] = check ? 1 : 0;
 			Settings.save();
 		},
 
-		save: function(f)
+		save: function Settings_save(f)
 		{
 			ls("settings", this.prefs);
 		},
 
-		show: function(noBack)
+		show: function Settings_show(noBack)
 		{
 /*
 			if (noBack)
@@ -1821,7 +1660,7 @@ let mainFunc = function(event)
 			setPopup(true);
 		},
 
-		hide: function()
+		hide: function Settings_hide()
 		{
 			Settings.box.hide();
 			setPopup(false);
@@ -1833,7 +1672,7 @@ let mainFunc = function(event)
 			default: [], //list of predefined colors
 			max: 100, //max num of colors to remember
 			inited: false,
-			add: function add(color, save)
+			add: function Settings_colors_add(color, save)
 			{
 				color = color.toUpperCase();
 				if (color == "FFFFFF" || this.default.indexOf(color) != -1 || Settings.prefs.lastColors.indexOf(color) != -1)
@@ -1849,12 +1688,12 @@ let mainFunc = function(event)
 					this.save();
 			},
 
-			save: function save(color)
+			save: function Settings_colors_save(color)
 			{
 				Settings.save();
 			},
 
-			css: function()
+			css: function Settings_colors_css()
 			{
 				let css = "",
 						colors = Settings.prefs.lastColors;
@@ -1870,7 +1709,7 @@ let mainFunc = function(event)
 				});
 			},
 
-			init: function()
+			init: function Settings_colors_init()
 			{
 				$("#detailsTemplate div.colors .color").each(function(i, e)
 				{
@@ -1999,7 +1838,7 @@ body,
 #manage-links-popup-content,
 #changesLogBox
 {
-	color: #b9b2b2;
+	color: #E0DEDE;
 }
 
 body.archive
@@ -2085,6 +1924,7 @@ div.entry[color="black"] svg,
 .cl_added > span:first-child,
 .cl_changed > span:first-child,
 .cl_removed > span:first-child,
+.cl_notfixed > span:first-child,
 .cl_fixed > span:first-child
 {
 	color: black;
@@ -2249,7 +2089,7 @@ END DARK THEME
 
 			list: {},
 
-			init: function themesInit()
+			init: function Settings_themes_nit()
 			{
 				for (let theme in this._default)
 				{
@@ -2284,9 +2124,9 @@ END DARK THEME
 				}
 				this.quickOverrideInit();
 //				this.quickOverride();
-			},
+			}, //Settings.themes.init()
 
-			load: function themesLoad(theme)
+			load: function Settings_themes_load(theme)
 			{
 				if (typeof(theme) == "undefined")
 				{
@@ -2312,15 +2152,41 @@ END DARK THEME
 					body.toggleClass(className, true);
 					Settings.themes.prev = className;
 				}
+				let disqusFrameRemoved = false,
+						disqusDiv = document.getElementById("disqus_thread");
 
-				try
+				disqusDiv && disqusDiv.addEventListener('DOMNodeInserted', e =>
 				{
-					$("#disqus_thread").find("iframe")[0].contentWindow.postMessage({id: "ade", func: "disqusTheme", args: [data.isDark], return: null}, "https://disqus.com");
-				}catch(e){}
-				$("select#theme").val(theme);
-			},//themes.load()
+					if (e.target.tagName != "IFRAME")
+						return;
 
-			getCustomThemes: function themesGetCustomThemes()
+//          $("#disqus_recommendations").remove();
+					e.target.addEventListener("load", e=>
+					{
+//						if (!disqusFrameRemoved && disqusDiv.querySelector("iframe") === e.target)
+//							return e.target.parentNode.removeChild(e.target);
+            if (!e.target.src)
+              try{return e.target.parentNode.removeChild(e.target)}catch(e){return}; //remove ads
+
+						try
+						{
+							e.target.contentWindow && e.target.contentWindow.postMessage({id: "ade", func: "disqusTheme", args: [data.isDark], return: null}, "https://disqus.com");
+						}
+						catch (e){console.log(e)}
+					});
+				}, false);
+				$("#disqus_thread").find('iframe[src^="https://disqus.com"]').each(function(o)
+				{
+					try
+					{
+						this.contentWindow.postMessage({id: "ade", func: "disqusTheme", args: [data.isDark], return: null}, "https://disqus.com");
+					}
+					catch (e){console.log(e)}
+				});
+				$("select#theme").val(theme);
+			},//Settings.themes.load()
+
+			getCustomThemes: function Settings_themes_getCustomThemes()
 			{
 				let themes = Object.assign({}, this.list);
 				for(let t in this._default)
@@ -2332,7 +2198,7 @@ END DARK THEME
 			},
 
 			quickOverrideStyle: [],
-			quickOverrideInit: function()
+			quickOverrideInit: function Settings_themes_quickOverrideInit()
 			{
 				if (this.quickOverride.inited)
 					return;
@@ -2350,7 +2216,7 @@ END DARK THEME
 				this.quickOverride.inited = true;
 			},
 
-			quickOverride: function(data, commonOnly)
+			quickOverride: function Settings_themes_quickOverride(data, commonOnly)
 			{
 
 				if (typeof(data) != "object")
@@ -2389,7 +2255,7 @@ END DARK THEME
 						document.getElementsByTagName("head")[0].appendChild(this.quickOverrideStyle[i]);
 					}
 				}
-			},//quickOverride()
+			},//Settings.themes.quickOverride()
 
 			quickOverrideTempl:
 			{
@@ -2574,97 +2440,25 @@ body[class*="theme_"] div.day:not(.today)
 
 		lastUpdate: new Date(),
 		lastUpdateDiv: null,
-		lastUpdateShow: function()
+		lastUpdateShow: function Settings_lastUpdateShow()
 		{
 			if (!this.lastUpdateDiv)
 			{
 				this.lastUpdateDiv = document.createElement("span");
 				this.lastUpdateDiv.className = "lastupdate";
-				document.querySelector("div.footer").appendChild(this.lastUpdateDiv);
+				const footer = document.querySelector("div.footer");
+				footer && footer.appendChild(this.lastUpdateDiv);
 			}
 			this.lastUpdateDiv.textContent = "Page updated " + this.lastUpdate;
 		}
 	}//Settings
 
-	let episodeTools = {
-		SEID: 1000000,
+	Object.seal(Settings);
 
-		id: function episodeTools_id(s, e)
-		{
-			s = this.split(s, e);
-			e = s[1]
-			s = ~~s[0];
-			return typeof(e) == "undefined" ? s : s * this.SEID + ~~e;
-		},
-
-		id2se: function episodeTools_id2se(se)
-		{
-			se = ~~se;
-			return  [Math.floor(se / this.SEID), se % this.SEID];
-		},
-
-		full: function episodeTools_full(s, e)
-		{
-			if (s instanceof HTMLElement)
-				s = this.fromNode(s)
-
-			if (typeof(e) == "undefined" && typeof(s) == "number" && s >= this.SEID)
-				s = this.id2se(s)
-
-			if (s instanceof Array)
-				e = s[1], s = s[0];
-
-			if (typeof(e) == "undefined" && typeof(s) == "string")
-				return s.replace(/^\s*(S?0*([0-9]+)?E)?0*([0-9]+)\s*$/i, function(a, b, c, d)
-				{
-					return (~~c ? "S" + pad(~~c) : "") + "E" + pad(~~d);
-				});
-
-			if (typeof(e) == "undefined")
-				e = s, s = 0;
-
-			s = ~~s, e = ~~e
-			return (s ? "S" + pad(s) : "") + "E" + pad(e);
-		},
-
-		short: function episodeTools_short(s, e)
-		{
-			if (s instanceof HTMLElement)
-				s = this.fromNode(s)
-
-			if (typeof(e) == "undefined" && typeof(s) == "number" && s >= this.SEID)
-				s = this.id2se(s)
-
-			if (s instanceof Array)
-				e = s[1], s = s[0];
-			
-				
-
-			if (typeof(e) == "undefined" && typeof(s) == "string")
-				return s.replace(/^\s*(S?0*([0-9]+))?E0*([0-9]+)|0*([0-9]+)\.0*([0-9]+)\s*$/i, "$2$4E$3$5").replace(/^E/, "");
-
-			return ("" + (typeof(e) == "undefined" ? ~~s : ~~s + "E" + ~~e)).replace(/^0*E*/, "");
-		},
-
-		split: function episodeTools_split(s, e)
-		{
-			if (s instanceof HTMLElement)
-				s = this.fromNode(s)
-
-			if (typeof(e) == "undefined" && typeof(s) == "number" && s >= this.SEID)
-				s = this.id2se(s)
-
-			if (s instanceof Array)
-				e = s[1], s = s[0];
-
-			let m = ("" + (typeof(e) == "undefined" ? s : s + "E" + e)).match(/^\s*(S?0*([0-9]+)?E+)?0*([0-9]+)\s*$/i);
-			if (m)
-				return [~~m[2], ~~m[3]];
-
-			return typeof(e) == "undefined" ? [0, ~~s] : [~~s, ~~e];
-		},
-
-		fromNode: function episodeTools_fromNode(node)
+	let episodeTools = (function()
+	{
+		const SEID = 1000000;
+		function fromNode(node)
 		{
 			let r;
 			if (node._episode)
@@ -2678,8 +2472,83 @@ body[class*="theme_"] div.day:not(.today)
 			}
 			return r;
 		}
-	}
+		return {
+			id: function episodeTools_id(s, e)
+			{
+				s = this.split(s, e);
+				e = s[1]
+				s = ~~s[0];
+				return typeof(e) == "undefined" ? s : s * SEID + ~~e;
+			},
 
+			id2se: function episodeTools_id2se(se)
+			{
+				se = ~~se;
+				return  [Math.floor(se / SEID), se % SEID];
+			},
+
+			full: function episodeTools_full(s, e)
+			{
+				if (s instanceof HTMLElement)
+					s = fromNode(s)
+
+				if (typeof(e) == "undefined" && typeof(s) == "number" && s >= SEID)
+					s = this.id2se(s)
+
+				if (s instanceof Array)
+					e = s[1], s = s[0];
+
+				if (typeof(e) == "undefined" && typeof(s) == "string")
+					return s.replace(/^\s*(S?0*([0-9]+)?E)?0*([0-9]+)\s*$/i, function(a, b, c, d)
+					{
+						return (~~c ? "S" + pad(~~c) : "") + "E" + pad(~~d);
+					});
+
+				if (typeof(e) == "undefined")
+					e = s, s = 0;
+
+				s = ~~s, e = ~~e
+				return (s ? "S" + pad(s) : "") + "E" + pad(e);
+			},
+
+			short: function episodeTools_short(s, e)
+			{
+				if (s instanceof HTMLElement)
+					s = fromNode(s)
+
+				if (typeof(e) == "undefined" && typeof(s) == "number" && s >= SEID)
+					s = this.id2se(s)
+
+				if (s instanceof Array)
+					e = s[1], s = s[0];
+				
+					
+
+				if (typeof(e) == "undefined" && typeof(s) == "string")
+					return s.replace(/^\s*(S?0*([0-9]+))?E0*([0-9]+)|0*([0-9]+)\.0*([0-9]+)\s*$/i, "$2$4E$3$5").replace(/^E/, "");
+
+				return ("" + (typeof(e) == "undefined" ? ~~s : ~~s + "E" + ~~e)).replace(/^0*E*/, "");
+			},
+
+			split: function episodeTools_split(s, e)
+			{
+				if (s instanceof HTMLElement)
+					s = fromNode(s)
+
+				if (typeof(e) == "undefined" && typeof(s) == "number" && s >= SEID)
+					s = this.id2se(s)
+
+				if (s instanceof Array)
+					e = s[1], s = s[0];
+
+				let m = ("" + (typeof(e) == "undefined" ? s : s + "E" + e)).match(/^\s*(S?0*([0-9]+)?E+)?0*([0-9]+)\s*$/i);
+				if (m)
+					return [~~m[2], ~~m[3]];
+
+				return typeof(e) == "undefined" ? [0, ~~s] : [~~s, ~~e];
+			}
+		};
+	})();
 
 	function fileLoad(callback, ext)
 	{
@@ -2734,14 +2603,14 @@ body[class*="theme_"] div.day:not(.today)
 
 	function exportGetColors()
 	{
-		let str = $.map(DB.savedColors,function(e,i)
+		return Object.keys(DB.savedColors).map(function(i)
 		{
-			if (i.match(/[^0-9]/) || !e.match(/^#([0-9A-F]{6})|FFFFFF$/i))
+			if (i.match(/[^0-9]/) || !DB.savedColors[i].match(/^#([0-9A-F]{6})|FFFFFF$/i))
 				return;
 
-			return i + "=" + e.trim();
+			return i + "=" + DB.savedColors[i].trim();
 		}).join(";");
-		return str;
+		
 	}
 
 	function pad(t, s, n)
@@ -3189,12 +3058,7 @@ body[class*="theme_"] div.day:not(.today)
 	customLinks.show = function(noBack)
 	{
 		let div = $(customLinks.div);
-/*
-		if (noBack)
-			div.attr("noback", "");
-		else
-			div.attr("noback");
-*/
+
 		hidePopups()
 		div.show();
 		setPopup(true);
@@ -4239,7 +4103,7 @@ alert("middleClick");
 //	$("body").toggleClass("dark", Settings.prefs["theme"] == 1);
 	Settings.themes.load();
 	// fix highlighting today would remove /u/user ..
-	$( "#linkToday" ).click(function click(e)
+	$( "#linkToday" ).click(function linkToday_click(e)
 	{
 		e.stopPropagation();
 		e.preventDefault();
@@ -4317,9 +4181,14 @@ alert("middleClick");
 
 	function _loadArchiveFromPathname(originalPath,highlightSelector)
 	{
-		path = originalPath||document.location.pathname;
+		let path = originalPath||document.location.pathname;
 		var match = path.match(/^\/archive\/([0-9]+)-([0-9]+)$/);
-		var ym = match && match.length == 3? (~~match[1]*12+~~match[2]-1) : ymToday;
+		var ym = match ? (~~match[1]*12+~~match[2]-1) : ymToday;
+		if (!document._title)
+			document._title = document.title;
+
+		document.title = document._title + (match ? " (" + ~~(ym/12) + "-" + ~~((ym%12)+1) + ")" : "");
+		
 	//start fix - browser history inflating after each page refresh
 		if (originalPath && prevPath != originalPath)
 		{
@@ -4402,6 +4271,10 @@ epDateFix(entries);
 		}
 		_loadArchiveFromPathname.firstRun = true;
 	}//_loadArchiveFromPathname(originalPath,highlightSelector)
+	window.loadArchiveFromPathname = _loadArchiveFromPathname;
+	/*
+	end fixing browser history inflating after each page refresh and prev/next history jump don't work
+	*/
 
 function epDateFix(_entries)
 {
@@ -4429,7 +4302,7 @@ function epDateFix(_entries)
 				continue;
 
 			let day = epDateFix.move(entries[i], data.episode, data.offset);
-			if (day)
+			if (day && days.indexOf(day) == -1)
 			{
 				days[days.length] = day;
 			}
@@ -4441,7 +4314,7 @@ function epDateFix(_entries)
 epDateFix.move = function epDateFix_move(entry, episodeID, offset)
 {
 	offset = ~~offset;
-	let newDate = new Date(entry._episodeDate.substr(0, 4), entry._episodeDate.substr(4,2) - 1, ~~entry._episodeDate.substr(6,2) + offset);
+	let newDate = new _Date(entry._episodeDate.substr(0, 4), entry._episodeDate.substr(4,2) - 1, ~~entry._episodeDate.substr(6,2) + offset);
 	newDate = newDate.getFullYear() * 10000 + (newDate.getMonth() + 1) * 100 + newDate.getDate();
 
 	if (entry._episodeID < episodeID)
@@ -4455,6 +4328,7 @@ epDateFix.move = function epDateFix_move(entry, episodeID, offset)
 epDateFix.check = function epDateFix_check(id, episodeID)
 {
 	let data = epDateFix._list ? epDateFix._list[id] || [] : [],
+			parentList = [],
 			offset = 0,
 			offsetRelative = 0,
 			index = -1,
@@ -4466,7 +4340,7 @@ epDateFix.check = function epDateFix_check(id, episodeID)
 		if (episodeID >= epID)
 		{
 			let o = ~~data[i][2];
-
+			parentList[parentList.length] = epID;
 			if (episodeID == epID)
 			{
 				index = i;
@@ -4480,6 +4354,7 @@ epDateFix.check = function epDateFix_check(id, episodeID)
 	}
 	return {
 		index: index,
+		parentList: parentList,
 		offset: offset + offsetRelative,
 		offsetPrev: offset,
 		offsetRelative: offsetRelative,
@@ -4572,10 +4447,6 @@ epDateFix.init();
 		if (changed);
 			$(entries.context).append(entries);
 	}//sortMyShows()
-	window.loadArchiveFromPathname = _loadArchiveFromPathname;
-	/*
-	end fixing browser history inflating after each page refresh and prev/next history jump don't work
-	*/
 
 	let episodeNumberFix = function(id, title)
 	{
@@ -4772,33 +4643,11 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 
 		day._type = "over";
 		clearTimeout(day._collapseMultiTimer);
-		if (Settings.prefs.animateExpand)
-		{
-			let func = function()
-			{
-				collapseMulti.animate(day, "expand", true, Settings.prefs.collapseMulti ? "_titleOrig" : "");
-			};
-			if (!$(day).hasClass("expand") && !$(day).hasClass("opened"))
-			{
-				func();
-			}
-			else
-			{
-				$(day).toggleClass("expand", true);
-				if (!Settings.prefs.collapseMulti)
-					return;
+		$(day).toggleClass("expand", true);
+		if (!Settings.prefs.collapseMulti)
+			return;
 
-				collapseMulti.setTitle(day.list, "_titleOrig");
-			}
-		}
-		else
-		{
-			$(day).toggleClass("expand", true);
-			if (!Settings.prefs.collapseMulti)
-				return;
-
-			collapseMulti.setTitle(day.list, "_titleOrig");
-		}
+		collapseMulti.setTitle(day.list, "_titleOrig");
 	};
 
 	collapseMulti.mouseOut = function(e, day, id)
@@ -4809,19 +4658,12 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 		day._type = "out";
 		day._collapseMultiTimer = setTimeout(function()
 		{
-			if (Settings.prefs.animateExpand)
-			{
-				collapseMulti.animate(day, "expand", false, Settings.prefs.collapseMulti && !$(day).hasClass("opened") ? "_titleCollapsed" : "")
-			}
-			else
-			{
-				$(day).toggleClass("expand", false);
-				if (!Settings.prefs.collapseMulti)
-					return;
+			$(day).toggleClass("expand", false);
+			if (!Settings.prefs.collapseMulti)
+				return;
 
-				if (!$(day).hasClass("opened"))
-					collapseMulti.setTitle(day.list, "_titleCollapsed");
-			}
+			if (!$(day).hasClass("opened"))
+				collapseMulti.setTitle(day.list, "_titleCollapsed");
 		}, 300)
 	};
 
@@ -5060,7 +4902,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 				stop = false,
 				days = $("div.days")[0],
 				today = _today[0],
-				that = this;
+				that = self;
 
 		for(let i = 0; i < days.children.length; i++)
 		{
@@ -5143,11 +4985,8 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 
 		let	daysPast = $('div.past'),
 				daysCount = Math.round((days.children.length) / 7) + 1,
-				weeks = ~~Settings.pref("weeksPast"),
+				weeks = ~~Settings.prefs.weeksPast,
 				weeksPastMax = Math.round((daysPast.length) / 7);//how many past weeks do we have available?
-
-		if (isNaN(weeks))
-			weeks = readCookieRaw("p") == "1" ? weeksPastMax : 0;
 
 		if (weeks > weeksPastMax)
 			weeks = weeksPastMax;
@@ -6251,7 +6090,7 @@ div[noback] .back
 	position: relative;
 	max-width: 1024px;
 	margin: 1em;
-	overflow: auto;
+	overflow: hidden;
 	background-color: white;
 	border: 1px solid black;
 	font-family: Monaco,"DejaVu Sans Mono",'courier new', 'times new roman', fixed, monospace;
@@ -6329,6 +6168,11 @@ body:not(.popup) div.entry[opened]
 {
 	padding: 4px;
 }
+.changesLogContentBox
+{
+	overflow: auto;
+	height: calc(100% - 4.5em);
+}
 #changesLogContent > div > div:not(.cl_ver_head)
 {
 	margin-top: 1px;
@@ -6349,10 +6193,39 @@ body:not(.popup) div.entry[opened]
 	font-weight: bold;
 	margin-top: 0.5em;
 }
+
+#changesLog.cl_added .cl_added:not(.cl_filter),
+#changesLog.cl_changed .cl_changed:not(.cl_filter),
+#changesLog.cl_fixed .cl_fixed:not(.cl_filter),
+#changesLog.cl_removed .cl_removed:not(.cl_filter),
+#changesLog.cl_notfixed .cl_notfixed:not(.cl_filter)
+{
+	max-height: 0;
+	overflow: hidden;
+	margin: 0;
+}
+#changesLog.cl_added .cl_filter.cl_added,
+#changesLog.cl_changed .cl_filter.cl_changed,
+#changesLog.cl_fixed .cl_filter.cl_fixed,
+#changesLog.cl_removed .cl_filter.cl_removed,
+#changesLog.cl_notfixed .cl_filter.cl_notfixed
+{
+	opacity: 0.3;
+}
+.cl_filter
+{
+	cursor: pointer;
+}
+.cl_filter:hover
+{
+	background-color: #858585;
+}
+
 .cl_added,
 .cl_changed,
 .cl_fixed,
 .cl_removed,
+.cl_notfixed,
 .cl_comment
 {
 }
@@ -6360,7 +6233,8 @@ body:not(.popup) div.entry[opened]
 .cl_added > span:first-child,
 .cl_changed > span:first-child,
 .cl_fixed > span:first-child,
-.cl_removed > span:first-child
+.cl_removed > span:first-child,
+.cl_notfixed > span:first-child
 {
 	font-weight: bold;
 	margin: 0 0.5em 0 1em;
@@ -6384,6 +6258,18 @@ body:not(.popup) div.entry[opened]
 {
 	background-color: #FFBFBF;
 }
+.cl_notfixed > span:first-child
+{
+	background-color: #E4DADB;
+}
+.cl_notfixed > span:last-child
+{
+	font-style: italic;
+}
+.cl_notfixed:not(.cl_filter) > span:last-child
+{
+	opacity: 0.8;
+}
 #changesLogContent > div[class^="cl_ver_v"] .cl_comment > span:last-child
 {
 	font-style: italic;
@@ -6393,6 +6279,7 @@ body:not(.popup) div.entry[opened]
 .cl_changed > span:last-child,
 .cl_fixed > span:last-child,
 .cl_removed > span:last-child,
+.cl_notfixed > span:last-child,
 .cl_comment > span:last-child
 {
 	width: 100%;
@@ -6782,6 +6669,14 @@ div.entry[data-episode=""] .epDateFix
 div.entry[color="white"] .epDateFix .input
 {
 	border: 1px solid white;
+}
+.epDateFix:not([title]) > div > span
+{
+	display: none;
+}
+.epDateFix[title] input
+{
+	background-color: lightgreen;
 }
 #epDateFix
 {
@@ -7590,6 +7485,10 @@ body.prompt.scrollbar
 	font-size: 0.9em;
 	opacity: 0.5;
 }
+#disqus_recommendations
+{
+  display: none;
+}
 */});//css
 
 	style.innerHTML = css;
@@ -7982,242 +7881,7 @@ log(arguments);
 				picker.detach().appendTo("body");
 			}
 		}//renderCallback()
-	}
-
-/*
-	{
-		animationSpeed: 0,
-		opacity: false,
-		buildCallback: function($elm)
-		{
-			$elm.toggleClass("popup", true);
-			let cp = this;
-			$elm
-				.append('<div class="cp-disp"><input type="button" value="Save"> <input type="button" value="Cancel"><input type="text" spellcheck="false" id="colorpicker-hex"></div>')
-				.on( "click", "input", function()
-				{
-					if (!this.value || this.id == 'colorpicker-hex')
-						return;
-
-					if (this.value == 'Save')
-					{
-						if (editingSeriesId != -2)
-						{
-							Settings.colors.add(cp.color.colors.HEX, cp.color.colors.HEX.toUpperCase() != "FFFFFF");
-							assignColor( editingSeriesId, "#" + cp.color.colors.HEX, true );
-						}
-						if (pickerCallback && pickerCallback in pickerCallbacks && typeof(pickerCallbacks[pickerCallback]) == "function")
-						{
-							pickerCallbacks[pickerCallback](cp.color.colors.HEX);
-						}
-						Settings.colors.init();
-						editingSeriesId = -1;
-						pickerCallback = "";
-						pickerColor = "";
-					}
-					cp.toggle();
-				})
-				.on( "input keydown keyup click", '#colorpicker-hex', function(e)
-				{
-					if (e.key == "Enter" || e.which == 13) //ENTER(13)
-					{
-						$elm.find('input[value="Save"]').click();
-						return;
-					}
-					let start = this.selectionStart,
-							end = this.selectionEnd;
-
-					if (e.type == "keydown")
-					{
-						if (!e.shiftKey &&
-								((start == 1 && end == 1 && (e.key == "ArrowLeft" || e.which == 37))
-									|| (e.key == "ArrowUp" || e.which == 38)
-									|| (e.key == "Home" || e.which == 36)))
-						{
-							e.preventDefault();
-							start = end = 0;
-						}
-						if ((e.ctrlKey || e.metaKey))
-						{
-							let k = 0;
-							if (e.key == "z" || e.which == 90)
-								k = -1;
-							else if (e.key == "y" || e.which == 89)
-								k = 1;
-
-							if (k)
-							{
-								let u = cp.undo(k);
-								if (u)
-								{
-									this.value = u.v;
-									this.selectionStart = u.s || start-1;
-									this.selectionEnd = u.e || end-1;
-								}
-								e.preventDefault();
-								$(this).trigger("input");
-							}
-						}
-					}
-					if (!start && !end)
-					{
-						this.selectionStart = ++start;
-						this.selectionEnd = ++end;
-					}
-					if (e.type != "input")
-						return;
-
-					let rs = 0,
-							re = 0,
-							r = "#",
-							val = this.value.toUpperCase();
-
-					if (val.charAt(0) != "#")
-					{
-						val = "#" + val;
-						start++;
-						end++;
-					}
-
-					for(let i = 1; i < val.length && r.length < 7; i++)
-					{
-						if (val.charAt(i).match(/[A-F0-9]/))
-						{
-							r += val[i];
-						}
-						else
-						{
-							if (i < start)
-								rs++
-
-							if (i < end)
-								re++
-						}
-					}
-					if (r != this.value)
-					{
-						this.value = r;
-						this.selectionStart = start - rs;
-						this.selectionEnd = end - re;
-					}
-
-					if (!e.isTrigger)
-						cp.undo({v: this.value, s: this.selectionStart, e: this.selectionEnd});
-
-					try
-					{
-						var col = "#" + new Colors().setColor(this.value).HEX;
-						if(col.length == 7)
-						{
-							if (editingSeriesId != -2)
-								assignColor(editingSeriesId, col, false);
-
-							if (pickerCallback && pickerCallback in pickerCallbacks && typeof(pickerCallbacks[pickerCallback]) == "function")
-							{
-								pickerCallbacks[pickerCallback](col, true);
-							}
-							cp.color.setColor(col);
-							cp.render(undefined);
-						}
-					}
-					catch(err)
-					{
-log(err);
-					}
-				});//.on( "input keydown keyup click", '#colorpicker-hex'
-
-			$("body").on("keydown", function(e)
-			{
-
-	//ESC(27) = cancel
-				if ((e.key == "Esc" || e.which == 27) && $elm.is(":visible"))
-					cp.toggle();
-			});
-//for some reason Chrome has issues with undo/redo after value was changed by the filter
-			this.undo = function (val, init)
-			{
-				if (!this.store || init)
-				{
-					this.store = [];
-					this.index = -1;
-				}
-
-				if (typeof(val) == "object")
-				{
-					let p = this.store[this.index];
-					if (p)
-					{
-						if (val.v == p.v)
-						{
-							this.store[this.index] = val;
-							return;
-						}
-					}
-					this.store[++this.index] = val;
-					if (this.store.length > this.index + 1)
-						this.store.splice(this.index + 1);
-				}
-				else
-				{
-					let i = this.index + val;
-					if (i > -1 && i < this.store.length)
-						this.index = i;
-
-					return this.store[i];
-				}
-
-				return this;
-			}//undo()
-		},//buildCallback: function()
-		renderCallback: function($elm, toggled) {
-			var colors = this.color.colors;
-			let cpHex = $("#colorpicker-hex");
-			if (pickerCallback && pickerCallback in pickerCallbacks && typeof(pickerCallbacks[pickerCallback]) == "function")
-			{
-				pickerCallbacks[pickerCallback](typeof(toggled) == "undefined" ? colors.HEX : toggled , true);
-			}
-			// on show
-			if( toggled === true ){
-				var col = editingSeriesId == -2 ? "#" + pickerColor : coalesce(DB.getColor(editingSeriesId), "#FFFFFF");
-				let val = colFix(col);
-				cpHex.val(val);
-				this.undo({v: val, s: 0, e: 0});
-				document.body.classList.toggle("colorpicker", true);
-			}
-			// on change
-			else if( typeof(toggled) == "undefined" ){
-	//preview new color
-				if (editingSeriesId != -2)
-					assignColor( editingSeriesId, "#" + colors.HEX, false );
-
-				if (colors.HEX != new Colors().setColor(cpHex.val()).HEX)
-				{
-					this.undo({v: "#" + colors.HEX, s: cpHex.selectionStart, e: cpHex.selectionEnd});
-					cpHex.val("#" + colors.HEX);
-				}
-			}
-			// on hide
-			else if( toggled === false ){
-				document.body.classList.toggle("colorpicker", false);
-				document.body.classList.toggle("colorpickerclose", true); //work around click firing on other elements
-				setTimeout(function()
-				{
-					document.body.classList.toggle("colorpickerclose", false);
-				}, 500);
-	//restore entry color
-				if( editingSeriesId > 0 )
-					loadColor( editingSeriesId );
-
-
-				editingSeriesId = -1;
-				pickerCallback = "";
-				pickerColor = "";
-				picker.detach().appendTo("body");
-			}
-		}
-	}
-*/
-	).attr("id", "colorPickerHolderNew"); //replace ID so it won't initialize in main.js
+	}).attr("id", "colorPickerHolderNew"); //replace ID so it won't initialize in main.js
 
 //log(picker);
 	function colFix(c)
@@ -8295,14 +7959,14 @@ log(err);
 		};
 		parent.each(func);
 	}//middleClick()
+
 	function parseLink(div, engine)
 	{
 //on middle click
-		//		let title = el.children("div.title").text().replace("?", "").replace(/[0-9]+-[0-9]+-[0-9]+/, ""),
 		let el = $(div),
-				title = div._title && div._title._titleOrig ? div._title._titleOrig : el.children("div.title").text();
-		title = title.replace("?", "").replace(/[0-9]+-[0-9]+-[0-9]+/, "");
-		let _MONKEY = title.replace(/ E[0-9]+/g, "") || "",
+				title = (div._title && div._title._titleOrig ? div._title._titleOrig : el.children("div.title").text())
+								.replace("?", "").replace(/[0-9]+-[0-9]+-[0-9]+/, ""),
+				_MONKEY = title.replace(/ E[0-9]+/g, "") || "",
 				_MONKEY_N = title.replace( /\s*S[0-9]+E[0-9]+$/g, '' ) || "",
 				_WIKI_TITLE = el.data("series-source"),
 				_MONKEY_ID = el.data("series-id"),
@@ -8731,8 +8395,8 @@ log(err);
 	//					Settings.pref("timeOffset", timeOffset);
 	//					if (!evt.isTrigger)
 	//						todayChange(timeOffset);
-				}
-					catch(e){}
+				  }
+					catch(e){console.error(e)}
 				}
 				function epNumFixSave()
 				{
@@ -8742,7 +8406,7 @@ log(err);
 
 					let days = {};
 					
-					$('div.entry[data-series-id="' + showId + '"]').each(function(i, entry)
+					$('div.entry[data-series-id="' + showId + '"]:not(.colorbox)').each(function(i, entry)
 					{
 /*
 						if (!entry._title)
@@ -8775,7 +8439,7 @@ log(err);
 						{
 							$(entry).find("div.details").remove();
 						}
-						day = entry.parentNode.getAttribute("data-date");
+						const day = entry.parentNode.getAttribute("data-date");
 						if (day)
 						days[day] = entry.parentNode;
 					});
@@ -8836,6 +8500,19 @@ log(err);
 				}
 					catch(e){log(e)}
 				}
+				epDateFixInput._epDateFixTitle = function (id, list)
+				{
+					let last = list[list.length - 1];
+					if (list.length)
+					{
+						list.sort().forEach(function(val, i)
+						{
+							list[i] = episodeTools.full(val)
+						});
+						return epDateFixBox.title = "Inherited from " + list.join(">");
+					}
+					return epDateFixBox.removeAttribute("title")
+				}
 				function epDateFixSave()
 				{
 					let data = epDateFix.check(showId, entry._episodeID),
@@ -8844,6 +8521,7 @@ log(err);
 //					epDateFix.move(entry, entry._episodeID, offset);
 					offset = offset - data.offsetPrev;
 					epDateFix.update(showId, entry._episodeID, offset);
+					epDateFixInput._epDateFixTitle(entry._episodeID, epDateFix.check(showId, entry._episodeID).parentList);
 					let days = epDateFix();
 					epDateFix.save();
 					for (let i = 0; i < days.length; i++)
@@ -8856,7 +8534,7 @@ log(err);
 				.trigger("input");
 
 				let txt = document.createElement("div");
-				txt.textContent = "Date offset (in days)";
+				txt.innerHTML = "Date offset (in days) <span>*</span>";
 				epDateFixBox.appendChild(txt);
 				let box = document.createElement("div");
 				box.className = "input";
@@ -8886,7 +8564,7 @@ log(err);
 					try
 					{
 						data = JSON.parse(entry.getAttribute("data-data"));
-					}catch(e){};
+					}catch(e){console.error(e)};
 				}
 				customShows.show(showId, data);
 			}, false);
@@ -8921,8 +8599,14 @@ log(err);
 		});
 		if( !open )
 		{
-			let entry = obj.parentNode;
-			entry.querySelector("div.epDateFix > .input > input").value = epDateFix.check(entry.dataset.seriesId, entry._episodeID).offset || 0;
+			let entry = obj.parentNode,
+					epFixData = epDateFix.check(entry.dataset.seriesId, entry._episodeID),
+					epFixParent = epFixData.parentList[epFixData.parentList.length - 1],
+					input = entry.querySelector("div.epDateFix > .input > input");
+
+			input.value = epFixData.offset || 0;
+			input._epDateFixTitle(entry._episodeID, epFixData.parentList);
+
 			function callbackOpen()
 			{
 				$entry.attr("opened", "");
@@ -9256,7 +8940,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 						num = data[n][3],
 						days = data[n][4],
 						weekDays = "" + (data[n][6] || 1234567),
-						perDay = data[n][5] || 1
+						perDay = data[n][5] || 1,
 						_date = new _Date(0),
 						newId = id + customShows.id;
 
@@ -9484,7 +9168,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 			obj.trigger("click");
 			scrollIntoView(obj[0], obj[0].parentElement.parentElement, 5, 5);
 			customShows.div.scrollIntoView(false);
-			let _data = $("#cushows-data");
+			let _data = $("#cushows-data"),
 					data = _data[0]._data;
 
 			if (dataId && data)
@@ -9772,7 +9456,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 					}, 1);
 				}
 			}
-			catch(e){};
+			catch(e){console.error(e)};
 		}).trigger("click");
 		function change(e)
 		{
@@ -11271,7 +10955,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		let Backup = function Backup(id, val)
 		{
 			clearTimeout(this.timer[id]);
-			if (this[id] && typeof(this[id]) == "function")
+			if (typeof(this[id]) == "function")
 				return this[id](val);
 			else
 				return this[id];
@@ -11281,6 +10965,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			data: {},
 			last: [],
 			timer: {},
+			undoObj: {},
 			clone: function(obj)
 			{
 				return Object.assign(Array.isArray(obj) ? [] : {}, obj);
@@ -11360,7 +11045,6 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 
 				}
 			},
-			undoObj: {},
 			undoHide: function(id)
 			{
 				let obj = this.undoObj[id];
@@ -11376,7 +11060,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			},
 			undoShow: function(id)
 			{
-				let that = this;
+				let that = self;
 				if (!this.undoObj[id])
 				{
 					this.undoObj[id] = $('<div class="undoBar popup"><div><span class="msg"></span> <a class="undoBar">Undo</a><span class="undo close">X</span><div></div>').appendTo("body");
@@ -11605,39 +11289,28 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 	if (location.pathname == "/_u/forgot-password")
 		$("#username").val(DB.loggedInUsername);
 
-/* changes log */
-	let changesLog = function changesLog()
-	{
-		changesLog.getData();
-	}
-
-	changesLog.show = function(noBack)
-	{
-		changesLog();
-		if (noBack)
-			changesLog.div.setAttribute("noback", "");
-		else
-			changesLog.div.removeAttribute("noback");
-		hidePopups()
-		$("body").toggleClass("changesLog", true);
-		setPopup(true);
-	}
-
-	changesLog.hide = function ()
-	{
-		$("body").toggleClass("changesLog", false);
-		setPopup(false);
-	}
 	function versionsCompare(a, b)
 	{
-		//treat non-numerical characters as lover version
-		//replacing them with a negative number based on charcode of each character
-		a = ("" + a).replace(/[^0-9\.]/g, versionsCompare.fix).split('.');
-		b = ("" + b).replace(/[^0-9\.]/g, versionsCompare.fix).split('.');
-		var c = Math.max(a.length, b.length);
-		for (var i = 0; i < c; i++)
+		function prep(t)
 		{
-			//convert to integer
+			return ("" + t)
+				//treat non-numerical characters as lower version
+				//replacing them with a negative number based on charcode of first character
+				//and remove non alpha-numerical characters
+				.replace(/[^0-9\.]+/g, function(c){return "." + ((c = c.replace(/[\W_]+/, "")) ? c.toLowerCase().charCodeAt(0) - 65536 : "") + "."})
+				//remove trailing ".", "0" and ".0"
+				.replace(/^\.|0*\.$|(?:\.0+)+$/g, "")
+				//replace double .
+				.replace(/\.+/g, ".")
+				//remove trailing "0" if followed by non-numerical characters (1.0.0b);
+				.replace(/(?:\.0+)*(\.-[0-9]+)(\.[0-9]+)?$/g, function(a,b,c){return b + (c ?  c : "")})
+				.split('.');
+		}
+		a = prep(a);
+		b = prep(b);
+		for (var i = 0, c = Math.max(a.length, b.length); i < c; i++)
+		{
+			//convert to integer the most efficient way
 			a[i] = ~~a[i];
 			b[i] = ~~b[i];
 			if (a[i] > b[i])
@@ -11647,129 +11320,195 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 		}
 		return 0;
 	}
-	versionsCompare.fix = function (s)
-	{
-		return "." + (s.toLowerCase().charCodeAt(0) - 2147483647) + ".";
-	}
-	changesLog.getData = function ()
-	{
-		if (changesLog.div)
-			return;
-
-		let list = {},
-				lines = changesLogText.replace(/\r\n/, "\n").split("\n"),
-				ver = "",
-				verFirst = "",
-				stopVer = "v" + Settings.pref("version");
-
-		for (let i = 0; i < lines.length; i++)
+/* changes log */
+	let changesLog = {
+		div: null,
+		list: [],
+		show: function changesLog_show(noBack)
 		{
-			let line = lines[i],
-					_ver = line.match(/^([0-9]+[^ ]*)( |$)/);
-			if (_ver)
-			{
-				ver = 'v' + _ver[1];
-//				if (ver == stopVer)
-//					break;
-				let date = line.match(/ (.*)/);
-				list[ver] = [];
-				list[ver].s = {0:0,"+":0,"-":0,"*":0,"!":0};
-				list[ver].d = date ? date[1] : "";
-				if (!verFirst)
-					verFirst = ver;
-			}
+			this.getData();
+			if (noBack)
+				this.div.setAttribute("noback", "");
 			else
-			{
-				let type = line.match(/^\t?([+\-*!])/);
-				type = type ? type[1] : "";
-				line = line.trim();
-				if (line === "")
-					continue;
-
-				if (type)
-					line = line.substr(1).trim();
-
-				if (!(ver in list))
-				{
-					list[ver] = [];
-					list[ver].s = {0:0};
-					list[ver].d = "";
-				}
-
-				list[ver].s[type]++;
-				list[ver][list[ver].length] = [type, line];
-			}
-		}
-		changesLog.list = list;
-		let legend = {
-			"+": "added",
-			"!": "fixed",
-			"*": "changed",
-			"-": "removed",
-			"": "comment"
+				this.div.removeAttribute("noback");
+			hidePopups()
+			$("body").toggleClass("changesLog", true);
+			setPopup(true);
 		},
-		html = multiline(function(){/*
-<div id="changesLog" class="popup">
-	<div id="changesLogBox">
-		<div id="changesLogHead" class="header">
-			<div class="back" title="Back">
-				{SVG-BACK}
-			</div>
-			<h4>Airdates.tv enhancer v# Changes Log</h4>
-			<div class="close" title="Close">
-				{SVG-CLOSEHOVER}
-				{SVG-CLOSE}
-			</div>
-		</div>
-		<div id="changesLogLegend">
-			<span class="cl_added"><span>+</span><span>Added</span></span>
-			<span class="cl_fixed"><span>!</span><span>Fixed</span></span>
-			<span class="cl_changed"><span>*</span><span>Changed</span></span>
-			<span class="cl_removed"><span>-</span><span>Removed</span></span>
-			<span id="noChangesLog"></span>
-		</div>
-		<div id="changesLogContent" class="content"></div>
-	</div>
-</div>
-		*/});
-		changesLog.div = $(html).appendTo("body")[0];
-		let head = $("#changesLogHead"),
-				cont = $("#changesLogContent"),
-				opt = createCheckbox("noChangesLog", "Don't show this again", Settings.prefs.noChangesLog ? true : false, Settings.callback);
 
-		document.getElementById("noChangesLog").appendChild(opt);
-		head.html(head.html().replace("#", adeVersion));
-		if (prevVersion)
+		hide: function changesLog_hide()
 		{
-			let h = head.find("h4");
-			h.text(h.text() + " (updated from v" + prevVersion + ")");
-		}
-		for(let v in list)
-		{
-			let verType = prevVersion ? versionsCompare(v.substr(1), prevVersion) : 0,
-					updated = prevVersion && verType < 1 ? " prev" : "",
-					ver = $('<div class="cl_ver_' + v.replace(/\./g, "_") + updated + '"></div>').appendTo(cont);
+			$("body").toggleClass("changesLog", false);
+			setPopup(false);
+		},
 
-			$('<div class="cl_ver_head">' + v + (list[v].d ? " " + list[v].d : "") + '</div>').appendTo(ver);
-			for(let i = 0; i < list[v].length; i++)
-			{
-				let line = list[v][i];
-				$('<span/>').appendTo($('<div class="cl_' + legend[line[0]] + '">' + (line[0] ? "\t" : "") + '<span>' + line[0] + '</span></div>').appendTo(ver))[0].innerHTML += line[1];
-			}
-		}
-		let as = cont.find("a").each(function(i, o)
+		getData: function changesLog_getData ()
 		{
-			if (o.href.indexOf(location.origin) != -1)
+			if (this.div)
+				return;
+
+			let list = {},
+					lines = changesLogText.replace(/\r\n/, "\n").split("\n"),
+					ver = "",
+					verFirst = "",
+					stopVer = "v" + Settings.pref("version");
+
+			for (let i = 0; i < lines.length; i++)
 			{
-				$(this).click(function(e)
+				let line = lines[i],
+						_ver = line.match(/^([0-9]+[^ ]*)( |$)/);
+				if (_ver)
 				{
-					changesLog.hide();
-					hashChanged(null, o.hash);
-				});
+					ver = 'v' + _ver[1];
+	//				if (ver == stopVer)
+	//					break;
+					let date = line.match(/ (.*)/);
+					list[ver] = [];
+					list[ver].s = {0:0,"+":0,"-":0,"*":0,"!":0,"?":0};
+					list[ver].d = date ? date[1] : "";
+					if (!verFirst)
+						verFirst = ver;
+				}
+				else
+				{
+					let type = line.match(/^[ \t]*([-+*!\?])/);
+					type = type ? type[1] : "";
+					line = line.trim();
+					if (line === "")
+						continue;
+
+					if (type)
+						line = line.substr(1).trim();
+
+					if (!(ver in list))
+					{
+						list[ver] = [];
+						list[ver].s = {0:0};
+						list[ver].d = "";
+					}
+
+					list[ver].s[type]++;
+					list[ver][list[ver].length] = [type, line];
+				}
 			}
-		});
-//		Settings.pref("version", verFirst);
-	}
+			this.list = list;
+			let legend = {
+				"+": "added",
+				"!": "fixed",
+				"*": "changed",
+				"-": "removed",
+				"?": "notfixed",
+				"": "comment"
+			},
+			html = $(multiline(function(){/*
+	<div id="changesLog" class="popup">
+		<div id="changesLogBox">
+			<div id="changesLogHead" class="header">
+				<div class="back" title="Back">
+					{SVG-BACK}
+				</div>
+				<h4>Airdates.tv enhancer v# Changes Log</h4>
+				<div class="close" title="Close">
+					{SVG-CLOSEHOVER}
+					{SVG-CLOSE}
+				</div>
+			</div>
+			<div id="changesLogLegend">
+				<span class="cl_added cl_filter"><span>+</span><span>Added</span></span>
+				<span class="cl_fixed cl_filter"><span>!</span><span>Fixed</span></span>
+				<span class="cl_changed cl_filter"><span>*</span><span>Changed</span></span>
+				<span class="cl_removed cl_filter"><span>-</span><span>Removed</span></span>
+				<span class="cl_notfixed cl_filter"><span>?</span><span>Not fixed</span></span>
+				<span id="noChangesLog"></span>
+			</div>
+			<div class="changesLogContentBox">
+				<div id="changesLogContent" class="content"></div>
+			</div>
+		</div>
+	</div>
+			*/}));
+function  checkInView(elem,partial)
+{
+		var container = $(".scrollable");
+		var contHeight = container.height();
+		var contTop = container.scrollTop();
+		var contBottom = contTop + contHeight ;
+ 
+		var elemTop = $(elem).offset().top - container.offset().top;
+		var elemBottom = elemTop + $(elem).height();
+		
+		var isTotal = (elemTop >= 0 && elemBottom <=contHeight);
+		var isPart = ((elemTop < 0 && elemBottom > 0 ) || (elemTop > 0 && elemTop <= container.height())) && partial ;
+		
+		return  isTotal  || isPart ;
+}
+			html.find("span.cl_filter").mousedown(function(e)
+			{
+				e.preventDefault();
+				e.stopPropagation();
+			}).click(function(e)
+			{
+				let div = document.getElementById("changesLogContent"),
+						scroll = null,
+						divTop = div.parentNode.offsetTop + div.parentNode.scrollTop;
+
+				for (let i = 0; i < div.children.length; i++)
+				{
+					let el = div.children[i];
+					if (el.offsetTop + el.offsetHeight - 4 >= divTop)
+					{
+						scroll = el;
+						break;
+					}
+				}
+				let c = "cl_" + legend[this.firstChild.innerText] || "comment";
+				this.parentNode.parentNode.parentNode.classList.toggle(c, !this.parentNode.parentNode.parentNode.classList.contains(c));
+				div.parentNode.scrollTop = scroll.offsetTop - div.parentNode.offsetTop - 4;
+
+				setTimeout(function()
+				{
+					div.parentNode.scrollTop = scroll.offsetTop - div.parentNode.offsetTop - 4;
+				}, 0);
+			});
+			this.div = html.appendTo("body")[0];
+			let head = $("#changesLogHead"),
+					cont = $("#changesLogContent"),
+					opt = createCheckbox("noChangesLog", "Don't show this again", Settings.prefs.noChangesLog ? true : false, Settings.callback);
+
+			document.getElementById("noChangesLog").appendChild(opt);
+			head.html(head.html().replace("#", adeVersion));
+			if (prevVersion)
+			{
+				let h = head.find("h4");
+				h.text(h.text() + " (updated from v" + prevVersion + ")");
+			}
+			for(let v in list)
+			{
+				let verType = prevVersion ? versionsCompare(v.substr(1), prevVersion) : 0,
+						updated = prevVersion && verType < 1 ? " prev" : "",
+						ver = $('<div class="cl_ver_' + v.replace(/\./g, "_") + updated + '"></div>').appendTo(cont);
+
+				$('<div class="cl_ver_head">' + v + (list[v].d ? " " + list[v].d : "") + '</div>').appendTo(ver);
+				for(let i = 0; i < list[v].length; i++)
+				{
+					let line = list[v][i];
+					$('<span/>').appendTo($('<div class="cl_' + legend[line[0]] + '">' + (line[0] ? "\t" : "") + '<span>' + line[0] + '</span></div>').appendTo(ver))[0].innerHTML += line[1];
+				}
+			}
+			let as = cont.find("a").each(function(i, o)
+			{
+				if (o.href.indexOf(location.origin) != -1)
+				{
+					$(this).click(function(e)
+					{
+						this.hide();
+						hashChanged(null, o.hash);
+					});
+				}
+			});
+	//		Settings.pref("version", verFirst);
+		}//getData()
+	};//changesLog
 /* changes log end */
 
 	$("body").on("click", ".back", function()
@@ -11787,7 +11526,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 
 	function setPopup(opened)
 	{
-		let that = this;
+		let that = self;
 		if (opened)
 			that.opened = true;
 
@@ -11832,34 +11571,34 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 				cancel = html.find(".cancel"),
 				form = html.find("form"),
 				file = html.find(".file"),
-				that = this,
+				that = self,
 				padding = 0,
 				rightOld = $("body")[0].style.right,
 				rgb2hsl = function(c)
 				{
 					let r = c[0]/255, g = c[1]/255, b = c[2]/255,
-				 			a=Math.max(r,g,b), n=a-Math.min(r,g,b), f=(1-Math.abs(a+a-n-1)),
-				  		h= n && ((a==r) ? (g-b)/n : ((a==g) ? 2+(b-r)/n : 4+(r-g)/n));
-				  return [60*(h<0?h+6:h), f ? n/f : 0, (a+a-n)/2];// h:[0,360], s:[0,1], l:[0,1]
+							a=Math.max(r,g,b), n=a-Math.min(r,g,b), f=(1-Math.abs(a+a-n-1)),
+							h= n && ((a==r) ? (g-b)/n : ((a==g) ? 2+(b-r)/n : 4+(r-g)/n));
+					return [60*(h<0?h+6:h), f ? n/f : 0, (a+a-n)/2];// h:[0,360], s:[0,1], l:[0,1]
 				},
 				hsl2rgb = function(c)
 				{
 					let h = c[0], s = c[1], l = c[2],
-				  		a=s*Math.min(l,1-l),
-				  		f= function(n)
-				  		{
-				  			let k=(n+h/30)%12;
-				  			return l - a*Math.max(Math.min(k-3,9-k,1),-1);
-				  		};
+							a=s*Math.min(l,1-l),
+							f= function(n)
+							{
+								let k=(n+h/30)%12;
+								return l - a*Math.max(Math.min(k-3,9-k,1),-1);
+							};
 
-				  return [Math.round(f(0)*255),Math.round(f(8)*255),Math.round(f(4)*255)];
-				}
+					return [Math.round(f(0)*255),Math.round(f(8)*255),Math.round(f(4)*255)];
+				},
 				rgbLum = function(c, lum)
 				{
 					let hsl = rgb2hsl(c);
 					hsl[2] += lum / 240;
 					return hsl2rgb(hsl);
-				}
+				},
 				rgb = cancel.css('background-color').match(/([0-9]+)/g),
 				hover = "rgb" + (rgb.length > 3 ? "a" : "") + "(" + rgbLum(rgb, -10).join(",") + (rgb.length > 3 ? "," + rgb[3] : "") + ");",
 				active = "rgb" + (rgb.length > 3 ? "a" : "") + "(" + rgbLum(rgb, -30).join(",") + (rgb.length > 3 ? "," + rgb[3] : "") + ");",
@@ -12083,9 +11822,8 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 					if (day.attr("opened") !== undefined)
 					{
 						let entry = day.find("div.entry[opened]");
-						title = entry.find(".title > span").html();
+						title = entry.find(".title > span").text();
 						details = entry.find(".details");
-
 					}
 					day.html(this.innerHTML);
 					if (details)
@@ -12104,6 +11842,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			{
 				customShows();
 				epDateFix();
+				sortMyShows();
 				$("div.day").each(function(i)
 				{
 	//adding watched checkboxes
@@ -12178,16 +11917,6 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 				customShows.show();
 			});
 		}
-		else if (hash == "#epdatefix1")
-		{
-			remove = true;
-			epDateFix.init(true);
-		}
-		else if (hash == "#epdatefix0")
-		{
-			remove = true;
-			epDateFix.init(false);
-		}
 		if (remove && hash == location.hash)
 		{
 			removeHash();
@@ -12252,12 +11981,12 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 
 //disqus
 var trollList;
-function trollListCallback(v)
+receiveMessage.f.trollListCallback = function receiveMessage_f_trollListCallback(v)
 {
 	trollList = v;
 }
 //if (isFrame && window.location.href.indexOf("disqus.com") != -1)
-if (isFrame)
+if (isFrame && window.self.location.href.match(/https?:\/\/(?:www\.)?disqus\.com/))
 {
 	mainFunc = function(){};
 
@@ -12416,7 +12145,6 @@ if (isFrame)
 
 	function reloadLoop()
 	{
-
 		let nav = document.getElementById("main-nav");
 		if (!nav && reloadLoop.i--)
 			return setTimeout(reloadLoop);
@@ -12424,12 +12152,11 @@ if (isFrame)
 		if (!nav)
 			return;
 
-		if (readCookie("scroll") && !--reloadLoop.s)
+		setTimeout(function()
 		{
-			window.top.postMessage({id: "ade", func: "_scrollTo", args: [nav.offsetTop], return: null}, "https://www.airdates.tv");
-			eraseCookie("scroll");
-			reloadLoop.s = 2;
-		}
+			window.top.postMessage({id: "ade", func: "reloadDisqus", args: [nav.offsetTop], return: null}, "https://www.airdates.tv");
+		}, 1000);
+
 		if (reloadLoop.inited)
 			return;
 
@@ -12440,13 +12167,11 @@ if (isFrame)
 			.insertAfter( $("#thread-share-menu, #thread-share-bar"))
 			.click(function()
 			{
-//							window.top.postMessage({id: "ade", func: "_reloadDisqus", args: [], return: null}, "https://www.airdates.tv");
-				createCookie("scroll", "1");
-				window.self.location.reload();
+				window.top.postMessage({id: "ade", func: "reloadDisqus", args: [], return: null}, "https://www.airdates.tv");
+//				window.self.location.reload(true);
 			});
 		reloadLoop.inited = true;
 	}
-	reloadLoop.s = 2;
 	function initPosts(names, li)
 	{
 		if (li.classList.contains("init"))
@@ -12575,7 +12300,13 @@ if (isFrame)
 
 			censorText(post);
 		}
+		if (!initPosts._loaded)
+		{
+//			window.top.postMessage({id: "ade", func: "scrollTo", args: [document.getElementById("main-nav").offsetTop], return: null}, "https://www.airdates.tv");
+			initPosts._loaded = true;
+		}
 	}//initPosts()
+
 	window.addEventListener("load", function(e)
 	{
 		let dis = 1000,
@@ -12918,19 +12649,21 @@ log(count);
 				}
 			})()
 
-			window.disqusNotifClick = function disqusNotifClick()
+			receiveMessage.f.disqusNotifClick = function disqusNotifClick()
 			{
 				if ($("li.nav-tab.nav-tab--primary.notification-menu.unread>a").length)
 					$("li.nav-tab.nav-tab--primary.notification-menu.unread>a")[0].click();
 			}
 
-			window.disqusTheme = function disqusTheme(dark)
+			receiveMessage.f.disqusTheme = function disqusTheme(dark)
 			{
+console.log("disqus dark", dark);
 				document.body.classList.toggle("dark", dark);
 			}
+			
 		} //if (!document.getElementById("message"))
 	}, false); //window load()
-}//disqus
+}//disqus if (iframe)
 else
 {
 }
@@ -12945,3 +12678,206 @@ if (document.readyState != "loading")
 	mainFuncDelay();
 else
 	document.addEventListener("DOMContentLoaded", mainFuncDelay ,true);
+
+
+
+
+
+function receiveMessage(event)
+{
+	if (["https://disqus.com", "https://www.airdates.tv"].indexOf(event.origin) == -1 || typeof(event.data) != "object" || event.data.id != "ade")
+	{
+		return;
+	}
+console.log("receiveMessage", event);
+	let func = typeof(receiveMessage.f[event.data.func]) == "function" ? receiveMessage.f[event.data.func] : null;
+	if (func)
+	{
+		let r;
+		try
+		{
+			r = func.apply(receiveMessage.f, event.data.args);
+		}
+		catch(e){log(e)};
+
+		try
+		{
+			event.source.postMessage({id: "ade", return: event.data.return, returnVal: r}, event.origin);
+		}
+		catch(e){}
+	}
+	if ("returnVal" in event.data && "return" in event.data && typeof(receiveMessage.f[event.data.return]) == "function")
+	{
+		receiveMessage.f[event.data.return](event.data.returnVal);
+	}
+}
+
+function createCookie(name,value){ document.cookie = name+"="+encodeURIComponent(value)+"; path=/; expires="+new Date( (new Date()).getTime()+3153600000000).toGMTString()+";"; }
+function readCookie(n,r){return(r=document.cookie.match('(^|;)\\s*'+encodeURIComponent(n)+'\\s*=\\s*([^;]+)'))?r[2]:null}
+function eraseCookie( name ){ document.cookie = name+"=; path=/; expires="+new Date((new Date()).getTime()+(-1)).toGMTString()+";"; }
+
+function ls(id, data, callback)
+{
+	let r;
+	if (typeof(data) == "undefined")
+	{
+		try
+		{
+			r = localStorage.getItem(id);
+		}
+		catch(e)
+		{
+			window.top.postMessage({id: "ade", func: "ls", args: [id], return: callback}, "https://www.airdates.tv");
+			log(e);
+			return r;
+		}
+		try
+		{
+			r = JSON.parse(r);
+		}catch(e){}
+	}
+	else
+	{
+		try
+		{
+			r = localStorage.setItem(id, JSON.stringify(data));
+		}
+		catch(e)
+		{
+			window.top.postMessage({id: "ade", func: "ls", args: [id, data], return: callback}, "https://www.airdates.tv");
+			log(e);
+			return r;
+		}
+	}
+	return r;
+}
+
+function cs(id, data)
+{
+	let r;
+	if (typeof(data) == "undefined")
+	{
+		try
+		{
+			r = readCookie(id);
+			r = JSON.parse(r);
+		}catch(e){}
+	}
+	else
+	{
+		try
+		{
+			r = createCookie(id, JSON.stringify(data));
+		}
+		catch(e){}
+	}
+	return r;
+}
+
+function multiline(func, ws)
+{
+	func = func.toString();
+	func = func.slice(func.indexOf("/*") + 2, func.lastIndexOf("*/")).split("*//*").join("*/");
+	func = func.replace(/{SVG-([A-Z]+)}/g, function(a, b)
+	{
+		return SVG[b.toLowerCase()] || a;
+	});
+	return ws ? func : func.replace(/[\n\t]*/g, "");
+}
+
+function removeHash()
+{
+	history.replaceState({}, "", location.href.replace(/#.*/, ''));
+}
+
+function cloneObj(obj, exclude, _map)
+{
+	if(obj == null || (typeof obj != "object" && typeof obj != "function"))
+		return obj;
+
+	let map = _map ? _map : new WeakMap(),
+			m = map.get(obj);
+
+	if (m)
+		return m;
+
+	let objNew,
+			type = Object.prototype.toString.call(obj).slice(8, -1);
+
+	if (typeof(exclude) == "undefined")
+		exclude = [];
+
+	if (_map && exclude.indexOf(type) != -1)
+	{
+		return obj;
+	}
+	try
+	{
+		objNew = new obj.constructor();
+	}
+	catch(e)
+	{
+		objNew = obj;
+	}
+	if (type == "Date")
+	{
+		objNew.setTime(obj.getTime());
+	}
+	else if (type == "Set")
+	{
+		for (let i of obj)
+		{
+			objNew.add(cloneObj(i, exclude, map));
+		}
+	}
+	else if (type == "Map")
+	{
+		for (let i of obj)
+		{
+			objNew.set(cloneObj(i[0], exclude, map), cloneObj(i[1], exclude, map));
+		}
+	}
+	else if (type == "Symbol")
+	{
+		objNew = Object(Symbol(obj.description));
+	}
+	else if (type == "Function" || type == "WeakMap")
+	{
+		objNew = obj;
+	}
+	else if (type == "Error")
+	{
+		objNew = new obj.constructor(obj);
+		objNew.stack = obj.stack;
+	}
+	else if (type == "Boolean"
+				|| type == "Number"
+				|| type == "String"
+				|| type == "RegExp")
+	{
+		objNew = new obj.constructor(obj);
+	}
+
+	if (typeof obj == "object" //is HTML?
+			&& ( obj instanceof Window
+				|| obj instanceof Document
+				|| obj.ownerDocument instanceof HTMLDocument))
+	{
+		let h = map.get(obj);
+		if (h)
+			return h;
+
+		map.set(obj, obj);
+		return obj;
+	}
+	map.set(obj, objNew);
+
+	let k = Object.keys(obj),
+			l = k.length;
+
+	for (let i = -1; ++i < l;)
+	{
+		objNew[k[i]] = cloneObj(obj[k[i]], exclude, map);
+	}
+	return objNew;
+}
