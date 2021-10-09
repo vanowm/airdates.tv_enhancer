@@ -8,12 +8,15 @@
 // @include     /^https?:\/\/(www\.)?disqus(cdn)?\.com\/embed\/comments\/.*$/
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QAAAAAAAD5Q7t/AAAACXBIWXMAAAsSAAALEgHS3X78AAADv0lEQVRYw+1Wv08jVxD+Zt7uWy92jOMjh6ULBUkHVbiU5A9If6LKSUdqUNLQsnIKlC7FgZQmoqFCgvQoQog0F0EXqNOQAsjZHBL22t43k8K7iw25S5OcpeRGGu3b3TfvzXzzE3hHIybKFlEU0dzc3Henp6flOI4BQI0xaozRTqfDzjl4nqciAlWlJEkAAKqKIAhgjFEAYGaoqhLlR7PneVQqlZiZsbS09GxQAe+OMp8BmEjfBYCmzOk3HdhLA7I68A931pyyeSMUURTx4uJisrOzo+041nYca6/3jTpH6hypOig5lzM7KDtWdqyLPyyqI5ezAOqI1BEpSJXhlOH0yZOfdX19/ep1CMA5B1UFp/AREZhvjdEciMxESeEgsPKQQaSaYyWpnO/be4bnUvV6XYwxYGa8TRq6LQ2w0SlQrVYRhuHoFEjTaXQKtFot9Hq9f+0yEfdmBay1o0Vg5EGYJAlE5L+LgHP3jXu7VefvEMhK8cgUYGYMtNF/nMQlr1cgiiLudDpYXVUEgUUQWJTfKyIMawjDGqgICN8yjQG1sIZaWMOPv1bBgpwL1QcoTE6iMDkJFUC1C9Uuvvr6Prp5N5ydnaWzs7MhFygI4+P999gA1BoQrPhQSXsiC3QAuPehQwNBt9t/Jsn9IMzFtre3w/39/Yubm5tis9mEiFAQBP1NRNA+IeuYxhhYazX9RwAQx3GWyuR5HlQ1iysNggDT09OYmpq6vry8fFCv190QAvPz89/u7u6WDg4OUCgU0Gw2USqVAACFQgHn5+dERDDG5LVCREhEEAQBrLVoNpuoVqsQEVhr0Wg0wMwolUqkqri6ukIQBOOVSqUI4DpH4OTkxK6urnaOjo4A3GZDt9uFqkJEUC6X+25RharC932ICJxzeQHzfR/WWlhr0Wq1QEQgIvi+D1VFkiRoNBpYXl52a2trHgDQ8fGxv7m5+dvFxcWjDLJMiawwZQd5ngdjDB4//gSe56NcLsMYg3a7jRcvfkGxWAQR5QiFYQjf9zN3YWxsDBMTEyiXy2DmYGFhoevNzMx82m63HxWLxSELkyTpj2fphJT5HwDirgMnirjzEsQMZsL0Rx/j+tVVNhUPp7MCKn3jer0ekiQBEXWiKDLe1tYW7e3t5RGZWZtxKp8e1I/uw8PDv8hyxcOuwv/8FX7/qZLLqQjCKUHhYQ9/fPAlkufPoalLv3j6tB8DKysrz+I4/rA/zlN2nzAzRCRH4U6jYmRTKcBEpESk2X4RGSpyaaZk3xJV/X5jY+Ml3tH/nv4E5KQFif7uYoAAAAAASUVORK5CYII=
 // @license     MIT
-// @version     1.73b4
+// @version     1.73b5
 // @run-at      document-start
 // @grant       none
 // ==/UserScript==
 
 //tab = 2 spaces
+
+/*global DB, GM_info, DISQUS, device, Colors, assignColor, loadColor, engines, ymToday, ym2str, coalesce, markSearchResults, search, updateSelectedOnly, readCookieRaw, loadArchiveFromPathname, hashChanged, require, HTMLDocument*/
+/*jshint supernew: true, globals: true, evil: true, loopfunc: true, jquery: true, boss: true, expr: true, devel: true, strict: global, scripturl: true, -W018, -W014*/
 
 "use strict";
 
@@ -21,8 +24,15 @@ var changesLogText = multiline(function(){/*
 <span class="warning info">if all your settings are lost after website upgrade to secure connection on Oct 13, 2019,</span>
 <span class="warning info">go to <a href="http://www.airdates.tv/legacy_cookies#backupsettings" target="_blank">this</a> page and backup your settings, then you can restore them in <a href="#settings">options</a></span>
 
+1.73b5 (2021-10-08)
+	+ restrict maximum width of the content (helps for wide resolution monitors)
+	! "collapse multiple" would collapse "premiere" or "returning" shows if there is an episode without season before it
+	! clicking on search link at the header would show arrow pointing at the searchbar without animation until page refreshed.
+	* clean up for jslint
+//enableEpDateFixMenu
+
 1.73b4 (2021-07-25)
-  + setting to activate date offset
+	+ setting to activate date offset
 	+ date offset of displays in tooltip which episode it's inherit current position
 	+ filter in changes log by clicking at legend titles
 	+ archive date to website title
@@ -37,8 +47,7 @@ var changesLogText = multiline(function(){/*
 	- ability enable/disable episode offset feature via #epdatefix0 and #epdatefix1 hashtags
 	- disqus recommendations b.s.
 	? date offset + collapsemulti = hidden/incorrect title
-//enableEpDateFixMenu
-	
+
 1.73b3 (2020-12-13)
 	+ hide "Also on" section of disqus
 1.73b2 (2020-10-15)
@@ -430,7 +439,7 @@ let log = console.log.bind(console),
 		timeOffset = 0,
 		isFrame = window.top !== window.self,
 		_Date = Date,
-		today = undefined,
+		today,
 		blankFunc = function(){},
 		SVG = {
 			del: '<svg viewBox="0 0 24 24"><path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"></path></svg>',
@@ -497,7 +506,7 @@ receiveMessage.f.reloadDisqus = function messageFunc_reloadDisqus(r)
 	{
 		$("html, body").animate({scrollTop: $("#disqus_thread").find("iframe")[0].offsetTop + r }, 300);
 	}
-}
+};
 
 window.self.addEventListener("message", receiveMessage, false);
 
@@ -509,7 +518,8 @@ if (!isFrame)
 		if (!(timeOffset instanceof Number))
 			timeOffset = 0;
 	}
-	catch(e){}
+	catch(er){}
+
 	Date = function()
 	{
 		let args = Array.prototype.slice.call(arguments);
@@ -517,12 +527,13 @@ if (!isFrame)
 		let n = (new (Function.prototype.bind.apply(_Date, args))).getTime() + 3600000 * timeOffset;
 
 		return new _Date(n);
-	}
+	};
+
 	Date._now = function()
 	{
 		return (new _Date()).getTime();
 //		return Math.floor((Date.now() - 1523246400000) / 1000); //2018-04-09 00:00:00
-	}
+	};
 }
 
 if (!Date.now)
@@ -530,7 +541,7 @@ if (!Date.now)
 	Date.now = function()
 	{
 		return (new Date()).getTime();
-	}
+	};
 }
 
 
@@ -539,7 +550,7 @@ Object.defineProperty(window, 'browser', { get: function()
 	let browser = "";
 	if((navigator.userAgent.indexOf("Opera") || navigator.userAgent.indexOf('OPR')) != -1 )
 	{
-		browser = "opera"
+		browser = "opera";
 	}
 	else if(navigator.userAgent.indexOf("Edge") != -1)
 	{
@@ -559,15 +570,28 @@ Object.defineProperty(window, 'browser', { get: function()
 	}
 	else if((navigator.userAgent.indexOf("MSIE") != -1 ) || (!!document.documentMode == true )) //IF IE > 10
 	{
-		browser = "ie"
+		browser = "ie";
 	}
 	return browser;
 }});
 
 let mainFunc = function mainFunc(event)
 {
+	/* jshint validthis: true */
 	if (typeof($) == "undefined")
 		return;
+
+	//create a DIV container and move everything into that container
+	const elContent = document.getElementById("content") || document.createElement("div"),
+				elSearchbarContainer = document.createElement("div");
+	elContent.id = "content";
+	elSearchbarContainer.id = "searchbarContainer";
+	elSearchbarContainer.appendChild(document.getElementById("searchbar"));
+	elContent.appendChild(elSearchbarContainer);
+	while(document.body.children.length)
+		elContent.appendChild(document.body.firstChild);
+
+	document.body.appendChild(elContent);
 
 	let browser = window.browser;
 	if (browser)
@@ -589,7 +613,7 @@ let mainFunc = function mainFunc(event)
 		}
 
 		disqusMessageCount.el.textContent = count;
-	}
+	};
 	receiveMessage.f.disqusMessageCount = disqusMessageCount;
 	let adeName = "Airdates.tv enhancer",
 			adeVersion = "n/a",
@@ -606,7 +630,7 @@ let mainFunc = function mainFunc(event)
 	{
 		adeName = GM_info.script.name;
 		adeVersion = GM_info.script.version;
-	}catch(e){};
+	}catch(er){}
 	cs.list = ["s","n"];
 	cs.listLegacy = {
 		sh: "showHidden",
@@ -824,7 +848,7 @@ let mainFunc = function mainFunc(event)
 				s = true;
 			}
 
-			window.createCookie = createCookie
+			window.createCookie = createCookie;
 //			window.eraseCookie = eraseCookie;
 //			window.readCookie = readCookie;
 			if (this.pref("version") != adeVersion)
@@ -847,7 +871,7 @@ let mainFunc = function mainFunc(event)
 							{
 								DB.setColor(id, DB.savedColors[id]);
 							}
-						})
+						});
 					}
 				}
 				if ("weekSunday" in this.prefs)
@@ -932,7 +956,7 @@ let mainFunc = function mainFunc(event)
 </div>
 			*/});//html
 
-			let popup = $(html).appendTo("body"),
+			let popup = $(html).appendTo("#content"),
 					content = popup.find(".content"),
 					a = document.createElement("a"),
 					i = document.createElement("span"),
@@ -964,7 +988,7 @@ let mainFunc = function mainFunc(event)
 			}, ['Move My Shows to the top of the list'], ""));
 
 			opt = $(multiline(function(){/*
-<span id="weekStartBox">First day of the week: 
+<span id="weekStartBox">First day of the week:
 	<select>
 		<option value="2">Saturday</option>
 		<option value="1">Sunday</option>
@@ -985,7 +1009,7 @@ let mainFunc = function mainFunc(event)
 
 
 			opt = $(multiline(function(){/*
-<span id="weeksBox">Show number of weeks: 
+<span id="weeksBox">Show number of weeks:
 	<select id="weeks">
 		<option value="">Default</option>
 		<option value="1">1</option>
@@ -1219,7 +1243,7 @@ let mainFunc = function mainFunc(event)
 							let data = {};
 							data[name] = val;
 							Settings.themes.quickOverride(data);
-						}
+						};
 					})
 					.parent()
 					.find(".del")
@@ -1304,7 +1328,7 @@ let mainFunc = function mainFunc(event)
 				{
 					json = JSON.parse(str);
 				}
-				catch(e){log(e)}
+				catch(er){log(er);}
 				if (json && typeof(json) == "object")
 				{
 					if ("hidden" in json)
@@ -1519,7 +1543,7 @@ let mainFunc = function mainFunc(event)
 							names[name] = {
 								i: f,
 								d: data
-							}
+							};
 							newData[id] = data;
 						}
 						customShows._list.l = newData;
@@ -1655,7 +1679,7 @@ let mainFunc = function mainFunc(event)
 			else
 				Settings.box.removeAttr("noback");
 */
-			hidePopups()
+			hidePopups();
 			Settings.box.show();
 			setPopup(true);
 		},
@@ -1701,7 +1725,7 @@ let mainFunc = function mainFunc(event)
 				for(let i = 0; i < colors.length; i++)
 					css += ".soft_cust" + i + "{background-color:#" + colors[colors.length - i - 1] + ";display:inline-block}\n";
 
-				$(".colors").toggleClass("nopre", (!Settings.prefs.lastColorsLine || Settings.prefs.lastColorsLine > 19) ? true : false)
+				$(".colors").toggleClass("nopre", (!Settings.prefs.lastColorsLine || Settings.prefs.lastColorsLine > 19) ? true : false);
 				document.getElementById("customColorsCSS2").innerHTML = css;
 				$('.colors [class^="color soft_"]').each(function(i)
 				{
@@ -1769,7 +1793,7 @@ let mainFunc = function mainFunc(event)
 				that.css();
 
 				if (that.inited)
-					return
+					return;
 
 				$( document ).off( "mouseover", ".color");
 				$( document ).off( "mouseout", ".color");
@@ -1786,7 +1810,7 @@ let mainFunc = function mainFunc(event)
 				$( document ).on( "mouseout", ".colors", function(){
 					clearTimeout(coltimer);
 					let $this = $(this);
-					coltimer = setTimeout(function(){loadColor( $this.parents("div.entry").data( "series-id" ) )}, 100);
+					coltimer = setTimeout(function(){loadColor( $this.parents("div.entry").data( "series-id" ) );}, 100);
 				});
 
 				$( document ).on( "mousedown", "div.colors .color", function(e)
@@ -1794,7 +1818,7 @@ let mainFunc = function mainFunc(event)
 					if (e.which != 2)
 						return;
 
-					let col = new Colors().setColor($(this).css( "background-color" )).HEX.toUpperCase();
+					let col = new Colors().setColor($(this).css( "background-color" )).HEX.toUpperCase(),
 							index = Settings.prefs.lastColors.indexOf(col);
 
 					if (index != -1)
@@ -1860,6 +1884,7 @@ a
 {
 	background-color: rgb(76, 76, 76);
 }
+
 #account-popup-content,
 #settings-popup .content,
 #manage-cushows-popup-content,
@@ -2109,14 +2134,14 @@ END DARK THEME
 					let name = cssName.replace(/[^a-zA-Z0-9_-]/g, "_"),
 							id = "theme_" + name,
 							style = document.getElementById(id) || document.createElement("style"),
-							reg = function(a,b,c)
+							reg = function(a)
 							{
 								let r = "body." + id;
 								if (a.toLowerCase() != "body")
 									r += " " + a;
 
 								return r;
-							}
+							};
 
 					style.id = id;
 					style.innerHTML = this.list[cssName].css.replace(/^(?!\*\/)(body|\w|[\.#\[\:\$@\*])/gm, reg).replace(/(\/\*([\s\S]*?)\*\/)|(\/\/(.*)$)/gm, '').replace(/[\n\t]*/g, "");
@@ -2165,14 +2190,14 @@ END DARK THEME
 					{
 //						if (!disqusFrameRemoved && disqusDiv.querySelector("iframe") === e.target)
 //							return e.target.parentNode.removeChild(e.target);
-            if (!e.target.src)
-              try{return e.target.parentNode.removeChild(e.target)}catch(e){return}; //remove ads
+						if (!e.target.src)
+							try{return e.target.parentNode.removeChild(e.target);}catch(er){return;} //remove ads
 
 						try
 						{
 							e.target.contentWindow && e.target.contentWindow.postMessage({id: "ade", func: "disqusTheme", args: [data.isDark], return: null}, "https://disqus.com");
 						}
-						catch (e){console.log(e)}
+						catch(er){console.log(er);}
 					});
 				}, false);
 				$("#disqus_thread").find('iframe[src^="https://disqus.com"]').each(function(o)
@@ -2181,7 +2206,7 @@ END DARK THEME
 					{
 						this.contentWindow.postMessage({id: "ade", func: "disqusTheme", args: [data.isDark], return: null}, "https://disqus.com");
 					}
-					catch (e){console.log(e)}
+					catch(er){console.log(er);}
 				});
 				$("select#theme").val(theme);
 			},//Settings.themes.load()
@@ -2244,7 +2269,7 @@ END DARK THEME
 
 					r = r	.replace(/\{ID\}/g, i)
 								.replace(/\{C1\}/g, c1)
-								.replace(/\{C2\}/g, c2)
+								.replace(/\{C2\}/g, c2);
 
 					if (val)
 						css += r;
@@ -2343,13 +2368,13 @@ body[class*="theme_"]
 				{
 					css: multiline(function(){/*
 .example_text,
-body > :not(.popup) #searchIcon > svg,
+body #content > :not(.popup) #searchIcon > svg,
 body[class*="theme_"] > :not(.popup) #searchIcon > svg,
-body > :not(.popup),
+body #content > :not(.popup),
 body[class*="theme_"] > :not(.popup)  svg,
-body > :not(.popup)  svg
+body #content > :not(.popup)  svg
 body[class*="theme_"] > :not(.popup),
-body > :not(.popup)  a
+body #content > :not(.popup)  a
 {
 	color: #{C1} !important;
 	fill: #{C1} !important;
@@ -2358,11 +2383,11 @@ body > :not(.popup)  a
 
 /*					css: multiline(function(){/*
 .example_text,
-body > :not(.popup) > *:not(.days),
-body > :not(.popup) > *:not(.days) *,
+body #content > :not(.popup) > *:not(.days),
+body #content > :not(.popup) > *:not(.days) *,
 body[class*="theme_"] > :not(.popup) > *:not(.days) *,
-body > :not(.popup) > :not(.days),
-body > :not(.popup) > :not(.days) a,
+body #content > :not(.popup) > :not(.days),
+body #content > :not(.popup) > :not(.days) a,
 body[class*="theme_"] > :not(.popup) > :not(.days) a
 {
 	color: #{C1} !important;
@@ -2396,7 +2421,7 @@ body[class*="theme_"] div.entry:not([color])
 				date:
 				{
 					css: multiline(function(){/*
-						
+
 .example_date,
 body div.day:not(.today) div.date,
 body[class*="theme_"] div.day:not(.today) div.date
@@ -2451,7 +2476,7 @@ body[class*="theme_"] div.day:not(.today)
 			}
 			this.lastUpdateDiv.textContent = "Page updated " + this.lastUpdate;
 		}
-	}//Settings
+	};//Settings
 
 	Object.seal(Settings);
 
@@ -2476,7 +2501,7 @@ body[class*="theme_"] div.day:not(.today)
 			id: function episodeTools_id(s, e)
 			{
 				s = this.split(s, e);
-				e = s[1]
+				e = s[1];
 				s = ~~s[0];
 				return typeof(e) == "undefined" ? s : s * SEID + ~~e;
 			},
@@ -2490,13 +2515,16 @@ body[class*="theme_"] div.day:not(.today)
 			full: function episodeTools_full(s, e)
 			{
 				if (s instanceof HTMLElement)
-					s = fromNode(s)
+					s = fromNode(s);
 
 				if (typeof(e) == "undefined" && typeof(s) == "number" && s >= SEID)
-					s = this.id2se(s)
+					s = this.id2se(s);
 
 				if (s instanceof Array)
-					e = s[1], s = s[0];
+				{
+					e = s[1];
+					s = s[0];
+				}
 
 				if (typeof(e) == "undefined" && typeof(s) == "string")
 					return s.replace(/^\s*(S?0*([0-9]+)?E)?0*([0-9]+)\s*$/i, function(a, b, c, d)
@@ -2505,24 +2533,29 @@ body[class*="theme_"] div.day:not(.today)
 					});
 
 				if (typeof(e) == "undefined")
-					e = s, s = 0;
+				{
+					e = s;
+					s = 0;
+				}
 
-				s = ~~s, e = ~~e
+				s = ~~s;
+				e = ~~e;
 				return (s ? "S" + pad(s) : "") + "E" + pad(e);
 			},
 
 			short: function episodeTools_short(s, e)
 			{
 				if (s instanceof HTMLElement)
-					s = fromNode(s)
+					s = fromNode(s);
 
 				if (typeof(e) == "undefined" && typeof(s) == "number" && s >= SEID)
-					s = this.id2se(s)
+					s = this.id2se(s);
 
 				if (s instanceof Array)
-					e = s[1], s = s[0];
-				
-					
+				{
+					e = s[1];
+					s = s[0];
+				}
 
 				if (typeof(e) == "undefined" && typeof(s) == "string")
 					return s.replace(/^\s*(S?0*([0-9]+))?E0*([0-9]+)|0*([0-9]+)\.0*([0-9]+)\s*$/i, "$2$4E$3$5").replace(/^E/, "");
@@ -2533,13 +2566,16 @@ body[class*="theme_"] div.day:not(.today)
 			split: function episodeTools_split(s, e)
 			{
 				if (s instanceof HTMLElement)
-					s = fromNode(s)
+					s = fromNode(s);
 
 				if (typeof(e) == "undefined" && typeof(s) == "number" && s >= SEID)
-					s = this.id2se(s)
+					s = this.id2se(s);
 
 				if (s instanceof Array)
-					e = s[1], s = s[0];
+				{
+					e = s[1];
+					s = s[0];
+				}
 
 				let m = ("" + (typeof(e) == "undefined" ? s : s + "E" + e)).match(/^\s*(S?0*([0-9]+)?E+)?0*([0-9]+)\s*$/i);
 				if (m)
@@ -2610,7 +2646,7 @@ body[class*="theme_"] div.day:not(.today)
 
 			return i + "=" + DB.savedColors[i].trim();
 		}).join(";");
-		
+
 	}
 
 	function pad(t, s, n)
@@ -2638,7 +2674,7 @@ body[class*="theme_"] div.day:not(.today)
 		if (enginesBackup.backup)
 		{
 			window.engines = enginesBackup.backup;
-			enginesBackup.backup = null
+			enginesBackup.backup = null;
 		}
 	}
 
@@ -2659,7 +2695,7 @@ body[class*="theme_"] div.day:not(.today)
 				return;
 			}
 		}
-	};
+	}
 
 	function enginesRemove(id)
 	{
@@ -2676,7 +2712,7 @@ body[class*="theme_"] div.day:not(.today)
 				return;
 			}
 		}
-	};
+	}
 
 	function enginesCheck(id)
 	{
@@ -2687,7 +2723,7 @@ body[class*="theme_"] div.day:not(.today)
 				return i;
 		}
 		return -1;
-	};
+	}
 
 	function enginesFind(id, obj, field)
 	{
@@ -2698,7 +2734,7 @@ body[class*="theme_"] div.day:not(.today)
 				return i;
 		}
 		return -1;
-	};
+	}
 
 	function enginesSort(list, save)
 	{
@@ -2761,7 +2797,7 @@ body[class*="theme_"] div.day:not(.today)
 				list[list.length] = i;
 		}
 		return !isEqual(list, enginesSort._list);
-	}
+	};
 
 	function isEqual (a, b)
 	{
@@ -2776,7 +2812,7 @@ body[class*="theme_"] div.day:not(.today)
 					return false;
 			}
 			else if (!(i in b) || a[i] != b[i])
-				return false
+				return false;
 		}
 		for(let i in b)
 		{
@@ -2786,7 +2822,7 @@ body[class*="theme_"] div.day:not(.today)
 					return false;
 			}
 			else if (!(i in a) || a[i] != b[i])
-				return false
+				return false;
 		}
 		return true;
 	}
@@ -2871,7 +2907,7 @@ body[class*="theme_"] div.day:not(.today)
 		{
 			command.list[id].func({preventDefault:function(){},stopPropagation:function(){}}, val);
 		}
-		catch(e)
+		catch(er)
 		{
 			return false;
 		}
@@ -3059,15 +3095,15 @@ body[class*="theme_"] div.day:not(.today)
 	{
 		let div = $(customLinks.div);
 
-		hidePopups()
+		hidePopups();
 		div.show();
 		setPopup(true);
-	}
+	};
 	customLinks.hide = function()
 	{
 		$(customLinks.div).hide();
 		setPopup(false);
-	}
+	};
 
 	customLinks.manager = function customLinksManager(callback)
 	{
@@ -3092,7 +3128,7 @@ body[class*="theme_"] div.day:not(.today)
 	</div>
 			*/});//html
 
-		let popup = $(html).appendTo("body");
+		let popup = $(html).appendTo("#content");
 		customLinks.div = popup[0];
 		$(popup).find("[id^=account]").each(function()
 		{
@@ -3213,8 +3249,6 @@ body[class*="theme_"] div.day:not(.today)
 							icon: engIcon.val().trim(),
 							regexp: reg
 						}];
-				if (eng.icon === "")
-					deleteeng.icon;
 
 				if (!eng[0].href.match(/[a-z]+:\/\//i))
 					eng[0].href = "http://" + eng[0].href;
@@ -3442,7 +3476,7 @@ body[class*="theme_"] div.day:not(.today)
 						let eng = window.engines[i],
 								id = "engine_" + cleanName(eng.host);
 
-						$(this).find("." + id).filter("a.link").attr("href", parseLink(this.parentNode.parentNode, eng).href)
+						$(this).find("." + id).filter("a.link").attr("href", parseLink(this.parentNode.parentNode, eng).href);
 					}
 				});
 				clone.remove();
@@ -3625,7 +3659,7 @@ body[class*="theme_"] div.day:not(.today)
 			content[0].setAttribute("draggable", true);
 			div.setAttribute("draggable", true);
 			div.addEventListener('dragstart', dndEvent, false);
-			div.addEventListener('dragenter', dndEvent, false)
+			div.addEventListener('dragenter', dndEvent, false);
 			div.addEventListener("mousedown", dndEvent, false);
 
 			dndHandle.innerText = "☰";
@@ -3770,7 +3804,7 @@ body[class*="theme_"] div.day:not(.today)
 										.find("a." + id)
 										.each(function()
 										{
-											$(this).attr("href", parseLink(this.parentNode.parentNode.parentNode, engine).href)
+											$(this).attr("href", parseLink(this.parentNode.parentNode.parentNode, engine).href);
 										})
 										.contents()
 										.filter(function()
@@ -3817,9 +3851,9 @@ body[class*="theme_"] div.day:not(.today)
 				continue;
 
 			content.append(create(eng[i], callback ? finished : null));
-		};
+		}
 	//	setTimeout(enginesRestore,100);
-	}//customLinks.manager()
+	};//customLinks.manager()
 
 	function customLinksAdd()
 	{
@@ -3878,7 +3912,7 @@ body[class*="theme_"] div.day:not(.today)
 			for (let n = 0; n < engines.length; n++)
 			{
 				if (engines[n].name == _enginesList[i])
-					_enginesList[i] = engines[n].host
+					_enginesList[i] = engines[n].host;
 
 				if (engines[n].host == _enginesList[i])
 				{
@@ -3892,7 +3926,7 @@ body[class*="theme_"] div.day:not(.today)
 					}
 	*/
 					found = true;
-					break
+					break;
 				}
 			}
 			if (!found)
@@ -3906,17 +3940,10 @@ body[class*="theme_"] div.day:not(.today)
 		try
 		{
 			_enginesList = Array.from(new Set(_enginesList));
-		}catch(e){}
+		}catch(er){}
 
 		if (l != _enginesList.length)
-		{
-/*
-log(l);
-log(_enginesList);
-alert("middleClick");
-*/
 			Settings.pref("middleClick", _enginesList);
-		}
 	}//customLinksAdd()
 
 	function customLinksAddCss(id)
@@ -3957,8 +3984,8 @@ alert("middleClick");
 	</div>
 			*/});//html
 
-		let popup = $(html).appendTo("body");
-		clolorsManager.div = popup[0];
+		let popup = $(html).appendTo("#content");
+		colorsManager.div = popup[0];
 	}//colorsManager()
 
 	colorsManager.show = function(noBack)
@@ -3970,16 +3997,16 @@ alert("middleClick");
 		else
 			div.attr("noback");
 */
-		hidePopups()
+		hidePopups();
 		div.show();
 		setPopup(true);
-	}
+	};
 
 	colorsManager.hide = function()
 	{
 		$(colorsManager.div).hide();
 		setPopup(false);
-	}
+	};
 
 
 	function createCheckbox(id, label, cookie, callback, title, className)
@@ -4088,7 +4115,7 @@ alert("middleClick");
 
 	Settings.init();
 	/*logo*/
-	$("body > h1 > img").click(function()
+	$("body #content > h1 > img").click(function()
 	{
 		let keys = Object.keys(Settings.themes.list),
 				i = keys.indexOf(Settings.prefs.theme);
@@ -4147,7 +4174,7 @@ alert("middleClick");
 					$('div.entry[data-series-id="' + seriesId + '"]').attr("color", c);
 				}, 1000);
 			}
-			catch(e){log(e);}
+			catch(er){log(er);}
 
 		}
 		else
@@ -4174,7 +4201,7 @@ alert("middleClick");
 	{
 		history.go(-1);
 		let path = window.location.href;
-		history.go(1)
+		history.go(1);
 		history.replaceState({}, "", path);
 		history.go(-1);
 	}
@@ -4188,7 +4215,7 @@ alert("middleClick");
 			document._title = document.title;
 
 		document.title = document._title + (match ? " (" + ~~(ym/12) + "-" + ~~((ym%12)+1) + ")" : "");
-		
+
 	//start fix - browser history inflating after each page refresh
 		if (originalPath && prevPath != originalPath)
 		{
@@ -4323,7 +4350,7 @@ epDateFix.move = function epDateFix_move(entry, episodeID, offset)
 	let day = $('div.calendar > div.days > div.day[data-date="' + newDate + '"]')[0] || epDateFix.div;
 	day.appendChild(entry);
 	return day;
-}
+};
 
 epDateFix.check = function epDateFix_check(id, episodeID)
 {
@@ -4332,8 +4359,8 @@ epDateFix.check = function epDateFix_check(id, episodeID)
 			offset = 0,
 			offsetRelative = 0,
 			index = -1,
-			episode = -1
-	
+			episode = -1;
+
 	for(let i = 0; i < data.length; i++)
 	{
 		let epID = episodeTools.id(data[i][0], data[i][1]);
@@ -4360,7 +4387,7 @@ epDateFix.check = function epDateFix_check(id, episodeID)
 		offsetRelative: offsetRelative,
 		episode: episode
 	};
-}
+};
 
 epDateFix.update = function epDateFix_update(id, episode, offset)
 {
@@ -4388,7 +4415,7 @@ epDateFix.update = function epDateFix_update(id, episode, offset)
 	else
 		this._list[id][this._list[id].length] = [ep[0], ep[1], offset];
 
-}
+};
 
 epDateFix.save = function epDateFix_save()
 {
@@ -4397,7 +4424,7 @@ epDateFix.save = function epDateFix_save()
 			delete this._list[id];
 
 	ls("epDateFix", this._list);
-}
+};
 
 epDateFix.init = function(enable)
 {
@@ -4407,7 +4434,7 @@ epDateFix.init = function(enable)
 		Settings.pref("enableEpDateFix", enable ? 1 : 0);
 
 	document.body.classList.toggle("enableEpDateFix", enable);
-}
+};
 epDateFix._list = ls("epDateFix") || {};
 epDateFix.div = document.createElement("div");
 epDateFix.div.id = "epDateFix";
@@ -4446,7 +4473,7 @@ epDateFix.init();
 		}
 		if (changed);
 			$(entries.context).append(entries);
-	}//sortMyShows()
+	};//sortMyShows()
 
 	let episodeNumberFix = function(id, title)
 	{
@@ -4466,7 +4493,7 @@ epDateFix.init();
 //if (data.episodeOffset || data.seasonOffset)
 //log(data);
 		return data.name + " S" + pad(seasonNew) + "E" + pad(episodeNew);
-	}
+	};
 
 	episodeNumberFix.Get = function (id, title, inherit, all)
 	{
@@ -4508,7 +4535,7 @@ epDateFix.init();
 			}
 		}
 		return r;
-	}
+	};
 
 	episodeNumberFix.Set = function(id, title, seasonOffset, episodeOffset)
 	{
@@ -4537,11 +4564,11 @@ epDateFix.init();
 			if (!data.data.length)
 				delete episodeNumberFix.list[id];
 		}
-	}
+	};
 	episodeNumberFix.save = function()
 	{
 		ls("epNumFix", episodeNumberFix.list);
-	}
+	};
 	episodeNumberFix.load = function()
 	{
 /*
@@ -4560,7 +4587,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 			}
 		}
 
-	}
+	};
 	episodeNumberFix.load();
 
 
@@ -4611,7 +4638,15 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 			else
 				list[id] = [];
 
-			list[id].push(entry);
+			if (entry.classList.contains("series-premiere") || entry.classList.contains("season-premiere"))
+			{
+				entry.classList.remove("multi");
+				list[id].unshift(entry);
+			}
+			else
+			{
+				list[id].push(entry);
+			}
 		});
 		for(let i in list)
 		{
@@ -4664,7 +4699,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 
 			if (!$(day).hasClass("opened"))
 				collapseMulti.setTitle(day.list, "_titleCollapsed");
-		}, 300)
+		}, 300);
 	};
 
 	collapseMulti.animateDone = function(e, n)
@@ -4923,7 +4958,7 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 				day.classList.toggle("past", true);
 			}
 
-		};
+		}
 		let daysNum = weekDay(),
 				prev = _today.prev();
 
@@ -4980,8 +5015,8 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 
 		for(let i = 0; i < days.children.length; i++)
 		{
-			days.children[i].setAttribute("week", (Math.ceil((i+1) / 7)))
-		};
+			days.children[i].setAttribute("week", (Math.ceil((i+1) / 7)));
+		}
 
 		let	daysPast = $('div.past'),
 				daysCount = Math.round((days.children.length) / 7) + 1,
@@ -5060,9 +5095,59 @@ id: [[season, episode, episodeOffset, seasonOffset]]
 		showWeeks();
 	}//pastLoaded()
 
+
 	//create stylesheet. A little trick to have multi-line text in javascript
 	let	style = document.createElement("style"),
 			css = multiline(function(){/*
+body
+{
+}
+#content
+{
+	max-width: 200em;
+	_transform: translateZ(0); /* this will force any "fixed" positions be relative to this container, not viewport*//*
+	position: relative;
+	margin: auto;
+}
+#searchbar
+{
+	right: unset;
+}
+#searchbarContainer
+{
+	position: absolute;
+	right: 6%;
+	margin-right: 200px;
+	padding: 0;
+	height: 0;
+	width: 0;
+	overflow: hidden;
+}
+#searchResults
+{
+	margin-top: 0.5em;
+	display: none;
+}
+
+#searchResults2
+{
+	position: fixed;
+	width: 200px;
+	margin-left: -11px;
+	padding: 10px;
+	max-height: 93vh;
+	top: 3em;
+	overflow: auto;
+	border: 1px solid transparent;;
+	border-top-color: transparent;
+	border-top-width: 0;
+	border-bottom-left-radius: 3px;
+	border-bottom-right-radius: 3px;
+}
+#searchbar.active #searchResults2
+{
+	border-color: black;
+}
 #account-overview > span.nu > svg
 {
 	width: 1.2em;
@@ -5461,7 +5546,7 @@ div.moreOpt:not([opened]) > div
 #manage-cushows-popup,
 #manage-links-popup
 {
-	position: fixed;
+	position: absolute;
 	top: 50px;
 	left: 4.7%;
 	bottom: 10px;
@@ -5483,7 +5568,7 @@ body.popup .cp-color-picker
 {
 	z-index: 1235;
 }
-body.prompt > .popup
+body.prompt .popup
 {
 	z-index: unset;
 }
@@ -5928,39 +6013,39 @@ body.shortTitle div.day.opened > div.entry > div.title
 /*
 	logo new frame
 *//*
-body > #menu + h1 > img
+#content > h1:first-of-type > img
 {
 	background-image: url('data:image/png;base64,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');
 }
 
-body.smallLogo > #menu + h1 > img
+body.smallLogo h1 > img
 {
 	height: 1em;
 	margin-bottom: -0.3em;
 	background-size: 100%;
 }
-body.smallLogo > #menu + h1,
-body.smallLogo > #menu + h1 + h2
+body.smallLogo h1,
+body.smallLogo h1 + h2
 {
 	margin: 0;
 }
 /*
-body.smallLogo > #menu + h1 > img
+body.smallLogo h1:first-of-type > img
 {
 	margin-top: 0.67em;
 	position: absolute;
 	z-index: -10;
 }
-body.smallLogo > #menu + h1
+body.smallLogo h1
 {
-	margin: 0;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	width: 100%;
 }
-body.smallLogo > #menu + h1,
-body.smallLogo > #menu + h1 + h2
+
+body.smallLogo h1,
+body.smallLogo h2
 {
 	background-color: rgba(255,255,255,0.6);
 }
@@ -6034,7 +6119,7 @@ span.button
 	display: grid;
 	position: relative;
 	padding-top: 0;
-	padding-bottom: 10px
+	padding-bottom: 0;
 }
 #searchFieldContainer > img
 {
@@ -6058,7 +6143,7 @@ body:not(.changesLog) #changesLog
 	display: none;
 }
 
-body.changesLog > :not(#changesLog)
+body.changesLog #content > :not(#changesLog)
 {
 /*
 	-webkit-filter: blur(5px);
@@ -6491,7 +6576,7 @@ div.undoBar > div > .close
 {
 	margin-right: 3px;
 	line-height: 1.2em;
-	
+
 }
 .cp-hex
 {
@@ -7148,6 +7233,7 @@ span.checkbox[checked]:before
 #arrow
 {
 	top: -20px;
+	position: fixed;
 }
 
 .warning.info
@@ -7165,9 +7251,10 @@ span.checkbox[checked]:before
 
 #go2top
 {
-	position: fixed;
+	position: sticky;
 	bottom: 10px;
-	right: 10px;
+	margin-right: 10px;
+	float: right;
 	z-index: 1;
 	outline: none;
 	background-color: silver;
@@ -7195,7 +7282,7 @@ span.checkbox[checked]:before
 	vertical-align: bottom;
 }
 
-body.archiveBottom > div.archiveBottom
+body.archiveBottom div.archiveBottom
 {
 	display: block;
 }
@@ -7238,21 +7325,25 @@ div.separator
 	margin-top: 0;
 }
 
+#account-popup.promptbox,
 .promptbox
 {
 	display: none;
 	z-index: 999999 !important;
+	width: 100%;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
 }
 .prompt-content
 {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	position: fixed;
-	top: 0;
-	left: 0;
 	width: 100%;
 	z-index: 999999;
+	margin: 0 auto;
 }
 .prompt-form
 {
@@ -7324,8 +7415,8 @@ div.separator
 {
 	height: 4em;
 }
-body.popupBlur.popup:not(.prompt) > :not(.popup),
-body.popupBlur.prompt > :not(.promptbox)
+body.popupBlur.popup:not(.prompt) #content > :not(.popup),
+body.popupBlur.prompt #content > :not(.promptbox)
 {
 	-webkit-filter: blur(10px);
 	-moz-filter: blur(10px);
@@ -7343,8 +7434,8 @@ body.popupBlur.popup:after,
 body.popupBlur.prompt:after
 {
 }
-body.popup:after,
-body.prompt:after
+body.popup > #content:after,
+body.promp > #contentt:after
 {
 	background-color: black;
 	opacity: 0.7;
@@ -7357,15 +7448,15 @@ body.prompt:after
 	z-index: 9;
 }
 
-body:not(.prompt) > .promptbox
+body:not(.prompt) #content > .promptbox
 {
 	display: none !important;
 }
-body.prompt > .promptbox
+body.prompt #content > .promptbox
 {
-	display: block !important;
+	display: flex !important;
 }
-body.prompts > *:not(.promptbox)
+body.prompts #content > *:not(.promptbox)
 {
 	-webkit-filter: grayscale(100%);
 	filter: grayscale(100%);
@@ -7397,7 +7488,7 @@ body.prompt.scrollbar
 	line-height: 2em;
 	height: 2em;
 }
-	
+
 .themeColorBox > *
 {
 	display: table-cell !important;
@@ -7487,7 +7578,7 @@ body.prompt.scrollbar
 }
 #disqus_recommendations
 {
-  display: none;
+	display: none;
 }
 */});//css
 
@@ -7660,10 +7751,10 @@ body.prompt.scrollbar
 						else
 						{
 							if (i < start)
-								rs++
+								rs++;
 
 							if (i < end)
-								re++
+								re++;
 						}
 					}
 					if (r != this.value)
@@ -7817,7 +7908,7 @@ log(arguments);
 				}
 
 				return this;
-			}//undo()
+			};//undo()
 		},
 
 		renderCallback: function($elm, toggled) {
@@ -7915,7 +8006,7 @@ log(arguments);
 		picker.detach().appendTo(this).click();
 	});
 
-	function middleClick(e, search)
+	function middleClick(e)
 	{
 		if (e.button != 1 && !(!e.button && e.ctrlKey))
 			return;
@@ -7927,37 +8018,39 @@ log(arguments);
 
 		let parent,
 				entry = true;
-		if (search)
-			parent = $(search);
-		else if ($(this).is("div.title"))
-			parent = $(this).parent();
+
+		if (e.target.closest("div.title"))
+			parent = [e.target.closest("div.entry")];
 		else
 		{
-			parent = $(this).parent().find("div.entry");
+			parent = e.target.parentNode.querySelectorAll("div.entry");
 			entry = false;
 		}
-		let func = function(e)
+		const engines = [];
+
+		for(let i = 0; i < _engines.length; i++)
 		{
-			let el = $(this),
-					div = this,
-					MONKEY_ID = encodeURIComponent( el.data("series-id") );
+			let engine = _engines[i];
+			if (engine.host in customLinks._list) //using up-to-date data
+				engine = customLinks._list[engine.host];
+
+			if (document.body.classList.contains("engine_" + cleanName(engine.host)))
+				engines[engines.length] = engine;
+		}
+		for(let i = 0; i < parent.length; i++)
+		{
+			const div = parent[i],
+						MONKEY_ID = encodeURIComponent( div.dataset.seriesId );
 
 			if (!entry && !DB.getColor(MONKEY_ID))
-				return;
+				continue;
 
-			$.each( _engines, function( i, engine )
+			for(let i = 0; i < engines.length; i++)
 			{
-				if (engine.host in customLinks._list) //using up-to-date data
-					engine = customLinks._list[engine.host];
-
-				if (!$("body").hasClass("engine_" + cleanName(engine.host)))
-					return;
-
-				let link = parseLink(div, engine);
-				window.open(link.href, (link.MONKEY + engine.name).replace(/ /g, "").replace(/%.{2}/g, ""));
-			});
-		};
-		parent.each(func);
+				const link = parseLink(div, engines[i]);
+				window.open(link.href, (link.MONKEY + engines[i].name).replace(/[^0-9a-zA-Z_-]/g, ""));
+			}
+		}
 	}//middleClick()
 
 	function parseLink(div, engine)
@@ -8028,7 +8121,7 @@ log(arguments);
 	window.markSearchResults = function markSearchResults()
 	{
 		if (showMyShows.box || showMyHidden.box)
-			return
+			return;
 
 		let searchResults = $("#searchResults"),
 				entries = searchResults.find("div.entry");
@@ -8054,7 +8147,7 @@ log(arguments);
 
 			if (wiki)
 			{
-				wikiTitle(title, wiki)
+				wikiTitle(title, wiki);
 			}
 			else
 			{
@@ -8077,12 +8170,12 @@ log(arguments);
 					wiki = obj.find(".entry").attr("data-series-source");
 					if (wiki)
 						wikiTitle(title, wiki);
-				})
+				});
 			}
 		});
 		if (entries.length)
 		{
-			function reverseOrder(entries, desc)
+			let reverseOrder = function (entries, desc)
 			{
 				if (!entries.length)
 					return;
@@ -8096,12 +8189,12 @@ log(arguments);
 				for(let i = entries.length-1; i > -1; i--)
 					entries[i].parentNode.insertBefore(entries[i], before);
 
-				return
-			}
+				return;
+			};
 			reverseOrder.order = function(entries)
 			{
 				return entries[0].innerText.toLowerCase().localeCompare(entries[entries.length-1].innerText.toLowerCase());
-			}
+			};
 
 			searchResults.prepend('<div class="info"><small><span><span class="button"></span></span></small><div>').find("span.button").click(function(e)
 			{
@@ -8169,9 +8262,9 @@ log(arguments);
 					if (r.toString().match(reg)[1] == parts[1])
 						regexp[regexp.length] = [r, repl[i] || ""];
 				}
-				catch(e){log(e)};
+				catch(er){log(er);}
 			}
-			catch(e){};
+			catch(er){}
 		}
 		if (regexp.length != lines.length)
 			return [];
@@ -8373,7 +8466,7 @@ log(arguments);
 				epNumFixInputSeason.type = "number";
 				epNumFixInputSeason.min = -999;
 				epNumFixInputSeason.max = 999;
-				function epNumFixEvt(evt)
+				let epNumFixEvt = function (evt)
 				{
 					try
 					{
@@ -8395,17 +8488,17 @@ log(arguments);
 	//					Settings.pref("timeOffset", timeOffset);
 	//					if (!evt.isTrigger)
 	//						todayChange(timeOffset);
-				  }
-					catch(e){console.error(e)}
-				}
-				function epNumFixSave()
+					}
+					catch(er){console.error(er);}
+				};
+				let epNumFixSave = function ()
 				{
 					episodeNumberFix.Set(showId, title, Number(epNumFixInputSeason.value), Number(epNumFixInputEpisode.value));
 					episodeNumberFix.save();
 //	log(episodeNumberFix.list[showId]);
 
 					let days = {};
-					
+
 					$('div.entry[data-series-id="' + showId + '"]:not(.colorbox)').each(function(i, entry)
 					{
 /*
@@ -8448,7 +8541,7 @@ log(arguments);
 					{
 						collapseMulti(i, days[i], true);
 					}
-				}
+				};
 				$(epNumFixInputSeason).on("input", epNumFixEvt);
 				$(epNumFixInputEpisode).on("input", epNumFixEvt)
 				.trigger("input");
@@ -8475,7 +8568,7 @@ log(arguments);
 				epDateFixInput.type = "number";
 				epDateFixInput.min = -999;
 				epDateFixInput.max = 999;
-				function epDateFixEvt(evt)
+				let epDateFixEvt = function (evt)
 				{
 					try
 					{
@@ -8497,9 +8590,9 @@ log(arguments);
 	//					Settings.pref("timeOffset", timeOffset);
 	//					if (!evt.isTrigger)
 	//						todayChange(timeOffset);
-				}
-					catch(e){log(e)}
-				}
+					}
+					catch(er){log(er);}
+				};
 				epDateFixInput._epDateFixTitle = function (id, list)
 				{
 					let last = list[list.length - 1];
@@ -8507,17 +8600,17 @@ log(arguments);
 					{
 						list.sort().forEach(function(val, i)
 						{
-							list[i] = episodeTools.full(val)
+							list[i] = episodeTools.full(val);
 						});
 						return epDateFixBox.title = "Inherited from " + list.join(">");
 					}
-					return epDateFixBox.removeAttribute("title")
-				}
-				function epDateFixSave()
+					return epDateFixBox.removeAttribute("title");
+				};
+				let epDateFixSave = function ()
 				{
 					let data = epDateFix.check(showId, entry._episodeID),
 							offset = ~~epDateFixInput.value;
-				
+
 //					epDateFix.move(entry, entry._episodeID, offset);
 					offset = offset - data.offsetPrev;
 					epDateFix.update(showId, entry._episodeID, offset);
@@ -8529,7 +8622,7 @@ log(arguments);
 						sortMyShows($(days[i]).find(".entry"));
 					}
 					epDateFixInput.focus();
-				}
+				};
 				$(epDateFixInput).on("input", epDateFixEvt)
 				.trigger("input");
 
@@ -8564,7 +8657,7 @@ log(arguments);
 					try
 					{
 						data = JSON.parse(entry.getAttribute("data-data"));
-					}catch(e){console.error(e)};
+					}catch(er){console.error(er);}
 				}
 				customShows.show(showId, data);
 			}, false);
@@ -8607,14 +8700,14 @@ log(arguments);
 			input.value = epFixData.offset || 0;
 			input._epDateFixTitle(entry._episodeID, epFixData.parentList);
 
-			function callbackOpen()
+			let callbackOpen = function()
 			{
 				$entry.attr("opened", "");
 				parent.attr("opened", "");
 				parent.toggleClass("opened", true);
 				if (parent[0])
 					collapseMulti.setTitle(parent[0].list, "_titleOrig");
-			}
+			};
 			details.slideDown(speed, callbackOpen);
 			$entry.attr("opened", "");
 			parent.attr("opened", "");
@@ -8836,15 +8929,15 @@ log([a, a.dataset.title, a.children[0].innerText])
 	customShows.d2y = function(date)
 	{
 		return "" + ~~(date/10000);
-	}
+	};
 	customShows.d2m = function(date)
 	{
 		return ("0" + ~~((date / 100) % 100)).slice(-2);
-	}
+	};
 	customShows.d2d = function(date)
 	{
 		return ("0" + ~~(date % 100)).slice(-2);
-	}
+	};
 /*
 	customShows.__list = {
 		i: 4, //next ID
@@ -8905,7 +8998,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 			}
 	};
 */
-	customShows.id = 1000000;
+	customShows.id = 1000000;//000000;
 	customShows.init = function(_list)
 	{
 		customShows._list = _list || ls("customShows") || {i:1,l:{}};
@@ -8955,7 +9048,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 						_date = new _Date(_date.getTime() + 86400000);
 					}
 					let newDate = "" + _date.getFullYear() + pad(_date.getMonth()+1) + pad(_date.getDate());
-							
+
 					for (let p = 0; p < perDay && p + e <= num ; p++)
 					{
 						if (!customShows.list[newId])
@@ -8966,7 +9059,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 							season: season,
 							episode: episode,
 							d: data[n]
-						}
+						};
 						if (!customShows.listDate[newDate])
 							customShows.listDate[newDate] = [];
 
@@ -8975,9 +9068,10 @@ log([a, a.dataset.title, a.children[0].innerText])
 							season: season,
 							episode: episode,
 							d: data[n]
-						}
+						};
 						episode++;
-						if (p) e++
+						if (p)
+							e++;
 					}
 					_date.setDate(_date.getDate() + days);
 				}
@@ -8988,12 +9082,12 @@ log([a, a.dataset.title, a.children[0].innerText])
 		if (upgraded)
 			customShows.save();
 
-	}//customShows.init()
+	};//customShows.init()
 
 	customShows.save = function(list)
 	{
 		ls("customShows", list || customShows._list);
-	}
+	};
 
 	customShows.remove = function(id)
 	{
@@ -9021,7 +9115,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 			s.val("").trigger("change").val(v).trigger("change");
 		}
 
-	}//customShows.remove()
+	};//customShows.remove()
 
 	customShows.search = function(_id, name)
 	{
@@ -9149,7 +9243,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 		}
 		$("<br>Your added custom show<br><br>").appendTo(searchResults);
 		markSearchResults();
-	}//customShow.search()
+	};//customShow.search()
 
 
 
@@ -9159,7 +9253,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 			customShows.manager();
 
 		let div = $(customShows.div);
-		hidePopups()
+		hidePopups();
 		div.show();
 		setPopup(true);
 		if (id)
@@ -9195,7 +9289,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 				}
 			}
 		}
-	}//customShows.show()
+	};//customShows.show()
 
 	function scrollIntoView(el, p, offsetTop, offsetBot)
 	{
@@ -9218,7 +9312,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 	{
 		$(customShows.div).hide();
 		setPopup(false);
-	}
+	};
 
 	customShows.manager = function customShowsManager(callback)
 	{
@@ -9244,7 +9338,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 	</div>
 			*/});//html
 
-		let popup = $(html).appendTo("body");
+		let popup = $(html).appendTo("#content");
 		customShows.div = popup[0];
 		$(popup).find("[id^=account]").each(function()
 		{
@@ -9429,7 +9523,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 			w = w.join("");
 			t = new Date(t.getTime() - (86400000 * rand(-2, 2)));
 			if (!p && w && i == 1)
-				p = 1
+				p = 1;
 
 			el.innerHTML =	'S<span title="Season">' + pad(rand(0, 15)) + "</span>" +
 											'E<span title="Episode">' + pad(rand(0, 22)) + "</span> " +
@@ -9456,7 +9550,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 					}, 1);
 				}
 			}
-			catch(e){console.error(e)};
+			catch(er){console.error(er);}
 		}).trigger("click");
 		function change(e)
 		{
@@ -9676,7 +9770,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 			{
 				var k = JSON.stringify(item);
 				return k in seen ? false : (seen[k] = true);
-			})
+			});
 			let cache = {},
 					array = [];
 
@@ -9731,7 +9825,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 			$('div[data-series-id="' + (id + customShows.id) + '"]').each(function()
 			{
 				delete this.parentNode.list;
-			})
+			});
 			showPast(function()
 			{
 				customShows();
@@ -9763,7 +9857,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 		function edit(id, scroll, className)
 		{
 			id = id || editId;
-			className = className || "edit"
+			className = className || "edit";
 			for(let i = 0; i < cushBox.children.length; i++)
 				cushBox.children[i].classList.toggle(className, (cushBox.children[i].id == "cush_" + id));
 
@@ -9942,14 +10036,14 @@ log([a, a.dataset.title, a.children[0].innerText])
 		for(let i in list)
 		{
 			cushBox.appendChild(customShowsCreate(~~i, callback ? finished : null));
-		};
+		}
 		if (!n)
 			callback();
 
 		sortShows();
 
 	//	setTimeout(enginesRestore,100);
-	}//customShows.manager()
+	};//customShows.manager()
 
 
 
@@ -9979,11 +10073,11 @@ log([a, a.dataset.title, a.children[0].innerText])
 	disqusMessageNotifLoaded.loaded = function loaded()
 	{
 		disqusMessageCount.el.classList.toggle("loading", false);
-	}
+	};
 
 	disqusMessageNotifLoaded.loop = function loop(iframe, i)
 	{
-		if (!i--)
+		if (!(i--))
 			return setTimeout(disqusMessageNotifLoaded.loaded, 1000);
 
 		if (iframe)
@@ -10009,7 +10103,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 		{
 			loop(iframe, i);
 		}, 100);
-	}
+	};
 
 	if (disqusMessageCount.el)
 	{
@@ -10023,7 +10117,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 				{
 					this.contentWindow.postMessage({id: "ade", func: "disqusNotifClick", args: null, return: null}, "https://disqus.com");
 				}
-				catch(e){}
+				catch(er){}
 			});
 		}, false);
 	}
@@ -10144,9 +10238,9 @@ log([a, a.dataset.title, a.children[0].innerText])
 		{
 			id = id - customShows.id;
 			if (!(id in customShows._list.l))
-				return null
+				return null;
 
-			return [customShows._list.l[id][0], customShows._list.l[id][2]]
+			return [customShows._list.l[id][0], customShows._list.l[id][2]];
 		}
 
 		let entry = $('div.days div[data-series-id="' + id + '"]').first()[0];
@@ -10160,7 +10254,7 @@ log([a, a.dataset.title, a.children[0].innerText])
 	{
 		let obj = document.createElement("div");
 		if (DB.infoChecked[id] && Date.now() - 3600000 < DB.infoChecked[id][0]) //1 hour
-			return
+			return;
 
 		if (id > customShows.id)
 			return DB.infoAdd(id);
@@ -10279,7 +10373,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 				sat: sat,
 				val: val,
 				lum: (r * 299 + g * 587 + b * 114) / 1000
-			}
+			};
 		}
 		(function display()
 		{
@@ -10338,11 +10432,11 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 
 			if (count)
 			{
-				function getSortName()
+				let getSortName = function ()
 				{
 					let a = ["Name", "Color"];
 					return  a[Settings.prefs.sortBy + 1] || a[0];
-				}
+				};
 				text = (DB.viewing ? DB.username + " has " : "You have ") + count + " show" + (count > 1 ? "s" : "") + '. <span>Sort by <span class="button">' + getSortName() + "</span></span>";
 			}
 			$(showMyShows.box).prepend('<div class="info"><small>' + text + '</small><div>');
@@ -10353,7 +10447,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 
 				Settings.save();
 				display();
-			});;
+			});
 		})();
 	}
 
@@ -10421,7 +10515,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 					span.appendChild(prev);
 					prev = span;
 				}
-				$(prev).toggleClass(id + "Icon", true)
+				$(prev).toggleClass(id + "Icon", true);
 			});
 		}
 		let accountLoop = 50;
@@ -10448,7 +10542,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			if( !accountPopup.hasClass("loaded") || (!as.length && accountLoop--))
 				return setTimeout(function()
 				{
-					loop(e)
+					loop(e);
 				}, 100);
 
 			if (!as.length)
@@ -10638,21 +10732,23 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 			e.originalEvent.preventDefault();
 			$("#searchBecauseNoOneChecks").focus();
 			var dur = 250,
-					arrow = $("#arrow");
+					arrow = $("#arrow"),
+					searchbar = $("#searchbar"),
+					left = searchbar.offset().left - 300;
+/*
 					right = this.____right || $("#searchbar").offset().left - arrow.show().offset().left + arrow.width();
 			this.____right = right;
-	/*
 			let searchbar = $("#searchbar");
 			searchbar.animate({left:$(this).offset().left}, 200).animate({left:searchbar.offset().left}, 300, function(e){this.style.left = ""; this.style.right = "";});
 	*/
-			arrow.css({'margin-right':200,right: right, 'opacity':0}).show()
-				.animate({marginRight:0,opacity:1},dur).animate({marginRight:200},dur)
-				.animate({marginRight:0},dur).animate({marginRight:200},dur)
-				.animate({marginRight:0},dur).animate({marginRight:200},dur)
-				.animate({marginRight:0},dur).animate({marginRight:200,opacity:0},dur).hide(1);
+			arrow.css({left:left + 200, 'opacity':0}).show()
+				.animate({left:left,opacity:1},dur).animate({left:left + 200},dur)
+				.animate({left:left},dur).animate({left:left + 200},dur)
+				.animate({left:left},dur).animate({left:left + 200},dur)
+				.animate({left:left},dur).animate({left:left + 200,opacity:0},dur).hide(1);
 
 		});
-		li.contents().filter(function(){return this.nodeType == 3}).each(function(i,e)
+		li.contents().filter(function(){return this.nodeType == 3;}).each(function(i,e)
 		{
 			e.parentNode.removeChild(e); //remove white spaces
 		});
@@ -10677,7 +10773,7 @@ log("Show with ID: " + id + " was removed after unseccessfull attempt retreive i
 
 			setTimeout(function()
 			{
-				let width = (ul.width() + $("body > #menu + h1 > img").width()/2 + ul.offset().left ) * 2;
+				let width = (ul.width() + $("body #menu + h1 > img").width()/2 + ul.offset().left ) * 2;
 				$("head").append('<style id="menuWidth">@media screen and (max-width: ' + width + multiline(function(){/*
 px)
 {
@@ -10693,7 +10789,7 @@ px)
 		{
 			setTimeout(function()
 			{
-				let width = (ul.width() + $("body > #menu + h1 > img").width()/2 + ul.offset().left ) * 2;
+				let width = (ul.width() + $("body #menu + h1 > img").width()/2 + ul.offset().left ) * 2;
 				$("head").append('<style id="menuWidth">@media screen and (max-width: ' + multiline(function(){/*
 px)
 {
@@ -10821,7 +10917,6 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 
 								if (isCustomSearch(e,q))
 									return;
-
 								$("#searchResults").load("/s?"+$.param({q:q}), function(){
 									customShows.search("", q);
 									lastQ = q;
@@ -11063,7 +11158,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 				let that = self;
 				if (!this.undoObj[id])
 				{
-					this.undoObj[id] = $('<div class="undoBar popup"><div><span class="msg"></span> <a class="undoBar">Undo</a><span class="undo close">X</span><div></div>').appendTo("body");
+					this.undoObj[id] = $('<div class="undoBar popup"><div><span class="msg"></span> <a class="undoBar">Undo</a><span class="undo close">X</span><div></div>').appendTo("#content");
 					this.undoObj[id].find("a").on("click", function()
 					{
 						let id = that.last.pop();
@@ -11164,7 +11259,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 			hideNode("clearWatched");
 		}
 
-		Settings.colors.init()
+		Settings.colors.init();
 	});//document.ready()
 
 //ESC(27) = close popups
@@ -11297,13 +11392,13 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 				//treat non-numerical characters as lower version
 				//replacing them with a negative number based on charcode of first character
 				//and remove non alpha-numerical characters
-				.replace(/[^0-9\.]+/g, function(c){return "." + ((c = c.replace(/[\W_]+/, "")) ? c.toLowerCase().charCodeAt(0) - 65536 : "") + "."})
+				.replace(/[^0-9\.]+/g, function(c){return "." + ((c = c.replace(/[\W_]+/, "")) ? c.toLowerCase().charCodeAt(0) - 65536 : "") + ".";})
 				//remove trailing ".", "0" and ".0"
 				.replace(/^\.|0*\.$|(?:\.0+)+$/g, "")
 				//replace double .
 				.replace(/\.+/g, ".")
 				//remove trailing "0" if followed by non-numerical characters (1.0.0b);
-				.replace(/(?:\.0+)*(\.-[0-9]+)(\.[0-9]+)?$/g, function(a,b,c){return b + (c ?  c : "")})
+				.replace(/(?:\.0+)*(\.-[0-9]+)(\.[0-9]+)?$/g, function(a,b,c){return b + (c ?  c : "");})
 				.split('.');
 		}
 		a = prep(a);
@@ -11331,7 +11426,7 @@ log("Removed show with id " + id + " due to invalid color: " + DB.savedColors[id
 				this.div.setAttribute("noback", "");
 			else
 				this.div.removeAttribute("noback");
-			hidePopups()
+			hidePopups();
 			$("body").toggleClass("changesLog", true);
 			setPopup(true);
 		},
@@ -11433,13 +11528,13 @@ function  checkInView(elem,partial)
 		var contHeight = container.height();
 		var contTop = container.scrollTop();
 		var contBottom = contTop + contHeight ;
- 
+
 		var elemTop = $(elem).offset().top - container.offset().top;
 		var elemBottom = elemTop + $(elem).height();
-		
+
 		var isTotal = (elemTop >= 0 && elemBottom <=contHeight);
 		var isPart = ((elemTop < 0 && elemBottom > 0 ) || (elemTop > 0 && elemTop <= container.height())) && partial ;
-		
+
 		return  isTotal  || isPart ;
 }
 			html.find("span.cl_filter").mousedown(function(e)
@@ -11470,7 +11565,7 @@ function  checkInView(elem,partial)
 					div.parentNode.scrollTop = scroll.offsetTop - div.parentNode.offsetTop - 4;
 				}, 0);
 			});
-			this.div = html.appendTo("body")[0];
+			this.div = html.appendTo("#content")[0];
 			let head = $("#changesLogHead"),
 					cont = $("#changesLogContent"),
 					opt = createCheckbox("noChangesLog", "Don't show this again", Settings.prefs.noChangesLog ? true : false, Settings.callback);
@@ -11534,7 +11629,7 @@ function  checkInView(elem,partial)
 		{
 			$("body").toggleClass("popup", opened || that.opened ? true : false);
 			that.opened = false;
-		}
+		};
 		clearTimeout(that.timer);
 		that.timer = setTimeout(func);
 	}
@@ -11563,7 +11658,7 @@ function  checkInView(elem,partial)
 		</form>
 	</div>
 </div>
-				*/})).appendTo("body"),
+				*/})).appendTo("#content"),
 				msg = html.find(".msg"),
 				input = html.find(".input"),
 				ok = html.find(".ok"),
@@ -11659,7 +11754,7 @@ function  checkInView(elem,partial)
 			{
 				ok = document.execCommand("copy");
 			}
-			catch(e) {}
+			catch(er) {}
 	//		inp.selectionStart = s;
 	//		inp.selectionEnd = e;
 			let msg = ok ? "Copied to clipboard!" : "Error copying to clipboard!",
@@ -11707,10 +11802,10 @@ function  checkInView(elem,partial)
 				else
 				{
 					if (i < s)
-						rs++
+						rs++;
 
 					if (i < e)
-						re++
+						re++;
 				}
 			}
 			if (r != this.value)
@@ -11770,6 +11865,7 @@ function  checkInView(elem,partial)
 					w = body.scrollWidth;
 
 			$(body).toggleClass("prompt", true);
+/*
 			let w2 = document.body.scrollWidth;
 			if (w2 != w)
 			{
@@ -11777,6 +11873,7 @@ function  checkInView(elem,partial)
 				$(body).css("right", padding + "px");
 			}
 			$(body).toggleClass("scrollbar", w2 != w)
+*/
 		}
 		_prompt.hide = close;
 		return _prompt;
@@ -11873,13 +11970,13 @@ function  checkInView(elem,partial)
 			search("info:hidden");
 			hashSearch = true;
 		}
-		else if (match = hash.match(/^#([sfq]|search|find):(.*)/))
+		else if ((match = hash.match(/^#([sfq]|search|find):(.*)/)))
 		{
 			search(match[2]);
 	//		remove = true;
 			hashSearch = true;
 		}
-		else if (match = hash.match(/^#(info:.+)/))
+		else if ((match = hash.match(/^#(info:.+)/)))
 		{
 			search(match[1]);
 	//		remove = true;
@@ -11923,11 +12020,11 @@ function  checkInView(elem,partial)
 			hashSearch = false;
 		}
 		hashChanged.hashSearch = hashSearch;
-	}
+	};
 	$(window).on("hashchange", hashChanged);
 	setTimeout(function()
 	{
-		$(window).trigger("hashchange")
+		$(window).trigger("hashchange");
 	});
 
 	let sr = $("#searchResults").siblings();
@@ -11945,7 +12042,7 @@ function  checkInView(elem,partial)
 	div.id = "go2top";
 	div.setAttribute("title", "Go to top");
 	div.innerHTML = "<i/>";
-	document.body.appendChild(div);
+	elContent.appendChild(div);
 	window.addEventListener("scroll", function(e)
 	{
 		if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
@@ -11956,10 +12053,10 @@ function  checkInView(elem,partial)
 	}, false);
 	let scrollTop = function(y)
 	{
-		$("html, body").animate({scrollTop: y }, 100)
+		$("html, body").animate({scrollTop: y }, 100);
 //		document.body.scrollTop = 0; // For Safari
 //		document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
-	}
+	};
 	div.addEventListener("click", function(e)
 	{
 		e.preventDefault();
@@ -11984,16 +12081,17 @@ var trollList;
 receiveMessage.f.trollListCallback = function receiveMessage_f_trollListCallback(v)
 {
 	trollList = v;
-}
+};
 //if (isFrame && window.location.href.indexOf("disqus.com") != -1)
 if (isFrame && window.self.location.href.match(/https?:\/\/(?:www\.)?disqus\.com/))
 {
 	mainFunc = function(){};
 
 //disqus troll filter
-	let trollHide = false,
+	let trollHide = true,
 			trollTimer,
-			comments = {};
+			comments = {},
+			trollSrc = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAA3NCSVQICAjb4U/gAAAACXBIWXMAAAsSAAALEgHS3X78AAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1M1cbXjNgAAABZ0RVh0Q3JlYXRpb24gVGltZQAxMi8yOC8xMZSAjI8AAAA/UExURf///wAAAAEBAQICAgMDAwQEBAUFBQYGBgcHBwgICAkJCQoKCgsLCw0NDQ8PDxAQEBISEhMTExYWFvr6+v////L9RbYAAAABdFJOUwBA5thmAAAAZklEQVQYGY3BWw6CMABFwXtQKLZafJz9r1WaaPgycSb5wwys8KT1DFcPZIeHlgQBZ5jcbUnTByq4oDXpopMDd88JWlCZEEtSKUsHRCUJr1W8iVqTIBeWAirZ4Rdk6A6cWPMBHfLbGzqjB8v8i7F/AAAAAElFTkSuQmCC";
 
 	trollList = ls("trolls", undefined, "trollListCallback");
 
@@ -12090,27 +12188,39 @@ if (isFrame && window.self.location.href.match(/https?:\/\/(?:www\.)?disqus\.com
 		return r;
 	};
 
-	let toggleTroll = function (comment, f)
+	let toggleTroll = function (comment, f, save)
 	{
 		//f = 0: orig
 		//f = 1: troll
 		//f = 2: toggle
 		f = typeof(f) == "undefined" ? 2 : f;
+		save = save === undefined ? true : save;
 		let parent = comment._parent,
 				t = true;
 		if (f == 1 || (f == 2 && parent.getAttribute("troll") != "true"))
 		{
+console.log(trollHide, "wtf");
 			if (trollHide)
+			{
+				if (!("innerHTMLOrig" in comment))
+					comment.innerHTMLOrig = comment.innerHTML;
+
 				comment.innerHTML = '<img src="' + trollSrc + '" class="trollComment">';
+			}
 			else
 				censorText(comment);
 		}
 		else
 		{
+			if (trollHide)
+				comment.innerHTML = comment.innerHTMLOrig;
+			
 			censorText(comment, true);
 			t = false;
 		}
-		parent.setAttribute("troll", t);
+		if (save)
+			parent.setAttribute("troll", t);
+
 		return t;
 	};
 
@@ -12143,7 +12253,7 @@ if (isFrame && window.self.location.href.match(/https?:\/\/(?:www\.)?disqus\.com
 		return obj.innerHTML;
 	};
 
-	function reloadLoop()
+	let reloadLoop = function reloadLoop()
 	{
 		let nav = document.getElementById("main-nav");
 		if (!nav && reloadLoop.i--)
@@ -12171,8 +12281,8 @@ if (isFrame && window.self.location.href.match(/https?:\/\/(?:www\.)?disqus\.com
 //				window.self.location.reload(true);
 			});
 		reloadLoop.inited = true;
-	}
-	function initPosts(names, li)
+	};
+	let initPosts = function initPosts(names, li)
 	{
 		if (li.classList.contains("init"))
 			return;
@@ -12288,7 +12398,8 @@ if (isFrame && window.self.location.href.match(/https?:\/\/(?:www\.)?disqus\.com
 							clearTimeout(this.timer);
 							this.timer = setTimeout(function()
 							{
-								censorText(post, type);
+								toggleTroll(post, !type, false);
+//								censorText(post, type);
 							}, type ? 200 : 1000);
 						};
 				body.addEventListener("mouseenter", eventHandler, false);
@@ -12298,14 +12409,15 @@ if (isFrame && window.self.location.href.match(/https?:\/\/(?:www\.)?disqus\.com
 			if (!troll)
 				continue;
 
-			censorText(post);
+			toggleTroll(post, true);
+//			censorText(post);
 		}
 		if (!initPosts._loaded)
 		{
 //			window.top.postMessage({id: "ade", func: "scrollTo", args: [document.getElementById("main-nav").offsetTop], return: null}, "https://www.airdates.tv");
 			initPosts._loaded = true;
 		}
-	}//initPosts()
+	};//initPosts()
 
 	window.addEventListener("load", function(e)
 	{
@@ -12346,7 +12458,7 @@ if (isFrame && window.self.location.href.match(/https?:\/\/(?:www\.)?disqus\.com
 
 			if (typeof($) != "undefined" && $ !== blankFunc &&  $(".btn.load-more__button.busy").length)
 			{
-				wasBusy = true
+				wasBusy = true;
 				return setTimeout(loop);
 			}
 			else
@@ -12395,7 +12507,7 @@ if (isFrame && window.self.location.href.match(/https?:\/\/(?:www\.)?disqus\.com
 					val = valEscaped;
 				}
 				if (textarea[i][key].match(/\bADEU\b/))
-					textarea[i][key]= textarea[i][key].replace(/\bADEU\b/, val)
+					textarea[i][key]= textarea[i][key].replace(/\bADEU\b/, val);
 			}
 
 //disqus button
@@ -12403,24 +12515,24 @@ if (isFrame && window.self.location.href.match(/https?:\/\/(?:www\.)?disqus\.com
 
 /*
 function getCaretPosition() {
-    var x = 0;
-    var y = 0;
-    var sel = window.getSelection();
-    if(sel.rangeCount) {
-        var range = sel.getRangeAt(0).cloneRange();
-        if(range.getClientRects()) {
-        range.collapse(true);
-        var rect = range.getClientRects()[0];
-        if(rect) {
-            y = rect.top;
-            x = rect.left;
-        }
-        }
-    }
-    return {
-        x: x,
-        y: y
-    };
+		var x = 0;
+		var y = 0;
+		var sel = window.getSelection();
+		if(sel.rangeCount) {
+				var range = sel.getRangeAt(0).cloneRange();
+				if(range.getClientRects()) {
+				range.collapse(true);
+				var rect = range.getClientRects()[0];
+				if(rect) {
+						y = rect.top;
+						x = rect.left;
+				}
+				}
+		}
+		return {
+				x: x,
+				y: y
+		};
 }
 
 
@@ -12480,7 +12592,7 @@ transform: scaleX(-1);
 }
 span.troll
 {
-background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAA3NCSVQICAjb4U/gAAAACXBIWXMAAAsSAAALEgHS3X78AAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1M1cbXjNgAAABZ0RVh0Q3JlYXRpb24gVGltZQAxMi8yOC8xMZSAjI8AAAA/UExURf///wAAAAEBAQICAgMDAwQEBAUFBQYGBgcHBwgICAkJCQoKCgsLCw0NDQ8PDxAQEBISEhMTExYWFvr6+v////L9RbYAAAABdFJOUwBA5thmAAAAZklEQVQYGY3BWw6CMABFwXtQKLZafJz9r1WaaPgycSb5wwys8KT1DFcPZIeHlgQBZ5jcbUnTByq4oDXpopMDd88JWlCZEEtSKUsHRCUJr1W8iVqTIBeWAirZ4Rdk6A6cWPMBHfLbGzqjB8v8i7F/AAAAAElFTkSuQmCC");
+background-image: url("TROLLSRC");
 background-repeat: no-repeat;
 background-position: center;
 width: 1.1em;
@@ -12577,7 +12689,7 @@ li.reload
 	display: none;
 }
 */
-		});//disqus css
+		}).replace(/TROLLSRC/g, trollSrc);//disqus css
 		document.getElementsByTagName("head")[0].appendChild(style);
 
 //disqus notification badge
@@ -12647,20 +12759,20 @@ log(count);
 
 					window.top.postMessage({id: "ade", func: "disqusMessageCount", args: [loop.notificationCount], return: null}, "https://www.airdates.tv");
 				}
-			})()
+			})();
 
 			receiveMessage.f.disqusNotifClick = function disqusNotifClick()
 			{
 				if ($("li.nav-tab.nav-tab--primary.notification-menu.unread>a").length)
 					$("li.nav-tab.nav-tab--primary.notification-menu.unread>a")[0].click();
-			}
+			};
 
 			receiveMessage.f.disqusTheme = function disqusTheme(dark)
 			{
-console.log("disqus dark", dark);
+//console.log("disqus dark", dark);
 				document.body.classList.toggle("dark", dark);
-			}
-			
+			};
+
 		} //if (!document.getElementById("message"))
 	}, false); //window load()
 }//disqus if (iframe)
@@ -12673,7 +12785,8 @@ let mainFuncDelay = function(e)
 		setTimeout(function(){mainFunc(e);}, 1000);
 	else
 		mainFunc(e);
-}
+
+};
 if (document.readyState != "loading")
 	mainFuncDelay();
 else
@@ -12689,7 +12802,7 @@ function receiveMessage(event)
 	{
 		return;
 	}
-console.log("receiveMessage", event);
+//console.log("receiveMessage", event);
 	let func = typeof(receiveMessage.f[event.data.func]) == "function" ? receiveMessage.f[event.data.func] : null;
 	if (func)
 	{
@@ -12698,13 +12811,13 @@ console.log("receiveMessage", event);
 		{
 			r = func.apply(receiveMessage.f, event.data.args);
 		}
-		catch(e){log(e)};
+		catch(er){log(er);}
 
 		try
 		{
 			event.source.postMessage({id: "ade", return: event.data.return, returnVal: r}, event.origin);
 		}
-		catch(e){}
+		catch(er){}
 	}
 	if ("returnVal" in event.data && "return" in event.data && typeof(receiveMessage.f[event.data.return]) == "function")
 	{
@@ -12713,7 +12826,7 @@ console.log("receiveMessage", event);
 }
 
 function createCookie(name,value){ document.cookie = name+"="+encodeURIComponent(value)+"; path=/; expires="+new Date( (new Date()).getTime()+3153600000000).toGMTString()+";"; }
-function readCookie(n,r){return(r=document.cookie.match('(^|;)\\s*'+encodeURIComponent(n)+'\\s*=\\s*([^;]+)'))?r[2]:null}
+function readCookie(n,r){return(r=document.cookie.match('(^|;)\\s*'+encodeURIComponent(n)+'\\s*=\\s*([^;]+)'))?r[2]:null;}
 function eraseCookie( name ){ document.cookie = name+"=; path=/; expires="+new Date((new Date()).getTime()+(-1)).toGMTString()+";"; }
 
 function ls(id, data, callback)
@@ -12725,16 +12838,16 @@ function ls(id, data, callback)
 		{
 			r = localStorage.getItem(id);
 		}
-		catch(e)
+		catch(er)
 		{
 			window.top.postMessage({id: "ade", func: "ls", args: [id], return: callback}, "https://www.airdates.tv");
-			log(e);
+			log(er);
 			return r;
 		}
 		try
 		{
 			r = JSON.parse(r);
-		}catch(e){}
+		}catch(er){}
 	}
 	else
 	{
@@ -12742,10 +12855,10 @@ function ls(id, data, callback)
 		{
 			r = localStorage.setItem(id, JSON.stringify(data));
 		}
-		catch(e)
+		catch(er)
 		{
 			window.top.postMessage({id: "ade", func: "ls", args: [id, data], return: callback}, "https://www.airdates.tv");
-			log(e);
+			log(er);
 			return r;
 		}
 	}
@@ -12761,7 +12874,7 @@ function cs(id, data)
 		{
 			r = readCookie(id);
 			r = JSON.parse(r);
-		}catch(e){}
+		}catch(er){}
 	}
 	else
 	{
@@ -12769,7 +12882,7 @@ function cs(id, data)
 		{
 			r = createCookie(id, JSON.stringify(data));
 		}
-		catch(e){}
+		catch(er){}
 	}
 	return r;
 }
@@ -12815,7 +12928,7 @@ function cloneObj(obj, exclude, _map)
 	{
 		objNew = new obj.constructor();
 	}
-	catch(e)
+	catch(er)
 	{
 		objNew = obj;
 	}
