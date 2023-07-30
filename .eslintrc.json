@@ -1,0 +1,39 @@
+{
+  "extends": [
+    "plugin:userscripts/recommended",
+    "eslint:recommended"
+  ],
+  "settings": {
+  },
+  "parserOptions": {
+    "ecmaVersion": "latest"
+  },
+  "env": {
+      "es6": true,
+      "browser": true,
+      "node": false,
+      "greasemonkey": true,
+      "jquery": true
+  },
+  "plugins": [
+    "userscripts"
+  ],
+  "rules": {
+    "prefer-template": "off", // allow "string" + "string"
+    // "no-plusplus": "off",
+    // "no-continue": "off",
+    // "no-param-reassign": "off",
+    // "no-restricted-syntax": "off",
+    // "no-bitwise": "off",
+    "no-unused-vars": "warn",
+    "no-cond-assign": "warn",
+    "userscripts/better-use-match": "off",
+    "curly": "off",
+    "no-empty": ["error", {"allowEmptyCatch": true}],
+    // "object-curly-newline": ["error", {
+    //   "ObjectPattern": "never",
+    //   "ObjectExpression": { "multiline": false, "minProperties": 1 }
+    // }],
+    "brace-style": ["error", "allman", { "allowSingleLine": true }]
+  }
+}

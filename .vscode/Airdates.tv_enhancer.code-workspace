@@ -1,0 +1,38 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"editor.tabSize": 4,
+		"cSpell.words": [
+			"allman",
+			"cond",
+			"plusplus"
+		]
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "Launch Edge",
+				"request": "launch",
+				"type": "msedge",
+				"url": "https://www.airdates.tv/",
+				"webRoot": "${workspaceFolder}",
+				"logTimestamps": true,
+				"outputCapture": "console",
+			  //  "trace": true,
+				"runtimeArgs": [
+					"--auto-open-devtools-for-tabs"
+				],
+				"env": {
+				  "XDEBUG_MODE": "debug,develop",
+				  "XDEBUG_CONFIG": "client_port=9000"
+				}
+			  },
+		],
+		"compounds": []
+	}
+}
